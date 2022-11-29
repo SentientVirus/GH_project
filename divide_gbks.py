@@ -25,5 +25,5 @@ for file in sorted(os.listdir(indir)):
                 newfile[locus_name] += line
                 
 for locus_name in newfile.keys():
-    with open(f'{outdir}/{locus_name}', 'w') as outgbk:
+    with open(f'{outdir}/{locus_name}.gbk', 'w') as outgbk:
         outgbk.write(newfile[locus_name])
