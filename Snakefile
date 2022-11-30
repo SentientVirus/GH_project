@@ -1,7 +1,10 @@
 configfile: "config.yml"
 rule all:
     input:
-        expand("data/genbanks/{strain}.gbk", strain = config["strains"])
+        expand("data/genbanks/{strain}.gbk", strain = config["strains"]),
+        expand("gbks/{strain}_1.gbk", strain = config["strains"]),
+        expand("data/fasta/{GH}.{ext}", GH = config["GHs"], ext = ["faa", "fna"])
+
 rule download_data:
     output:
         expand("data/genbanks/{strain}.gbk", strain = config["strains"])
@@ -22,3 +25,13 @@ rule divide_gbks:
     log: "logs/python/gbks.log"
     script:
         "divide_gbks.py"
+
+rule retrieve_sequences:
+    output:
+        expand("data/fasta/{GH}/{GH}.{ext}", GH = config["GHs"], ext = ["faa", "fna"])
+    input:
+        expand("gbks/{strain}_1.gbk", strain = config["strains"])
+    log: "logs/python/GHs.log"
+    conda: "biopython_env.yml"
+    script:
+        "retrieve_GH70s.py"
