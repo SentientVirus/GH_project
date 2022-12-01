@@ -18,6 +18,26 @@ import csv
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 from Bio.SeqIO.FastaIO import as_fasta
+import logging, traceback
+
+logging.basicConfig(filename=snakemake.log[0],
+                    level=logging.INFO,
+                    format='%(asctime)s %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',
+                    )
+def handle_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+
+    logger.error(''.join(["Uncaught exception: ",
+                         *traceback.format_exception(exc_type, exc_value, exc_traceback)
+                         ])
+                 )
+# Install exception handler
+sys.excepthook = handle_exception
+
+sys.stdout = open(snakemake.log[0], 'a')
 
 direct = 'interproscan'
 indir = 'gbks'
@@ -25,9 +45,6 @@ gene_types = snakemake.output
 file_list = snakemake.input
 strains = [Path(file).stem for file in file_list]
 strains = [strain[:-2] for strain in strains]
-
-# with open(snakemake.log[0], "w") as f:
-#     sys.stderr = sys.stdout = f
 
 def get_domain_pos(directory, strains, domain_annot):
     gene_names = {}
@@ -95,7 +112,7 @@ def parse_faa_fna(indir, outdir, gene_domains, out_prefix):
                                         gene_dom = get_domains(feature.location.extract(record).seq, gene_domain[locus_tag][0]*3, gene_domain[locus_tag][1]*3)
                                         gene_record = SeqRecord(Seq(gene_dom), tag, tag, '')
                                         out_fna.write(as_fasta(gene_record))    #write >locus_tag and nucleotide sequence to output file
-                                        print(f'GH70 domain with locus tag {tag} added.\n')
+                                        print(f'{out_prefix} domain with locus tag {tag} added.\n')
                                             
 def parse_GH32(indir, outdir, gene_domains, out_prefix):
     locus_tags = gene_domains                   #locus_tags of interest
@@ -125,7 +142,7 @@ def parse_GH32(indir, outdir, gene_domains, out_prefix):
                                     out_faa.write(as_fasta(prot_record))     #write >locus_tag and amino acid sequence to output file
                                     gene_record = SeqRecord(Seq(feature.location.extract(record).seq), locus_tag, locus_tag, '')
                                     out_fna.write(as_fasta(gene_record))    #write >locus_tag and nucleotide sequence to output file
-                                    print(f'GH32 with locus tag {locus_tag} added.\n')
+                                    print(f'{out_prefix} with locus tag {locus_tag} added.\n')
 
 for gene_type in gene_types:
     gtype = Path(gene_type).stem
@@ -136,7 +153,7 @@ for gene_type in gene_types:
     if gtype == 'GH70':
         domannot = 'Glycosyl hydrolase family 70'
         gene_domain = get_domain_pos(direct, strains, domannot)
-        parse_faa_fna(indir, outdir, gene_domain, gtype)
+        parse_GH32(indir, outdir, gene_domain, gtype)
         
     elif gtype == 'GH32':
         domannot = 'SSF75005'
