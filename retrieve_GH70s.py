@@ -106,10 +106,10 @@ def parse_faa_fna(indir, outdir, gene_domains, out_prefix):
                                     else:
                                         locus_tag_list = [locus_tag]
                                     for tag in locus_tag_list:
-                                        domain = get_domains(feature.qualifiers['translation'][0], gene_domain[locus_tag][0], gene_domain[locus_tag][1])
+                                        domain = get_domains(feature.qualifiers['translation'][0], gene_domain[tag][0], gene_domain[tag][1])
                                         prot_record = SeqRecord(Seq(domain), tag, tag, '')
                                         out_faa.write(as_fasta(prot_record))     #write >locus_tag and amino acid sequence to output file
-                                        gene_dom = get_domains(feature.location.extract(record).seq, gene_domain[locus_tag][0]*3, gene_domain[locus_tag][1]*3)
+                                        gene_dom = get_domains(feature.location.extract(record).seq, gene_domain[tag][0]*3, gene_domain[tag][1]*3)
                                         gene_record = SeqRecord(Seq(gene_dom), tag, tag, '')
                                         out_fna.write(as_fasta(gene_record))    #write >locus_tag and nucleotide sequence to output file
                                         print(f'{out_prefix} domain with locus tag {tag} added.\n')
@@ -153,7 +153,7 @@ for gene_type in gene_types:
     if gtype == 'GH70':
         domannot = 'Glycosyl hydrolase family 70'
         gene_domain = get_domain_pos(direct, strains, domannot)
-        parse_GH32(indir, outdir, gene_domain, gtype)
+        parse_faa_fna(indir, outdir, gene_domain, gtype)
         
     elif gtype == 'GH32':
         domannot = 'SSF75005'
