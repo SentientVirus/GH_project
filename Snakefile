@@ -35,3 +35,30 @@ rule retrieve_sequences:
     conda: "biopython_env.yml"
     script:
         "retrieve_GH70s.py"
+
+rule separate_GHs:
+    output:
+        expand("data/fasta/{GH}/{GH}_{sufix}.{ext}", GH = config["GHs"], ext = ["faa", "fna"], sufix = ["repset", "subset"]),
+        expand("data/fasta/GH70/{type}_{sufix}.{ext}", type = ["GS1", "GS2", "BRS", "short", "NCB"], sufix = ["repset", "subset"], ext = ["faa", "fna"]),
+        expand("data/fasta/GH32/{type}_repset.{ext}", type = ["S1", "S2a", "S2b", "S3"], ext = ["faa", "fna"]),
+        expand("data/fasta/GH32/{type}_subset.{ext}", type = ["S2a", "S2b", "S3"], ext = ["faa", "fna"])
+    input:
+        expand("data/fasta/{GH}/{GH}.{ext}", GH = config["GHs"], ext = ["faa", "fna"])
+    params:
+        GS1 = config["GS1"],
+        GS2 = config["GS2"],
+        BRS = config["BRS"],
+        short = config["short"],
+        NCB = config["NCB"],
+        S1 = config["S1"],
+        S2a = config["S2a"],
+        S2b = config["S2b"],
+        S3 = config["S3"],
+        repr = config["representatives"],
+        subset = config["subset"],
+        GH70s = ["GS1", "GS2", "BRS", "short", "NCB"],
+        GH32s = ["S1", "S2a", "S2b", "S3"]
+    log: "logs/python/substypes.log"
+    conda: "biopython_env.yml"
+    script:
+        "separate_genes.py"
