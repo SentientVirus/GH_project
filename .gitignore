@@ -1,2 +1,4 @@
 #Ignore gbk files (they're generated as part of the pipeline, but shouldn't be changed)
 gbks/*
+*.swp
+.snakemake
