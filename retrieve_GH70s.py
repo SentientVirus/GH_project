@@ -20,6 +20,10 @@ from Bio.Seq import Seq
 from Bio.SeqIO.FastaIO import as_fasta
 import logging, traceback
 
+# =============================================================================
+# Logging
+# =============================================================================
+
 logging.basicConfig(filename=snakemake.log[0],
                     level=logging.INFO,
                     format='%(asctime)s %(message)s',
@@ -34,31 +38,43 @@ def handle_exception(exc_type, exc_value, exc_traceback):
                          *traceback.format_exception(exc_type, exc_value, exc_traceback)
                          ])
                  )
-# Install exception handler
+
 sys.excepthook = handle_exception
 
 sys.stdout = open(snakemake.log[0], 'a')
+
+# =============================================================================
+# Defining paths and loading parameters from Snakemake
+# =============================================================================
 
 direct = 'interproscan'
 indir = 'gbks'
 gene_types = snakemake.output
 file_list = snakemake.input
-strains = [Path(file).stem for file in file_list]
-strains = [strain[:-2] for strain in strains]
+strains = [Path(file).stem for file in file_list] #Extract strain names from files
+strains = [strain[:-2] for strain in strains] #Remove _1 from strain names
+
+# =============================================================================
+# Function to get GH70 domain tags from Interproscan annotations (in same folder)
+# =============================================================================
 
 def get_domain_pos(directory, strains, domain_annot):
-    gene_names = {}
-    for filename in sorted(strains, key=lambda v: v.upper()):
-        with open(f'{directory}/{filename}.tsv') as annot:
-            file = csv.reader(annot)
-            for line in file:
-                line = line[0].split('\t')
-                if domain_annot in line:
-                    if line[0] not in gene_names.keys():
+    gene_names = {} #Create emprty dictionary
+    for filename in sorted(strains, key=lambda v: v.upper()): #Loop through files in folder
+        with open(f'{directory}/{filename}.tsv') as annot: #Open annotations
+            file = csv.reader(annot) #Read file
+            for line in file: #Loop through file
+                line = line[0].split('\t') #Get list with information in the line
+                if domain_annot in line: #If it is a GH70 domain
+                    if line[0] not in gene_names.keys(): #Retrieve domain position
                         gene_names[line[0]] = (int(line[6]), int(line[7]))
-                    else:
+                    else: #Accounts for two domains in a gene
                         gene_names[f'{line[0]}_2'] = (int(line[6]), int(line[7]))
-    return gene_names
+    return gene_names #Returns dictionary locus_tag: (domain start, domain end)
+
+# =============================================================================
+# Same as the function above, but gets GH32 full protein locus tags
+# =============================================================================
 
 def get_GH32(directory, strains, domain_annot):
     gene_names = []
@@ -67,17 +83,22 @@ def get_GH32(directory, strains, domain_annot):
             file = csv.reader(annot)
             for line in file:
                 line = line[0].split('\t')
-                if domain_annot in line and int(line[0].split('_')[1]) > 10**4:
+                if domain_annot in line and int(line[0].split('_')[1]) > 10**4: #Take only locus tags > 10000
                     gene_names.append(line[0])
     return gene_names
+
+# =============================================================================
+# Function to get only the domain sequence from a protein
+# =============================================================================
 
 def get_domains(sequence, start, end):
     domain = sequence[start:end]
     return domain
 
 
-
-#Function to parse nucleotide and amino acid sequence from genbank:
+# =============================================================================
+# Function to parse nucleotide and amino acid sequences from GenBank files:
+# =============================================================================
 
 def parse_faa_fna(indir, outdir, gene_domains, out_prefix):
     locus_tags = list(gene_domains.keys())                   #locus_tags of interest
@@ -94,7 +115,7 @@ def parse_faa_fna(indir, outdir, gene_domains, out_prefix):
         with open(f'{indir}/{gbk_file}_1.gbk') as new_gbk:
             print(f'{indir}/{gbk_file}_1.gbk')
             #parse faa and fna sequences
-            with open(outfile_faa, 'a') as out_faa, open(outfile_fna, 'a') as out_fna:                #open output file where all faa and fna sequences will be saved.
+            with open(outfile_faa, 'a') as out_faa, open(outfile_fna, 'a') as out_fna:    #open output file where all faa and fna sequences will be saved.
                 for record in SeqIO.parse(new_gbk, 'genbank'):      #for each record in gbk file
                     if record.features:                             #if record.features
                         for feature in record.features:             #loop thorugh each feature
@@ -113,7 +134,11 @@ def parse_faa_fna(indir, outdir, gene_domains, out_prefix):
                                         gene_record = SeqRecord(Seq(gene_dom), tag, tag, '')
                                         out_fna.write(as_fasta(gene_record))    #write >locus_tag and nucleotide sequence to output file
                                         print(f'{out_prefix} domain with locus tag {tag} added.\n')
-                                            
+ 
+# =============================================================================
+# Same but for GH32s (not accounting for domains)
+# =============================================================================
+                                           
 def parse_GH32(indir, outdir, gene_domains, out_prefix):
     locus_tags = gene_domains                   #locus_tags of interest
     
@@ -144,11 +169,15 @@ def parse_GH32(indir, outdir, gene_domains, out_prefix):
                                     out_fna.write(as_fasta(gene_record))    #write >locus_tag and nucleotide sequence to output file
                                     print(f'{out_prefix} with locus tag {locus_tag} added.\n')
 
-for gene_type in gene_types:
-    gtype = Path(gene_type).stem
+# =============================================================================
+# Implementation of the functions
+# =============================================================================
+
+for gene_type in gene_types: #Loop through output filenames
+    gtype = Path(gene_type).stem #Get gene type: GH70 or GH32
     outdir = f'data/fasta/{gtype}'
     if not os.path.exists(outdir):
-        os.makedirs(outdir)
+        os.makedirs(outdir) #Create outdir if it does not exist
         
     if gtype == 'GH70':
         domannot = 'Glycosyl hydrolase family 70'

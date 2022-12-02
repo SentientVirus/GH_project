@@ -4,11 +4,21 @@
 Created on Thu Dec  1 16:43:13 2022
 
 @author: marina
+
 """
+
+# =============================================================================
+# Script to divide GHs by type and subset
+# =============================================================================
+
 import os
 from Bio import SeqIO
 from Bio.SeqIO.FastaIO import as_fasta
 import logging, traceback
+
+# =============================================================================
+# Logging
+# =============================================================================
 
 logging.basicConfig(filename=snakemake.log[0],
                     level=logging.INFO,
@@ -24,10 +34,14 @@ def handle_exception(exc_type, exc_value, exc_traceback):
                          *traceback.format_exception(exc_type, exc_value, exc_traceback)
                          ])
                  )
-# Install exception handler
+
 sys.excepthook = handle_exception
 
 sys.stdout = open(snakemake.log[0], 'a')
+
+# =============================================================================
+# Define Snakemake input
+# =============================================================================
 
 GS1 = snakemake.params.GS1
 GS2 = snakemake.params.GS2
@@ -45,63 +59,59 @@ GH32s = snakemake.params.GH32s
 representatives = snakemake.params.repr
 subset = snakemake.params.subset
 
+# =============================================================================
+# Define path to outputs and dictionary of variables
+# =============================================================================
+
 path = 'data/fasta'
 
 myVars = locals()
-# with open('try.txt', 'w') as file:
-#     file.write('')
 
-# for GH70 in GH70s:
-#     with open('try.txt', 'a') as file:
-#         file.write(GH70)
+# =============================================================================
+# Function to create file if it does not exist, otherwise append to file
+# =============================================================================
 
-#record_dict = {}
+def create_write(path, prefix, filename):
+    with open(f'{path}/{prefix}/{filename}', 'a+') as outfile:
+        outfile.write(as_fasta(record))
+        
+# =============================================================================
+# Loop through inputs and save the information to outputs
+# =============================================================================
 
-for file in input_files:
-    if 'GH70' in file:
-        gene_list = GH70s
-        prefix = 'GH70'
+for file in input_files: #Loop through Snakemake inputs
+    if 'GH70' in file: #If GH70 is in the file
+        gene_list = GH70s #Get all GH70 types
+        prefix = 'GH70' #Set GH70 as prefix for outputs
     elif 'GH32' in file:
         gene_list = GH32s
         prefix = 'GH32'
-    with open(file) as seq_file:
-        for record in SeqIO.parse(seq_file, 'fasta'):
-            if record.id.split('_')[0] in representatives:
-                filename = f'{prefix}_repset.{file[-3:]}'
-                if filename not in os.listdir(f'{path}/{prefix}'):
-                    mode = 'w'
-                else:
-                    mode = 'a'
-                with open(f'{path}/{prefix}/{filename}', mode) as outfile:
+    with open(file) as seq_file: #Open input file
+        for record in SeqIO.parse(seq_file, 'fasta'): #Read it as fasta
+            check = False #To check if the strain is in the subset
+            sname = record.id.split('_')[0] #Get strain name from locus tag
+            if sname in representatives: #Get strain name and check if it is among the representatives
+                if sname in subset:
+                    check = True
+                filename = f'{prefix}_repset.{file[-3:]}' #Define output file name
+                with open(f'{path}/{prefix}/{filename}', 'a+') as outfile: #Create the file if it does not exist, otherwise append to file
                     outfile.write(as_fasta(record))
                 print(f'{record.id} added to {path}/{prefix}/{filename}')
-                if record.id.split('_')[0] in subset:
+                
+                if check: 
                     filename = f'{prefix}_subset.{file[-3:]}'
-                    if filename not in os.listdir(f'{path}/{prefix}'):
-                        mode = 'w'
-                    else:
-                        mode = 'a'
-                    with open(f'{path}/{prefix}/{filename}', mode) as outfile:
-                        outfile.write(as_fasta(record))
+                    create_write(path, prefix, filename)
                     print(f'{record.id} added to {path}/{prefix}/{filename}')
-                for gene_type in gene_list:
-                    if record.id in myVars[gene_type]:
-                        filename = f'{gene_type}_repset.{file[-3:]}'
-                        if filename not in os.listdir(f'{path}/{prefix}'):
-                            mode = 'w'
-                        else:
-                            mode = 'a'
-                        with open(f'{path}/{prefix}/{filename}', mode) as outfile:
-                            outfile.write(as_fasta(record))
+                    
+                for gene_type in gene_list: #Loop through gene types
+                    if record.id in myVars[gene_type]: #Retrieve locus tags per type
+                        filename = f'{gene_type}_repset.{file[-3:]}' #File for a particular GH type
+                        create_write(path, prefix, filename)
                         print(f'{record.id} added to {path}/{prefix}/{filename}')
-                        if record.id.split('_')[0] in subset:
-                            filename = f'{gene_type}_subset.{file[-3:]}'
-                            if filename not in os.listdir(f'{path}/{prefix}'):
-                                mode = 'w'
-                            else:
-                                mode = 'a'
-                            with open(f'{path}/{prefix}/{filename}', mode) as outfile:
-                                outfile.write(as_fasta(record))
+                        
+                        if check:
+                            filename = f'{gene_type}_subset.{file[-3:]}' #File for a particular GH type in the subset
+                            create_write(path, prefix, filename)
                             print(f'{record.id} added to {path}/{prefix}/{filename}')
                     
                 
