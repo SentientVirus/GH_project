@@ -58,7 +58,7 @@ rule separate_GHs:
         subset = config["subset"],
         GH70s = ["GS1", "GS2", "BRS", "short", "NCB"],
         GH32s = ["S1", "S2a", "S2b", "S3"]
-    log: "logs/python/substypes.log"
+    log: "logs/python/subtypes.log"
     conda: "biopython_env.yml"
     script:
         "separate_genes.py"

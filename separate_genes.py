@@ -8,6 +8,26 @@ Created on Thu Dec  1 16:43:13 2022
 import os
 from Bio import SeqIO
 from Bio.SeqIO.FastaIO import as_fasta
+import logging, traceback
+
+logging.basicConfig(filename=snakemake.log[0],
+                    level=logging.INFO,
+                    format='%(asctime)s %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',
+                    )
+def handle_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+
+    logger.error(''.join(["Uncaught exception: ",
+                         *traceback.format_exception(exc_type, exc_value, exc_traceback)
+                         ])
+                 )
+# Install exception handler
+sys.excepthook = handle_exception
+
+sys.stdout = open(snakemake.log[0], 'a')
 
 GS1 = snakemake.params.GS1
 GS2 = snakemake.params.GS2
@@ -46,9 +66,17 @@ for file in input_files:
         prefix = 'GH32'
     with open(file) as seq_file:
         for record in SeqIO.parse(seq_file, 'fasta'):
-            for gene_type in gene_list:
-                if record.id.split('_')[0] in representatives:
-                    filename = f'{prefix}_repset.{file[-3:]}'
+            if record.id.split('_')[0] in representatives:
+                filename = f'{prefix}_repset.{file[-3:]}'
+                if filename not in os.listdir(f'{path}/{prefix}'):
+                    mode = 'w'
+                else:
+                    mode = 'a'
+                with open(f'{path}/{prefix}/{filename}', mode) as outfile:
+                    outfile.write(as_fasta(record))
+                print(f'{record.id} added to {path}/{prefix}/{filename}')
+                if record.id.split('_')[0] in subset:
+                    filename = f'{prefix}_subset.{file[-3:]}'
                     if filename not in os.listdir(f'{path}/{prefix}'):
                         mode = 'w'
                     else:
@@ -56,15 +84,7 @@ for file in input_files:
                     with open(f'{path}/{prefix}/{filename}', mode) as outfile:
                         outfile.write(as_fasta(record))
                     print(f'{record.id} added to {path}/{prefix}/{filename}')
-                    if record.id.split('_')[0] in subset:
-                        filename = f'{prefix}_subset.{file[-3:]}'
-                        if filename not in os.listdir(f'{path}/{prefix}'):
-                            mode = 'w'
-                        else:
-                            mode = 'a'
-                        with open(f'{path}/{prefix}/{filename}', mode) as outfile:
-                            outfile.write(as_fasta(record))
-                        print(f'{record.id} added to {path}/{prefix}/{filename}')
+                for gene_type in gene_list:
                     if record.id in myVars[gene_type]:
                         filename = f'{gene_type}_repset.{file[-3:]}'
                         if filename not in os.listdir(f'{path}/{prefix}'):
