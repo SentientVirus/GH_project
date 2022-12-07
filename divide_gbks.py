@@ -30,7 +30,7 @@ def parse_GenBank(file, locus_dict):
                 check = True
             elif '//' in line:
                 check = False
-            if check:
+            if check and 'ORIGIN' not in line:
                 line = '  ' + line
             locus_dict[locus_name] += line
     return locus_dict
