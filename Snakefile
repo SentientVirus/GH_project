@@ -1,27 +1,27 @@
 configfile: "config.yml"
 rule all:
     input:
-        expand("data/genbanks/{strain}.gbk", strain = config["strains"]),
+#        expand("data/genbanks/{strain}.gbk", strain = config["strains"]),
         expand("gbks/{strain}_1.gbk", strain = config["strains"]),
         expand("data/fasta/{GH}.{ext}", GH = config["GHs"], ext = ["faa", "fna"])
 
-rule download_data:
-    output:
-        expand("data/genbanks/{strain}.gbk", strain = config["strains"])
-    params: 
-        link = config["datalink"]
-    log: "logs/downloads/SciLife.log"
-    shadow: "minimal"
-    shell:
-        "wget -O tarfile {params.link} -o {log} \
-        && tar -xvzf tarfile >> {log} 2>> {log} \
-        && mv analyses/data/genbanks/* data/genbanks"
+#rule download_data:
+#    output:
+#        expand("data/genbanks/{strain}.gbk", strain = config["strains"])
+#    params: 
+#        link = config["datalink"]
+#    log: "logs/downloads/SciLife.log"
+#    shadow: "minimal"
+#    shell:
+#        "wget -O tarfile {params.link} -o {log} \
+#        && tar -xvzf tarfile >> {log} 2>> {log} \
+#        && mv analyses/data/genbanks/* data/genbanks"
 
 rule divide_gbks:
     output:
         expand("gbks/{strain}_1.gbk", strain = config["strains"])
     input:
-        expand("data/genbanks/{strain}.gbk", strain = config["strains"])
+        expand("/home/marina/Akunkeei_files/gbff/{strain}_genomic.gbff", strain = config["strains"])
     log: "logs/python/gbks.log"
     script:
         "divide_gbks.py"
