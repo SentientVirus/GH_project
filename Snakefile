@@ -155,23 +155,27 @@ rule pal2nal:
         """
 
 rule codeml_exe:
-	input:
-		'codons/{gnrl}_codon.pal2nal',
-		'alignments/{gnrl}_prot.mafft.fasta.treefile'
-	output:
-		'codeml_out/{gnrl}/{gnrl}.txt',
-		'codeml_out/{gnrl}/2ML.dN',
-		'codeml_out/{gnrl}/2ML.dS'
-	params:
-		outdir = '/home/marina/codeml_analysis/subset/codeml_out/{gnrl}'
-	script:
-		'codeml_biopython.py'
+    output:
+        summary = expand("results/{type}/{type}_repset.txt", type = ["GS1", "GS2", "BRS", "S2a", "S3"]),
+        dN = expand("results/{type}/2ML.dN", type = ["GS1", "GS2", "BRS", "S2a", "S3"]),
+        dS = expand("results/{type}/2ML.dS", type = ["GS1", "GS2", "BRS", "S2a", "S3"])
+    input:
+        codons = expand("data/codons/{types}_codon.pal2nal", types = ["GS1", "GS2", "BRS", "S2a", "S3"]),
+        trees_GH70 = expand("data/fasta/GH70/trees/{type}_repset.mafft.faa.treefile", type = ["GS1", "BRS", "GS2"]),
+        trees_GH32 = expand("data/fasta/GH32/trees/{type}_repset.mafft.faa.treefile", type = ["S2a", "S3"])
+    params:
+        outdir = "/home/marina/GH_project/results"
+    log: "logs/python/repset_codeml.log"
+    conda: "environment.yml"
+    script:
+        "codeml_biopython.py"
 		
 rule run_parser:
-	input:
-		'codeml_out/{gnrl}/{gnrl}.txt'
-	output:
-		'codeml_out/{gnrl}/dNdS.tsv',
-		'codeml_out/{gnrl}/stats.tsv'
-	script:
-		'../parse_codeml.py'
+    output:
+        dNdS = expand("results/{type}/dNdS.tsv", type = ["GS1", "GS2", "BRS", "S2a", "S3"]),
+        stats = expand("results/{type}/stats.tsv", type = ["GS1", "GS2", "BRS", "S2a", "S3"])
+    input:
+        txt = expand("results/{type}/{type}_repset.txt", type = ["GS1", "GS2", "BRS", "S2a", "S3"])
+    log: "logs/python/repset_outtabs.log"
+    script:
+        "parse_codeml.py"
