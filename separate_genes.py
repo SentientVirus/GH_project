@@ -86,31 +86,38 @@ for file in input_files: #Loop through Snakemake inputs
     elif 'GH32' in file:
         gene_list = GH32s
         prefix = 'GH32'
+    if 'complete' in file:
+        add = 'complete_'
+    else: add = ''
     with open(file) as seq_file: #Open input file
         for record in SeqIO.parse(seq_file, 'fasta'): #Read it as fasta
             check = False #To check if the strain is in the subset
+            check2 = True #To check that GH70 domain is complete
             sname = record.id.split('_')[0] #Get strain name from locus tag
+            if sname[0] == 'H':
+                sname = sname[:4] + '-' + sname[4:]
             if sname in representatives: #Get strain name and check if it is among the representatives
                 if sname in subset:
                     check = True
-                filename = f'{prefix}_repset.{file[-3:]}' #Define output file name
+                filename = f'{add}{prefix}_repset.{file[-3:]}' #Define output file name
                 with open(f'{path}/{prefix}/{filename}', 'a+') as outfile: #Create the file if it does not exist, otherwise append to file
                     outfile.write(as_fasta(record))
                 print(f'{record.id} added to {path}/{prefix}/{filename}')
                 
                 if check: 
-                    filename = f'{prefix}_subset.{file[-3:]}'
+                    filename = f'{add}{prefix}_subset.{file[-3:]}'
                     create_write(path, prefix, filename)
                     print(f'{record.id} added to {path}/{prefix}/{filename}')
                     
                 for gene_type in gene_list: #Loop through gene types
                     if record.id in myVars[gene_type]: #Retrieve locus tags per type
-                        filename = f'{gene_type}_repset.{file[-3:]}' #File for a particular GH type
-                        create_write(path, prefix, filename)
-                        print(f'{record.id} added to {path}/{prefix}/{filename}')
+                        if myVars[gene_type] not in ['GS1', 'GS2', 'BRS', 'NCB'] or len(record.seq) > 650:
+                            filename = f'{add}{gene_type}_repset.{file[-3:]}' #File for a particular GH type
+                            create_write(path, prefix, filename)
+                            print(f'{record.id} added to {path}/{prefix}/{filename}')
                         
                         if check:
-                            filename = f'{gene_type}_subset.{file[-3:]}' #File for a particular GH type in the subset
+                            filename = f'{add}{gene_type}_subset.{file[-3:]}' #File for a particular GH type in the subset
                             create_write(path, prefix, filename)
                             print(f'{record.id} added to {path}/{prefix}/{filename}')
                     
