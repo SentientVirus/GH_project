@@ -75,6 +75,7 @@ rule separate_GHs:
         "separate_genes.py"
 
 #This pipeline requires Mafft, iqtree, pal2nal and paml. It also requires Python3 with biopython and pandas.
+#The conda environment files provide all required packages except for pal2nal (v14).
 
 rule msa_gtf:
     output:
