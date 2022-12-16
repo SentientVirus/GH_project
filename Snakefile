@@ -107,26 +107,52 @@ rule msa_gtf:
         """ 
 
 rule iqtree_gtf:
-	input:
-		prot = 'alignments/{gnrl}_prot.mafft.fasta',
-		gene = 'alignments/{gnrl}_genes.mafft.fasta'
-	output:
-		prot = 'alignments/{gnrl}_prot.mafft.fasta.log',
-		gene = 'alignments/{gnrl}_genes.mafft.fasta.log',
-		tree = 'alignments/{gnrl}_prot.mafft.fasta.treefile'
-	threads: 12
-	shell:
+    output:
+        prot_GH70 = expand("data/fasta/GH70/trees/{type}_repset.mafft.faa.treefile", type = ["GS1", "BRS", "GS2"]),
+        gene_GH70 = expand("data/fasta/GH70/trees/{type}_repset.mafft.fna.treefile", type = ["GS1", "BRS", "GS2"]),
+        prot_GH32 = expand("data/fasta/GH32/trees/{type}_repset.mafft.faa.treefile", type = ["S2a", "S3"]),
+        gene_GH32 = expand("data/fasta/GH32/trees/{type}_repset.mafft.fna.treefile", type = ["S2a", "S3"])
+    input:
+        prot_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.faa", type = ["GS1", "BRS", "GS2"]),
+        gene_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.fna", type = ["GS1", "BRS", "GS2"]),
+        prot_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.faa", type = ["S2a", "S3"]),
+        gene_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.fna", type = ["S2a", "S3"])
+    threads: 12
+    conda: "environment.yml"
+    log: "logs/iqtree/repset_trees.log"
+    shell:
 #		'iqtree -s {input.prot} -st AA -m LG+C10+F -bb 1000 -alrt 1000 -v > {output.prot} && iqtree -s {input.gene} -st DNA -m GTR+G4+F -bb 1000 -alrt 1000 -v > {output.gene}'
-		'iqtree -nt {threads} -s {input.prot} -st AA -m LG+G4+F -bb 1000 -bnni && iqtree -s {input.gene} -st DNA -m GTR+G4+F -bb 1000 -bnni'
+        """
+        mkdir -p data/fasta/GH70/trees && mkdir -p data/fasta/GH32/trees &&
+        iqtree -nt {threads} -s {input.prot_GH70[0]} -st AA -m LG+G4+F -bb 1000 -bnni > {log} &&
+        iqtree -nt {threads} -s {input.prot_GH70[1]} -st AA -m LG+G4+F -bb 1000 -bnni >> {log} && 
+        iqtree -nt {threads} -s {input.prot_GH70[2]} -st AA -m LG+G4+F -bb 1000 -bnni >> {log} && mv data/fasta/GH70/*.faa.* data/fasta/GH70/trees &&
+        iqtree -nt {threads} -s {input.gene_GH70[0]} -st DNA -m GTR+G4+F -bb 1000 -bnni >> {log} &&
+        iqtree -nt {threads} -s {input.gene_GH70[1]} -st DNA -m GTR+G4+F -bb 1000 -bnni >> {log} &&
+        iqtree -nt {threads} -s {input.gene_GH70[2]} -st DNA -m GTR+G4+F -bb 1000 -bnni >> {log} && mv data/fasta/GH70/*.fna.* data/fasta/GH70/trees &&
+        iqtree -nt {threads} -s {input.prot_GH32[0]} -st AA -m LG+G4+F -bb 1000 -bnni >> {log} &&
+        iqtree -nt {threads} -s {input.prot_GH32[1]} -st AA -m LG+G4+F -bb 1000 -bnni >> {log} && mv data/fasta/GH32/*.faa.* data/fasta/GH32/trees &&
+        iqtree -nt {threads} -s {input.gene_GH32[0]} -st DNA -m GTR+G4+F -bb 1000 -bnni >> {log} &&
+        iqtree -nt {threads} -s {input.gene_GH32[1]} -st DNA -m GTR+G4+F -bb 1000 -bnni >> {log} && mv data/fasta/GH32/*.fna.* data/fasta/GH32/trees
+        """ 
 
 rule pal2nal:
-	input:
-		aln1 = 'alignments/{gnrl}_prot.mafft.fasta',
-		aln2 = 'inputs/{gnrl}_genes.fasta'
-	output:
-		'codons/{gnrl}_codon.pal2nal'
-	shell:
-		'../pal2nal.v14/pal2nal.pl {input.aln1} {input.aln2} -output paml -nogap > {output}'
+    output:
+        expand("data/codons/{types}_codon.pal2nal", types = ["GS1", "GS2", "BRS", "S2a", "S3"])
+    input:
+        aln1_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.faa", type = ["GS1", "GS2", "BRS"]),
+        aln1_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.faa", type = ["S2a", "S3"]),
+	aln2_GH70 = expand("data/fasta/GH70/{type}_repset.fna", type = ["GS1", "GS2", "BRS"]),
+        aln2_GH32 = expand("data/fasta/GH32/{type}_repset.fna", type = ["S2a", "S3"])
+    log: "logs/pal2nal/repset_codons.log"
+    shell:
+        """
+        pal2nal.v14/pal2nal.pl {input.aln1_GH70[0]} {input.aln2_GH70[0]} -output paml -nogap > {output[0]} 2> {log} &&
+        pal2nal.v14/pal2nal.pl {input.aln1_GH70[1]} {input.aln2_GH70[1]} -output paml -nogap > {output[1]} 2>> {log} &&
+        pal2nal.v14/pal2nal.pl {input.aln1_GH70[2]} {input.aln2_GH70[2]} -output paml -nogap > {output[2]} 2>> {log} &&
+        pal2nal.v14/pal2nal.pl {input.aln1_GH32[0]} {input.aln2_GH32[0]} -output paml -nogap > {output[3]} 2>> {log} &&
+        pal2nal.v14/pal2nal.pl {input.aln1_GH32[1]} {input.aln2_GH32[1]} -output paml -nogap > {output[4]} 2>> {log}
+        """
 
 rule codeml_exe:
 	input:
