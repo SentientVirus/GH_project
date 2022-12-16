@@ -111,15 +111,15 @@ for file in input_files: #Loop through Snakemake inputs
                     
                 for gene_type in gene_list: #Loop through gene types
                     if record.id in myVars[gene_type]: #Retrieve locus tags per type
-                        if myVars[gene_type] not in ['GS1', 'GS2', 'BRS', 'NCB'] or len(record.seq) > 650:
+                        if gene_type not in ['GS1', 'GS2', 'BRS', 'NCB'] or (file.endswith('.faa') and len(record.seq) > 700) or (file.endswith('.fna') and len(record.seq) > 2100):
                             filename = f'{add}{gene_type}_repset.{file[-3:]}' #File for a particular GH type
                             create_write(path, prefix, filename)
                             print(f'{record.id} added to {path}/{prefix}/{filename}')
                         
-                        if check:
-                            filename = f'{add}{gene_type}_subset.{file[-3:]}' #File for a particular GH type in the subset
-                            create_write(path, prefix, filename)
-                            print(f'{record.id} added to {path}/{prefix}/{filename}')
+                            if check:
+                                filename = f'{add}{gene_type}_subset.{file[-3:]}' #File for a particular GH type in the subset
+                                create_write(path, prefix, filename)
+                                print(f'{record.id} added to {path}/{prefix}/{filename}')
                     
                 
                 
