@@ -67,9 +67,10 @@ def get_domain_pos(directory, strains, domain_annot):
                 line = line[0].split('\t') #Get list with information in the line
                 if domain_annot in line: #If it is a GH70 domain
                     if line[0] not in gene_names.keys(): #Retrieve domain position
-                        gene_names[line[0]] = (int(line[6]), int(line[7]))
+                        loctag = line[0].replace('-', '')
+                        gene_names[loctag] = (int(line[6]), int(line[7]))
                     else: #Accounts for two domains in a gene
-                        gene_names[f'{line[0]}_2'] = (int(line[6]), int(line[7]))
+                        gene_names[f'{loctag}_2'] = (int(line[6]), int(line[7]))
     return gene_names #Returns dictionary locus_tag: (domain start, domain end)
 
 # =============================================================================
@@ -84,7 +85,7 @@ def get_GH32(directory, strains, domain_annot):
             for line in file:
                 line = line[0].split('\t')
                 if domain_annot in line and int(line[0].split('_')[1]) > 10**4: #Take only locus tags > 10000
-                    gene_names.append(line[0])
+                    gene_names.append(line[0].replace('-', ''))
     return gene_names
 
 # =============================================================================
@@ -120,7 +121,8 @@ def parse_faa_fna(indir, outdir, gene_domains, out_prefix):
                     if record.features:                             #if record.features
                         for feature in record.features:             #loop thorugh each feature
                             if feature.type == 'CDS':                 #if there is a CDS feature type
-                                locus_tag = feature.qualifiers['locus_tag'][0]      #retrieve locus tag as locus_tag
+                                locus_tag = feature.qualifiers['locus_tag'][0][3:]     #retrieve locus tag as locus_tag
+                                print(locus_tag)
                                 if locus_tag in locus_tags: #if locus_tag is present in locus_tags
                                     if f'{locus_tag}_2' in locus_tags:
                                         locus_tag_list = [locus_tag, f'{locus_tag}_2']
@@ -161,7 +163,8 @@ def parse_GH32(indir, outdir, gene_domains, out_prefix):
                     if record.features:                             #if record.features
                         for feature in record.features:             #loop thorugh each feature
                             if feature.type == 'CDS':                 #if there is a CDS feature type
-                                locus_tag = feature.qualifiers['locus_tag'][0]      #retrieve locus tag as locus_tag
+                                locus_tag = feature.qualifiers['locus_tag'][0][3:]  #retrieve locus tag as locus_tag
+                                print(locus_tag)
                                 if locus_tag in locus_tags: #if locus_tag is present in locus_tags
                                     prot_record = SeqRecord(Seq(feature.qualifiers['translation'][0]), locus_tag, locus_tag, '')
                                     out_faa.write(as_fasta(prot_record))     #write >locus_tag and amino acid sequence to output file
