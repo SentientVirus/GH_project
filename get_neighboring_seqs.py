@@ -32,6 +32,10 @@ sys.excepthook = handle_exception
 
 sys.stdout = open(snakemake.log[0], 'a')
 
+# =============================================================================
+# Define objects to store GenBank information and sorting function
+# =============================================================================
+
 class gbk_entry:
     def __init__(self, name, subset, locus_tag, translation, gene_seq, description = ''):
         self.name = name
@@ -43,10 +47,13 @@ class gbk_entry:
         self.description = description
     def __str__(self):
         return f'<{self.name} at {self.locus_tag} with length {self.length}, {self.subset} subset>'
+    
+def sort_key(text:str):
+    return(text[0].upper(), text[1:])
 
-same_sequences = {} #Keep track of sequences that are the same
-added = [] #Keep track of what has already been added
-count = 0
+# =============================================================================
+# Set paths, parameters and define dictionary to store information
+# =============================================================================
 
 current_dir = '/home/marina/GH_project'
 outdir = current_dir + '/' + os.path.dirname(snakemake.output[0]) #'/home/marina/GH_project/data/fasta/other_genes'
@@ -65,6 +72,9 @@ genes = list(map(lambda x: x.replace('yhdG_2','yhdG'), genes))
 gtypes = snakemake.params.gtypes
 # gtypes = ['GH70', 'GH32']
 
+# =============================================================================
+# Loop through gene type and strain
+# =============================================================================
 
 for gtype in gtypes:
     if gtype == 'GH70':
@@ -75,42 +85,23 @@ for gtype in gtypes:
         GH70_subset = snakemake.params.GH32_subset
         # GH70_subset = ['A1001', 'A1805', 'H1B1-04J', 'H3B2-03M',
         #               'H4B4-02J', 'H4B4-12M', 'H4B5-03X']
-        
-    check = False
     for gene_n in genes:
-            
-        
-        #Change everything from here to read the GenBank directly
-        
-        # strain_list = []
-        # gene_list = []
-        
-        # with open(file_out, 'w') as gn: #Reset file
-        #     gn.write('')
-        
-        def sort_key(text:str):
-            return(text[0].upper(), text[1:])
-        
         os.chdir(gbk_dir)
         file_list = sorted(os.listdir(os.getcwd()), key=sort_key)
         for filename in file_list:
             sname = filename.split('_')[0]
-            
-                    
             if filename.endswith('.gbff') and sname in GH70_subset:
-                # if ('H3B1-04' in filename or 'H3B2-03J' in filename) and gene_n == 'oppA_2':
-                #     gene_n = 'oppA_3'
-                # elif 'H1B3-02M' in filename and gene_n == 'oppA_2':
-                #     gene_n = 'oppA'
                 with open(filename) as handle:
                     for record in SeqIO.parse(handle, 'genbank'):
                         for feature in record.features:
+                            # Retrieve locus tag and sequence
                             if 'gene' in feature.qualifiers.keys() and 'translation' in feature.qualifiers.keys():
                                 gene_str = feature.qualifiers['gene'][0] 
                                 locus_tag = feature.qualifiers['locus_tag'][0][3:]
-                                #Redo this part and use dictionaries to take the highest or lowest locus tag depending on the gene
+                                # Filtering for genes that appear several times
                                 if (gene_str == gene_n and (int(locus_tag.split('_')[1]) > 12000)) or ('mhpD' in gene_str and gene_n == 'hpcG'):
                                     if not (gtype == 'GH70' and gene_n == 'yhdG' and (int(locus_tag.split('_')[1]) < 12200)):
+                                        # Create empty output files and account for genes that appear several times
                                         if (gene_n, gtype) not in gene_dict.keys():
                                             gene_dict[(gene_n, gtype)] = []
                                             file_out = f'{outdir}/a_kunkeei_{gene_n}_{gtype}.faa'
@@ -128,16 +119,18 @@ for gtype in gtypes:
                                                     gn.write('')
                                                     gn2.write('')
                                         
+                                        # Create GenBank object
                                         gbkobj = gbk_entry(gene_n, gtype, locus_tag, 
                                                            feature.qualifiers['translation'][0], 
                                                            feature.location.extract(record).seq,
                                                            feature.qualifiers['product'][0])
                                         
+                                        # Filter out variants of the gene outside target region, save info to dictionary
                                         if gbkobj.name != 'sbnD_2' and gbkobj.name != 'GH39_2':
                                             gene_dict[(gene_n, gtype)].append(gbkobj)
                                         gene_n = gene_n.split('_')[0]
                                         
-                                        #Filter out yhdG
+                                        # Save entries in fasta format
                                         file_out = f'{outdir}/a_kunkeei_{gbkobj.name}_{gtype}.faa'
                                         file_fna = file_out.replace('.faa', '.fna')
                                         if (gbkobj.name != 'sbnD_2') and (gbkobj.name != 'yhdG') and ('GH39' not in gbkobj.name or (gbkobj.name == 'GH39' and gbkobj.length > 500)):
@@ -152,71 +145,3 @@ for gtype in gtypes:
                                                 outfile2.write(as_fasta(gene_entry))
                                             print(gbkobj)
                                         
-                                        
-                            # with open(file_out, 'a') as gn:
-                            #     if record.id == gene_n:
-                            #         print('It works!')
-                            #         file_out.write(record)
-                            #         print(f'{record.id} with length {len(record.seq)} added.\n')
-        #         if ('H3B1-04' in filename or 'H3B2-03J' in filename) and gene_n == 'oppA_2':
-        #             gene_n = 'oppA_3'
-        #         elif 'H1B3-02M' in filename and gene_n == 'oppA_2':
-        #             gene_n = 'oppA'
-        #         f = (row for row in open(filename))
-        #         locus = next(f)[12:22] #Take file name (i.e. HXBX-XXX)
-        #         locus = locus.replace(' ', '')
-        
-        #         for line in f: #Loop through lines in file
-        #             #print(line[22:27])
-        #             if line[22:27] == 'locus': #Get gene names
-        #                 gene = line[:-1].replace(' ', '') #Remove spaces
-        #                 gene = gene.replace('/locus_tag=', '') #Remove other text
-        #                 gene = re.sub(r'[("")]', '', gene) #Remove ""
-        #                 line2 = next(f)
-        #                 line2 = next(f)
-        #                 # if 'gene' in line2:
-        #                 #     gene_name = line2.replace('/gene=', '')
-        #                 #     print(gene_name)
-        #                 if (gene_n in line2) or ('A1001' in filename and 'yhdG' in gene_n and 'yhdG_2' in line2) or ('mhpD' in line2 and gene_n == 'hpcG'): #If it is the gene(s) of interest
-        #                     while 'translation' not in line2: #Jump to the start of the protein sequence
-        #                         line2 = next(f)
-        #                     prot_seq = '' #Define string
-        #                     while line2[21:24] !='/EC' and line2[5:9] != 'gene': #Get full protein sequence
-        #                         prot_seq += line2
-        #                         line2 = next(f)
-        #                     prot_seq = prot_seq.replace(' ', '')
-        #                     prot_seq = prot_seq.replace('/translation=', '')
-        #                     prot_seq = re.sub(r'[("\n")]', '', prot_seq)
-        #                     if 'oppA' in gene_n:
-        #                         gene_n = 'oppA_2'
-        
-        
-        #                     with open(file_out, 'r') as gn: #Add sequence info to file
-        #                         prot = prot_seq
-        #                         n = 1
-        #                         i = 0
-        #                         while i < n:
-        #                             if prot not in added:
-        #                                 added.append(prot)
-        #                                 same_sequences[prot] = [gene]
-        #                             else:
-        #                                 same_sequences[prot].append(gene)
-        #                             with open(file_out, 'a+') as gn2:
-        #                                 record = SeqRecord(Seq(prot), gene, gene, '')
-        #                                 fasta_record = as_fasta(record)
-        #                                 gn2.write(fasta_record)
-        #                                 print(f'{gene} added, {len(prot)}')
-        #                                 count += 1
-        #                             gene_list.append(gene)
-        #                             i += 1
-        
-        # x = f'{gene_n}_{gtype}_protein'
-        # print(f'{outdir}/same_{x}_sequences.txt')
-        # with open(f'{outdir}/same_{x}_sequences.txt', 'w') as gn2:
-        #     x = x.replace('_', ' ')
-        #     gn2.write(f'There are a total of {count} ({len(same_sequences.keys())}) different sequences at the {x} level.\n')
-        #     gn2.write('The following genomes contain the same sequence:\n\n')
-        #     for seq in same_sequences.keys():
-        #         [gn2.write(f'{sequence} ') for sequence in same_sequences[seq]]
-        #         gn2.write('\n')
-        #         #[gn2.write(f'{g}\t{same_sequences[seq][0]}\n') for g in same_sequences[seq]]
