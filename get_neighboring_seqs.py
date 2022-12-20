@@ -5,12 +5,32 @@ Created on Tue Oct  5 00:34:10 2021
 @author: usuario
 """
 import os
-import re
-import csv
+import logging, traceback
 from Bio.SeqRecord import SeqRecord
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqIO.FastaIO import as_fasta
+
+# =============================================================================
+# Logging
+# =============================================================================
+
+logging.basicConfig(filename = snakemake.log[0], level = logging.INFO,
+                    format = '%(asctime)s %(message)s',
+                    datefmt = '%Y-%m-%d %H:%M:%S')
+
+def handle_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+
+    logger.error(''.join(["Uncaught exception: ",
+                          *traceback.format_exception(exc_type, exc_value, exc_traceback)
+                          ]))
+
+sys.excepthook = handle_exception
+
+sys.stdout = open(snakemake.log[0], 'a')
 
 class gbk_entry:
     def __init__(self, name, subset, locus_tag, translation, gene_seq, description = ''):
@@ -27,30 +47,34 @@ class gbk_entry:
 same_sequences = {} #Keep track of sequences that are the same
 added = [] #Keep track of what has already been added
 count = 0
-initial_path = '/home/marina/GH_project'
-outdir = '/home/marina/GH_project/data/fasta/other_genes'
-gbk_dir = '/home/marina/Akunkeei_files/gbff'
+
+current_dir = '/home/marina/GH_project'
+outdir = current_dir + '/' + os.path.dirname(snakemake.output[0]) #'/home/marina/GH_project/data/fasta/other_genes'
+gbk_dir = os.path.dirname(snakemake.input[0]) #'/home/marina/Akunkeei_files/gbff'
 
 gene_dict = {}
 
 if not os.path.exists(outdir):
     os.makedirs(outdir)
 
-# min_length = 0 #667 #Set minimum length for the proteins
+genes = snakemake.params.gene_names
+genes = list(map(lambda x: x.replace('yhdG_2','yhdG'), genes))
+# genes = ['ohrR', 'yifK', 'yhdG', 'GH39', 'nox', 'hpcG', 'oppA', 'sbnD', 'epsE', 
+#          'epsL', 'ywqE', 'ywqD', 'ywqC', 'tagU'] #Run without GH39
 
-# gene_names = {} #Genes to be retrieved and their positions
+gtypes = snakemake.params.gtypes
+# gtypes = ['GH70', 'GH32']
 
-genes = ['ohrR', 'yifK', 'yhdG', 'GH39', 'nox', 'hpcG', 
-         'oppA', 'sbnD', 'epsE', 'epsL', 'ywqE', 'ywqD', 'ywqC', 'tagU'] #Run without GH39, plnV (before and after nox) and ytgP (before sbnD)
 
-gtypes = ['GH70', 'GH32']
 for gtype in gtypes:
     if gtype == 'GH70':
-        GH70_subset = ['G0403', 'H1B3-02M', 'H3B2-03J', 'H3B1-04J', 'H3B1-04X', 
-                      'H4B2-02J', 'H4B2-04J', 'H4B5-04J', 'H4B5-05J']
+        GH70_subset = snakemake.params.GH70_subset
+        # GH70_subset = ['G0403', 'H1B3-02M', 'H3B2-03J', 'H3B1-04J', 'H3B1-04X', 
+        #               'H4B2-02J', 'H4B2-04J', 'H4B5-04J', 'H4B5-05J']
     else:
-        GH70_subset = ['A1001', 'A1805', 'H1B1-04J', 'H3B2-03M',
-                      'H4B4-02J', 'H4B4-12M', 'H4B5-03X']
+        GH70_subset = snakemake.params.GH32_subset
+        # GH70_subset = ['A1001', 'A1805', 'H1B1-04J', 'H3B2-03M',
+        #               'H4B4-02J', 'H4B4-12M', 'H4B5-03X']
         
     check = False
     for gene_n in genes:

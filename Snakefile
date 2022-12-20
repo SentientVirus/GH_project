@@ -74,6 +74,17 @@ rule separate_GHs:
     script:
         "separate_genes.py"
 
+rule get_neighboring_genes:
+    output:
+        expand("data/fasta/other_genes/a_kunkeei_{gname}_{type}.{ext}", gname = config["neighbors"], type = config["GHs"], ext = ["faa", "fna"])
+    input:
+        expand("/home/marina/Akunkeei_files/gbff/{strain}_genomic.gbff", strain = config["strains"]) #I added GH39 to the gbffs
+    conda: "biopython_env.yml"
+    log: "logs/python/neighbors.log"
+    params: gene_names = config["neighbors"], gtypes = config["GHs"], GH70_subset = config["GH70_subset"], GH32_subset = config["GH32_subset"]
+    script:
+        "get_neighboring_seqs.py"
+
 #This pipeline requires Mafft, iqtree, pal2nal and paml. It also requires Python3 with biopython and pandas.
 #The conda environment files provide all required packages except for pal2nal (v14).
 

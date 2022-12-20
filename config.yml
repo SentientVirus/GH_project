@@ -15,6 +15,23 @@ subset:
 - H4B5-03X
 - H4B5-04J
 - H4B5-05J
+GH32_subset:
+- A1001
+- A1805
+- H1B1-04J
+- H3B2-03M
+- H4B4-02J
+- H4B4-12M
+- H4B5-03X
+GH70_subset:
+- G0403
+- H1B3-02M
+- H3B1-04J
+- H3B1-04X
+- H3B2-03J
+- H4B2-02J
+- H4B5-04J
+- H4B5-05J
 representatives:
 - A0901
 - A1001
@@ -610,3 +627,19 @@ strains:
 - H4B5-08X
 - MP2
 - Fhon2
+neighbors:
+- ohrR
+- yifK
+- yifK_2
+- yhdG_2
+- GH39
+- nox
+- hpcG
+- oppA
+- sbnD
+- epsE
+- epsL
+- ywqE
+- ywqD
+- ywqC
+- tagU
