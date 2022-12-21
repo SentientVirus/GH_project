@@ -2,3 +2,7 @@
 gbks/*
 *.swp
 .snakemake
+interproscan
+logs/*
+results/*
+data/*

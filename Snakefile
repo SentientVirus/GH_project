@@ -90,33 +90,44 @@ rule get_neighboring_genes:
 
 rule msa_gtf:
     output:
-        prot_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.faa", type = ["GS1", "BRS", "GS2"]),
-        gene_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.fna", type = ["GS1", "BRS", "GS2"]),
-        prot_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.faa", type = ["S1", "S2a", "S3"]),
-        gene_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.fna", type = ["S1", "S2a", "S3"])
+        GH70 = expand("data/fasta/GH70/{type}_repset.mafft.{ext}", type = ["GS1", "BRS", "GS2"], ext = ["faa", "fna"]),
+        GH32 = expand("data/fasta/GH32/{type}_repset.mafft.{ext}", type = ["S1", "S2a", "S3"], ext = ["faa", "fna"])
     input:
-        prot_GH70 = expand("data/fasta/GH70/{type}_repset.faa", type = ["GS1", "BRS", "GS2"]),
-        gene_GH70 = expand("data/fasta/GH70/{type}_repset.fna", type = ["GS1", "BRS", "GS2"]),
-        prot_GH32 = expand("data/fasta/GH32/{type}_repset.faa", type = ["S1", "S2a", "S3"]),
-        gene_GH32 = expand("data/fasta/GH32/{type}_repset.fna", type = ["S1", "S2a", "S3"])
+        GH70 = expand("data/fasta/GH70/{type}_repset.{ext}", type = ["GS1", "BRS", "GS2"], ext = ["faa", "fna"]),
+        GH32 = expand("data/fasta/GH32/{type}_repset.{ext}", type = ["S1", "S2a", "S3"], ext = ["faa", "fna"])
     threads: 2
     conda: "environment.yml"
     log: "logs/mafft/repset_aln.log"
     shell:
         """
-        mafft-linsi --thread {threads} {input.prot_GH70[0]} > {output.prot_GH70[0]} 2> {log} &&
-        mafft-linsi --thread {threads} {input.prot_GH70[1]} > {output.prot_GH70[1]} 2>> {log} &&
-        mafft-linsi --thread {threads} {input.prot_GH70[2]} > {output.prot_GH70[2]} 2>> {log} &&
-        mafft-linsi --thread {threads} {input.gene_GH70[0]} > {output.gene_GH70[0]} 2>> {log} &&
-        mafft-linsi --thread {threads} {input.gene_GH70[1]} > {output.gene_GH70[1]} 2>> {log} &&
-        mafft-linsi --thread {threads} {input.gene_GH70[2]} > {output.gene_GH70[2]} 2>> {log} && 
-        mafft-linsi --thread {threads} {input.prot_GH32[0]} > {output.prot_GH32[0]} 2>> {log} &&
-        mafft-linsi --thread {threads} {input.prot_GH32[1]} > {output.prot_GH32[1]} 2>> {log} &&
-        mafft-linsi --thread {threads} {input.prot_GH32[2]} > {output.prot_GH32[2]} 2>> {log} &&
-        mafft-linsi --thread {threads} {input.gene_GH32[0]} > {output.gene_GH32[0]} 2>> {log} &&
-        mafft-linsi --thread {threads} {input.gene_GH32[1]} > {output.gene_GH32[1]} 2>> {log} &&
-        mafft-linsi --thread {threads} {input.gene_GH32[2]} > {output.gene_GH32[2]} 2>> {log}
+        for i in {input.GH70};
+        do
+        output=$(echo $i | cut -d'.' -f 1).mafft.$(echo $i | cut -d'.' -f 2)
+        mafft-linsi --thread {threads} $i > $output 2>> {log};
+        done
+        for j in {input.GH32};
+        do
+        output=$(echo $j | cut -d'.' -f 1).mafft.$(echo $j | cut -d'.' -f 2)
+        mafft-linsi --thread {threads} $j > $output 2>> {log};
+        done
         """ 
+
+rule msa_other:
+    output:
+        expand("data/fasta/other_genes/a_kunkeei_{gene}_{type}.mafft.{ext}", gene = config["neighbors"], type = config["GHs"], ext = ["faa", "fna"])
+    input:
+        expand("data/fasta/other_genes/a_kunkeei_{gene}_{type}.{ext}", gene = config["neighbors"], type = config["GHs"], ext = ["faa", "fna"])
+    threads: 2
+    conda: "environment.yml"
+    log: "logs/mafft/neighbors_aln.log"
+    shell:
+        """
+        for i in {input};
+        do
+        output=$(echo $i | cut -d'.' -f 1).mafft.$(echo $i | cut -d'.' -f 2)
+        mafft-linsi --thread {threads} $i > $output 2>> {log};
+        done
+        """
 
 rule iqtree_gtf:
     output:
@@ -135,18 +146,50 @@ rule iqtree_gtf:
     shell:
 #		'iqtree -s {input.prot} -st AA -m LG+C10+F -bb 1000 -alrt 1000 -v > {output.prot} && iqtree -s {input.gene} -st DNA -m GTR+G4+F -bb 1000 -alrt 1000 -v > {output.gene}'
         """
-        mkdir -p data/fasta/GH70/trees && mkdir -p data/fasta/GH32/trees &&
-        iqtree -nt {threads} -s {input.prot_GH70[0]} -st AA -m LG+G4+F -bb 1000 -bnni > {log} &&
-        iqtree -nt {threads} -s {input.prot_GH70[1]} -st AA -m LG+G4+F -bb 1000 -bnni >> {log} && 
-        iqtree -nt {threads} -s {input.prot_GH70[2]} -st AA -m LG+G4+F -bb 1000 -bnni >> {log} && mv data/fasta/GH70/*.faa.* data/fasta/GH70/trees &&
-        iqtree -nt {threads} -s {input.gene_GH70[0]} -st DNA -m GTR+G4+F -bb 1000 -bnni >> {log} &&
-        iqtree -nt {threads} -s {input.gene_GH70[1]} -st DNA -m GTR+G4+F -bb 1000 -bnni >> {log} &&
-        iqtree -nt {threads} -s {input.gene_GH70[2]} -st DNA -m GTR+G4+F -bb 1000 -bnni >> {log} && mv data/fasta/GH70/*.fna.* data/fasta/GH70/trees &&
-        iqtree -nt {threads} -s {input.prot_GH32[0]} -st AA -m LG+G4+F -bb 1000 -bnni >> {log} &&
-        iqtree -nt {threads} -s {input.prot_GH32[1]} -st AA -m LG+G4+F -bb 1000 -bnni >> {log} && mv data/fasta/GH32/*.faa.* data/fasta/GH32/trees &&
-        iqtree -nt {threads} -s {input.gene_GH32[0]} -st DNA -m GTR+G4+F -bb 1000 -bnni >> {log} &&
-        iqtree -nt {threads} -s {input.gene_GH32[1]} -st DNA -m GTR+G4+F -bb 1000 -bnni >> {log} && mv data/fasta/GH32/*.fna.* data/fasta/GH32/trees
+        mkdir -p data/fasta/GH70/trees && mkdir -p data/fasta/GH32/trees
+        for i in {input.prot_GH70};
+        do
+        iqtree -nt {threads} -s $i -st AA -m LG+G4+F -bb 1000 -bnni >> {log}
+        done
+        for j in {input.prot_GH32};
+        do
+        iqtree -nt {threads} -s $j -st AA -m LG+G4+F -bb 1000 -bnni >> {log}
+        done
+        for k in {input.gene_GH70};
+        do
+        iqtree -nt {threads} -s $k -st DNA -m GTR+G4+F -bb 1000 -bnni >> {log}
+        done
+        for l in {input.gene_GH32};
+        do
+        iqtree -nt {threads} -s $l -st DNA -m GTR+G4+F -bb 1000 -bnni >> {log}
+        done
+        mv data/fasta/GH70/*.f*a.* data/fasta/GH70/trees
+        mv data/fasta/GH32/*.f*a.* data/fasta/GH32/trees
         """ 
+
+rule iqtree_other:
+    output:
+        expand("data/fasta/other_genes/trees/a_kunkeei_{gene}_{type}.mafft.f{l}a.treefile", gene = config["neighbors"], type = config["GHs"], l = ["a", "n"]),
+    input:
+        prot = expand("data/fasta/other_genes/a_kunkeei_{gene}_{type}.mafft.faa", gene = config["neighbors"], type = config["GHs"]),
+        gene = expand("data/fasta/other_genes/a_kunkeei_{gene}_{type}.mafft.fna", gene = config["neighbors"], type = config["GHs"])
+    threads: 4
+    conda: "environment.yml"
+    log: "logs/iqtree/neighbors_tree.log"
+    shell:
+        """
+        mkdir -p data/fasta/other_genes/trees
+        for i in {input.prot};
+        do
+        iqtree -nt {threads} -s $i -st AA -m LG+G4+F -bb 1000 -bnni >> {log}
+        done
+        for j in {input.gene};
+        do
+        iqtree -nt {threads} -s $j -st DNA -m GTR+G4+F -bb 1000 -bnni >> {log}
+        done
+        mv data/fasta/other_genes/*.f*a.* data/fasta/other_genes/trees
+        """
+    
 
 rule pal2nal:
     output:
