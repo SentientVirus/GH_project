@@ -188,8 +188,7 @@ rule iqtree_other:
         iqtree -nt {threads} -s $j -st DNA -m GTR+G4+F -bb 1000 -bnni >> {log}
         done
         mv data/fasta/other_genes/*.f*a.* data/fasta/other_genes/trees
-        """
-    
+        """    
 
 rule pal2nal:
     output:
@@ -207,6 +206,23 @@ rule pal2nal:
         pal2nal.v14/pal2nal.pl {input.aln1_GH70[2]} {input.aln2_GH70[2]} -output paml -nogap > {output[2]} 2>> {log} &&
         pal2nal.v14/pal2nal.pl {input.aln1_GH32[0]} {input.aln2_GH32[0]} -output paml -nogap > {output[3]} 2>> {log} &&
         pal2nal.v14/pal2nal.pl {input.aln1_GH32[1]} {input.aln2_GH32[1]} -output paml -nogap > {output[4]} 2>> {log}
+        """
+
+rule pal2nal_other:
+    output:
+        expand("data/codons/a_kunkeei_{CDS}_{type}.pal2nal", CDS = config["neighbors"], type = config["GHs"])
+    input:
+        aln = expand("data/fasta/other_genes/a_kunkeei_{CDS}_{type}.mafft.faa", CDS = config["neighbors"], type = config["GHs"]),
+        gene = expand("data/fasta/other_genes/a_kunkeei_{CDS}_{type}.fna", CDS = config["neighbors"], type = config["GHs"])
+    log: "logs/pal2nal/neighbors_codons.log"
+    shell:
+        """
+        for a in {input.aln};
+        do
+        fna=$(echo $a | cut -d'.' -f 1).fna
+        output=data/codons/$(echo $a | cut -d'/' -f 4 | cut -d'.' -f 1).pal2nal
+        pal2nal.v14/pal2nal.pl $a $fna -output paml -nogap > $output 2>> {log};
+        done
         """
 
 rule codeml_exe:
