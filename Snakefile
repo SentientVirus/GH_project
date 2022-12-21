@@ -240,6 +240,21 @@ rule codeml_exe:
     conda: "environment.yml"
     script:
         "codeml_biopython.py"
+
+rule codeml_other:
+    output:
+        summary = expand("results/a_kunkeei_{CDS}_{type}/a_kunkeei_{CDS}_{type}.txt", CDS = config["neighbors"], type = config["GHs"]),
+        dN = expand("results/a_kunkeei_{CDS}_{type}/2ML.dN", CDS = config["neighbors"], type = config["GHs"]),
+        dS = expand("results/a_kunkeei_{CDS}_{type}/2ML.dS", CDS = config["neighbors"], type = config["GHs"])
+    input:
+        codons = expand("data/codons/a_kunkeei_{CDS}_{type}.pal2nal", CDS = config["neighbors"], type = config["GHs"]),
+        trees = expand("data/fasta/other_genes/trees/a_kunkeei_{CDS}_{type}.mafft.faa.treefile", CDS = config["neighbors"], type = config["GHs"])
+    params:
+        outdir = "/home/marina/GH_project/results"
+    log: "logs/python/neighbors_codeml.log"
+    conda: "environment.yml"
+    script:
+        "codeml_neighbors.py"
 		
 rule run_parser:
     output:
@@ -248,5 +263,15 @@ rule run_parser:
     input:
         txt = expand("results/{type}/{type}_repset.txt", type = ["GS1", "GS2", "BRS", "S2a", "S3"])
     log: "logs/python/repset_outtabs.log"
+    script:
+        "parse_codeml.py"
+
+rule parse_neighbors:
+    output:
+        dNdS = expand("results/a_kunkeei_{CDS}_{type}/dNdS.tsv", CDS = config["neighbors"], type = config["GHs"]),
+        stats = expand("results/a_kunkeei_{CDS}_{type}/stats.tsv", CDS = config["neighbors"], type = config["GHs"])
+    input:
+        txt = expand("results/a_kunkeei_{CDS}_{type}/a_kunkeei_{CDS}_{type}.txt", CDS = config["neighbors"], type = config["GHs"])
+    log: "logs/python/neighbors_outtabs.log"
     script:
         "parse_codeml.py"
