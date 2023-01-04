@@ -96,7 +96,9 @@ for gtype in gtypes:
                         for feature in record.features:
                             # Retrieve locus tag and sequence
                             if 'gene' in feature.qualifiers.keys() and 'translation' in feature.qualifiers.keys():
-                                gene_str = feature.qualifiers['gene'][0] 
+                                gene_str = feature.qualifiers['gene'][0]
+                                if gene_str == 'cap8A':
+                                    gene_str = 'ywqC'
                                 locus_tag = feature.qualifiers['locus_tag'][0][3:]
                                 # Filtering for genes that appear several times
                                 if (gene_str == gene_n and (int(locus_tag.split('_')[1]) > 12000)) or ('mhpD' in gene_str and gene_n == 'hpcG'):

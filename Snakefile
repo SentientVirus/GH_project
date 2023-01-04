@@ -275,3 +275,13 @@ rule parse_neighbors:
     log: "logs/python/neighbors_outtabs.log"
     script:
         "parse_codeml.py"
+
+## Rules to generate plots
+rule get_CDS_tabs:
+    output:
+        expand("plots/tabfiles/{strain}_gpr.tab", strain = config["strains"])
+    input:
+        expand("Akunkeei_files/gbff/{strain}_genomic.gbff, strain = config["strains"])
+    log: "logs/python/CDS_tabfiles.logs"
+    script:
+         "get_CDS_tabs.py"
