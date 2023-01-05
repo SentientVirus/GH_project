@@ -4,36 +4,45 @@ Created on Wed Sep 29 21:57:29 2021
 
 @author: usuario
 """
-import os
+import os, logging, traceback
 import re
 
-homedir = '/home/marina'
-outdir = 'plots/tabfiles'
+# =============================================================================
+# Logging
+# =============================================================================
+
+logging.basicConfig(filename = snakemake.log[0], level = logging.INFO,
+                    format = '%(asctime)s %(message)s',
+                    datefmt = '%Y-%m-%d %H:%M:%S')
+
+def handle_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+
+    logger.error(''.join(["Uncaught exception: ",
+                          *traceback.format_exception(exc_type, exc_value, exc_traceback)
+                          ]))
+
+sys.excepthook = handle_exception
+
+sys.stdout = open(snakemake.log[0], 'a')
+
+# =============================================================================
+# Input/output definitions
+# =============================================================================
+
+#homedir = '/home/marina'
+outdir = snakemake.output[1] #'plots/tabfiles'
+phylo_file = snakemake.input.tree
+inputs = snakemake.input.gbff
 
 if not os.path.exists(outdir):
     os.makedirs(outdir)
-
-#Create a dictionary to plot strands according to the phylogeny
-phylogeny = {}
-n = 1
-with open('phylogeny.txt') as f:
-    lines = f.readlines()
-    for line in lines:
-        line = line.replace(' ', '')
-        line = line.replace('\n', '')
-        no = str(n)
-        while len(no) < 3:
-            no = '0' + no
-        n += 1
-        phylogeny[line] = no
-
-'''#Create a dictionary to plot strands according to the phylogeny
-phylogeny =  {'G0102': '001', 'G0401': '002', 'G0803': '003', 'G0804': '004',
-              'G0404': '005', 'G0801': '006', 'G0802': '007', 'G0402': '008',
-              'G0602': '009', 'G0408': '009', 'G0'}'''
-
-#Change to the directory where the gbk files are
-os.chdir('../Akunkeei_files/gbff') #Replace with a parameter from Snakemake
+    
+# =============================================================================
+# Class definition
+# =============================================================================
 
 class CDS:
     def __init__(self, name, start, end, strand, locus):
@@ -45,18 +54,41 @@ class CDS:
     def __str__(self):
         return f'Protein: {self.name} in genome {self.locus}, {self.start}-{self.end}, strand {self.strand}'
 
-omit = ['Fhon13', 'H3B2-03M-01', 'H3B2-03M-04'] #Or use shadow: minimal in Snakemake
+# =============================================================================
+# Dictionary to plot strands following the order in the phylogeny
+# =============================================================================
 
-for filename in os.listdir(os.getcwd()):
-    if filename.split('_')[0] not in omit and filename.endswith('.gbff'):
+phylogeny = {}
+n = 1
+with open(phylo_file) as f:
+    lines = f.readlines()
+    for line in lines:
+        line = line.replace(' ', '')
+        line = line.replace('\n', '')
+        no = str(n)
+        while len(no) < 3:
+            no = '0' + no
+        n += 1
+        phylogeny[line] = no
+
+# =============================================================================
+# Create tab files with CDS positions
+# =============================================================================
+
+#omit = ['Fhon13', 'H3B2-03M-01', 'H3B2-03M-04'] #Or use shadow: minimal in Snakemake
+
+for filename in inputs:
+    if filename.endswith('.gbk'):
         f = (row for row in open(filename))
-        locus = next(f)[12:23] #Take file name (i.e. HXBX-XXX)
+        locus = next(f)[12:23] #Take locus name (OX...)
             
         for line in f:
             if 'strain=' in line:
                 strain = ''.join(e for e in line if (e.isalnum() or e == '-'))[6:]
-                with open(f'../../GH_project/{outdir}/{phylogeny[strain]}_{strain}_gpr.tab', 'w') as gn: #Start writing tab file
-                    gn.write('name\tstart\tend\tstrand\tregion\n')
+                out_file = f'{outdir}/{phylogeny[strain]}_{strain}_gpr.tab'
+                print(out_file)
+                with open(out_file, 'w') as gn: #Start writing tab file
+                    gn.write('name\tstart\tend\tstrand\tregion\n') #Add headers to file
             if line[5:8] == 'CDS':
                 check = False
                 if 'complement' in line: #If the gene is in the complementary strand
@@ -83,5 +115,7 @@ for filename in os.listdir(os.getcwd()):
                     gene = locus_tag
                 p = CDS(gene, position[0], position[1], strand, locus) #Save info in object
 
-                with open(f'{phylogeny[strain]}_{filename[:-4]}_gpr.tab', 'a') as gn: #Add object info to file
+                basename = filename.split('/')[1].split('_')[0]
+                out_file = f'{outdir}/{phylogeny[strain]}_{basename}_gpr.tab'
+                with open(out_file, 'a') as gn: #Add object info to file
                     gn.write(f'{p.name}\t{p.start}\t{p.end}\t{p.strand}\t{p.locus}\n')

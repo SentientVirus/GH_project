@@ -3,7 +3,9 @@ rule all:
     input:
 #        expand("data/genbanks/{strain}.gbk", strain = config["strains"]),
         expand("gbks/{strain}_1.gbk", strain = config["strains"]),
-        expand("data/fasta/{GH}.{ext}", GH = config["GHs"], ext = ["faa", "fna"])
+        expand("data/fasta/{GH}/{GH}.{ext}", GH = config["GHs"], ext = ["faa", "fna"]),
+#        "plots/tabfiles/87_A0901_gpr.tab"
+        
 
 #rule download_data:
 #    output:
@@ -277,11 +279,29 @@ rule parse_neighbors:
         "parse_codeml.py"
 
 ## Rules to generate plots
+def getTargetFiles():
+    targets = []
+    for s in config["strains"]:
+        no = str(config["no_dict"][s][0])
+        while len(no) < 3:
+            no = "0" + no
+        print(s, no)
+        target = "plots/tabfiles/"+no+"_"+s+"_gpr.tab"
+        targets.append(target)
+    return targets
+
+output_tabs = getTargetFiles()
+
 rule get_CDS_tabs:
     output:
-        expand("plots/tabfiles/{strain}_gpr.tab", strain = config["strains"])
+        directory("plots"),
+        directory("plots/tabfiles"),
+        output_tabs 
+        #lambda wildcards: expand("plots/tabfiles/{no}_{strain}_gpr.tab", strain = config["strains"], no = config["no_dict"][{wildcards.strain}])
     input:
-        expand("Akunkeei_files/gbff/{strain}_genomic.gbff, strain = config["strains"])
+        gbff = expand("gbks/{strain}_1.gbk", strain = config["strains"]),
+        tree = "phylogeny.txt"
     log: "logs/python/CDS_tabfiles.logs"
+#    shadow: "minimal"
     script:
          "get_CDS_tabs.py"
