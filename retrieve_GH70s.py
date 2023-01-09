@@ -173,7 +173,7 @@ def parse_GH32(indir, outdir, gene_domains, out_prefix):
                                     print(f'{out_prefix} with locus tag {locus_tag} added.\n')
 
 # =============================================================================
-# Implementation of the functions
+# Implementation of the functions'/'
 # =============================================================================
 
 for gene_type in gene_types: #Loop through output filenames

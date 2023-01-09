@@ -62,7 +62,7 @@ rule separate_GHs:
         GS2 = config["GS2"],
         BRS = config["BRS"],
         short = config["short"],
-        NCB = config["NCB"],
+        NCB = config["NGB"],
         S1 = config["S1"],
         S2a = config["S2a"],
         S2b = config["S2b"],
@@ -285,7 +285,6 @@ def getTargetFiles():
         no = str(config["no_dict"][s][0])
         while len(no) < 3:
             no = "0" + no
-        print(s, no)
         target = "plots/tabfiles/"+no+"_"+s+"_gpr.tab"
         targets.append(target)
     return targets
@@ -301,7 +300,27 @@ rule get_CDS_tabs:
     input:
         gbff = expand("gbks/{strain}_1.gbk", strain = config["strains"]),
         tree = "phylogeny.txt"
-    log: "logs/python/CDS_tabfiles.logs"
+    log: "logs/python/CDS_tabfiles.log"
 #    shadow: "minimal"
     script:
          "get_CDS_tabs.py"
+
+rule presence_absence_tab:
+    output: "plots/counts/GH70_32_counts.tab"
+    input: 
+        tree = "phylogeny.txt",
+        GH70 = "data/fasta/GH70/GH70.faa"
+    params:
+        GS1 = config["GS1"],
+        GS2 = config["GS2"],
+        BRS = config["BRS"],
+        NGB = config["NGB"],
+        short = config["short"], 
+        S1 = config["S1"],
+        S2a = config["S2a"],
+        S2b = config["S2b"],
+        S3 = config["S3"]
+    conda: "biopython_env.yml"
+    log: "logs/python/presence_absence.log"
+    script:
+        "gtf_CB_per_strain.py"
