@@ -61,13 +61,25 @@ strains = [strain[:-2] for strain in strains] #Remove _1 from strain names
 def get_domain_pos(directory, strains, domain_annot):
     gene_names = {} #Create emprty dictionary
     for filename in sorted(strains, key=lambda v: v.upper()): #Loop through files in folder
+        if filename == 'Fhon2':
+            filename = 'fhon2'
         with open(f'{directory}/{filename}.tsv') as annot: #Open annotations
             file = csv.reader(annot) #Read file
             for line in file: #Loop through file
                 line = line[0].split('\t') #Get list with information in the line
                 if domain_annot in line: #If it is a GH70 domain
-                    if line[0] not in gene_names.keys(): #Retrieve domain position
-                        loctag = line[0].replace('-', '')
+                    loctag = line[0].replace('-', '')
+                    loctag = loctag.replace('fhon2', 'FHON2')
+                    if filename == 'MP2':
+                        if loctag == 'MP2_13350':
+                            loctag = '55_RS03850'
+                        elif loctag == 'MP2_13360':
+                            loctag = '55_RS03845'
+                        elif loctag == 'MP2_14250':
+                            loctag = '55_RS03400'
+                    
+                    print(loctag)
+                    if loctag not in gene_names.keys(): #Retrieve domain position
                         gene_names[loctag] = (int(line[6]), int(line[7]))
                     else: #Accounts for two domains in a gene
                         gene_names[f'{loctag}_2'] = (int(line[6]), int(line[7]))

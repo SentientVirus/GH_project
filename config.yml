@@ -429,7 +429,7 @@ GS2:
 - H4B505J_12900
 - H4B507X_13730
 - H4B508X_13250
-- APS55_RS03845
+- 55_RS03845
 BRS:
 - A1401_12760
 - FHON2_13550
@@ -750,6 +750,7 @@ strains:
 - A2101
 - A2102
 - A2103
+- Fhon2
 - G0101
 - G0102
 - G0103
@@ -836,7 +837,6 @@ strains:
 - H4B5-07X
 - H4B5-08X
 - MP2
-- Fhon2
 neighbors:
 - ohrR
 - yifK
