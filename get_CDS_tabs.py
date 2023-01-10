@@ -33,7 +33,7 @@ sys.stdout = open(snakemake.log[0], 'a')
 # =============================================================================
 
 #homedir = '/home/marina'
-outdir = snakemake.output[1] #'plots/tabfiles'
+outdir = 'plots/tabfiles'
 phylo_file = snakemake.input.tree
 inputs = snakemake.input.gbff
 
@@ -99,7 +99,7 @@ for filename in inputs:
                 position = line[21:-1].split('..') #Save position of CDS
                 for i in range(8):
                     gene = next(f) #Go to the next line
-                    if '/gene' in gene: #If the next line includes gene name
+                    if '/gene' in gene and 'gtfC' not in gene: #If the next line includes gene name
                         gene = gene[:-1].replace(' ', '') #Remove spaces
                         gene = gene.replace('/gene=', '') #Remove other text
                         gene = re.sub(r'[("")]', '', gene) #Remove ""

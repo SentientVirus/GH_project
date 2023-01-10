@@ -6,13 +6,37 @@ Spyder Editor
 import os, logging, traceback
 import csv
 from Bio import SeqIO
-output_file = snakemake.output[0]
-outdir = output_file.split('/')[:-1]
-outdir = '/'.join(outdir)
-if not os.path.exists(outdir):
-    os.makedirs(outdir)
 
-#Group on the upper part of the phylogeny
+# =============================================================================
+# Logging
+# =============================================================================
+
+logging.basicConfig(filename = snakemake.log[0], level = logging.INFO,
+                    format = '%(asctime)s %(message)s',
+                    datefmt = '%Y-%m-%d %H:%M:%S')
+
+def handle_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+
+    logger.error(''.join(["Uncaught exception: ",
+                          *traceback.format_exception(exc_type, exc_value, exc_traceback)
+                          ]))
+
+sys.excepthook = handle_exception
+sys.stdout = open(snakemake.log[0], 'a')
+
+# =============================================================================
+# Define inputs from Snakemake
+# =============================================================================
+
+output_file = snakemake.output.file
+outdir =  'plots/counts'
+if not os.path.exists(outdir):
+    os.makedirs(outdir) #Create output directory if it doesn't exist
+
+#Read list of locus tags per type
 GS1 = snakemake.params.GS1
 GS2 = snakemake.params.GS2
 BRS = snakemake.params.BRS
@@ -26,15 +50,12 @@ S3 = snakemake.params.S3
 phylo = snakemake.input.tree
 GH70 = snakemake.input.GH70
 
+#Create a dictionary to calculate the value of the counts for GH70 genes
 value_dict = {}
 with open(GH70) as lengths:
     for record in SeqIO.parse(lengths, 'fasta'):
-        # if record.id[0] == 'H':
-        #     record.id = record.id[:4] + '-' + record.id[4:]
         if len(record.seq) >= 750: #Add only 0.5 to the count for proteins that are not full-length
             value_dict[record.id] = 1
-#            if 'G0102' in record.id:
-#                print(f'{record.id}: {len(record.seq)}')
         elif record.id not in short:
             value_dict[record.id] = 0.5
 
@@ -52,18 +73,17 @@ with open(phylo) as phy: #Order by phylogeny
     for strain in p:
         loci = ''
         strain = strain.strip()
-        #strains.append(strain)
         if len(strain) > 0:
             strain = strain.replace('-', '')
-            count[0] = sum(value_dict[s] for s in GS1 if strain in s)
-            count[1] = sum(value_dict[s] for s in GS2 if strain in s)
-            count[2] = sum(value_dict[s] for s in BRS if strain in s)
-            count[3] = sum([1 for s in NGB if strain in s])
-            count[4] = sum([1 for s in short if strain in s])
+            count[0] = sum(value_dict[s] for s in GS1 if (strain.upper() in s) or ('55_' in s and strain == 'MP2')) #Account for locus tags with a different format for MP2
+            count[1] = sum(value_dict[s] for s in GS2 if (strain.upper() in s) or ('55_' in s and strain == 'MP2'))
+            count[2] = sum(value_dict[s] for s in BRS if (strain.upper() in s) or ('55_' in s and strain == 'MP2'))
+            count[3] = sum([1 for s in NGB if (strain.upper() in s) or ('55_' in s and strain == 'MP2')])
+            count[4] = sum([1 for s in short if (strain.upper() in s) or ('55_' in s and strain == 'MP2')])
             count = [int(num) for num in count] #Convert floats to ints
             total = sum(count)
             for GH70 in all_GH70: #Add loci names
-                if strain in GH70:
+                if strain.upper() in GH70 or ('55_' in GH70 and strain == 'MP2'):
                     loci += f'{GH70}, '
             count[5] = sum([1 for s in S1 if strain in s])
             count[6] = sum([1 for s in S2 if strain in s])

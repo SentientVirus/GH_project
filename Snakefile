@@ -293,8 +293,6 @@ output_tabs = getTargetFiles()
 
 rule get_CDS_tabs:
     output:
-        directory("plots"),
-        directory("plots/tabfiles"),
         output_tabs 
         #lambda wildcards: expand("plots/tabfiles/{no}_{strain}_gpr.tab", strain = config["strains"], no = config["no_dict"][{wildcards.strain}])
     input:
@@ -306,7 +304,8 @@ rule get_CDS_tabs:
          "get_CDS_tabs.py"
 
 rule presence_absence_tab:
-    output: "plots/counts/GH70_32_counts.tab"
+    output: 
+        file = "plots/counts/GH70_32_counts.tab"
     input: 
         tree = "phylogeny.txt",
         GH70 = "data/fasta/GH70/GH70.faa"
@@ -324,3 +323,23 @@ rule presence_absence_tab:
     log: "logs/python/presence_absence.log"
     script:
         "gtf_CB_per_strain.py"
+
+rule plot_delregion:
+    output: "plots/trees/phylogeny.png"
+    input: 
+        tree = "kunkeei_nonclosed.tree",
+        tabs = output_tabs,
+        counts = "plots/counts/GH70_32_counts.tab"
+    params:
+        GS1 = config["GS1"],
+        GS2 = config["GS2"],
+        BRS = config["BRS"],
+        NGB = config["NGB"],
+        short = config["short"],
+        S1 = config["S1"],
+        S2a = config["S2a"],
+        S2b = config["S2b"],
+        S3 = config["S3"]
+    conda: "biopython_env.yml"
+    log: "logs/python/plot_delregion.log"
+    script: "ete3_delregion_plot.py"
