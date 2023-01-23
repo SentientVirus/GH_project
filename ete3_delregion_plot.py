@@ -202,17 +202,18 @@ for leaf in lnames:
     for filename in sorted(os.listdir(comp_dir)):
         if leaf == 'fhon2':
             leaf = 'Fhon2'
-        elif leaf == 'MP2':
-            leaf = '55'
         if leaf in filename and filename.endswith('gpr.tab'):
+            if leaf == 'MP2':
+                leaf = '55'
+            print(leaf)
             check = False
             with open(f'{comp_dir}/{filename}', 'r') as gfile:
                 genes = csv.reader(gfile, delimiter='\t')
                 for gene in genes:
                     if 'name' not in gene: #Skip first line
-                        if gene[0] == 'ohrR' and not check: #Gene used to center the plotted fragments in the right position
+                        if leaf != '55' and gene[0] == 'ohrR' and not check: #Gene used to center the plotted fragments in the right position
                             start = int(gene[1])+5000
-                            if leaf == 'MP2' or leaf == 'H3B2-03M':
+                            if leaf == 'H3B2-03M':
                                 start += 1400
                             elif leaf == 'H1B1-05A':
                                 start += 1300
@@ -220,9 +221,13 @@ for leaf in lnames:
                                 start += 1450
                             end = start + 30500 #Original 30500
                             check = True
+                        if leaf == '55':
+                            start = 846400
+                            end = start + 30500 #Original 30500
+                            check = True
                             #if leaf == 'G0407':
                             #    print((start, end))
-                    if check and 'name' not in gene and end >= int(gene[1]) >= start and gene[3] == '-': #If the gene is in the right range and strand.
+                    if check and 'name' not in gene and end >= int(gene[1]) >= start and ((leaf != '55' and gene[3] == '-') or (leaf == '55' and gene[3] == '+')): #If the gene is in the right range and strand.
                         if gene[0][3:] in GS1 or (gene[0] == 'gtfC' and leaf != 'G0417'):
                             gene[0] = 'GS1'
                         elif gene[0][3:] in GS2:
@@ -241,11 +246,11 @@ for leaf in lnames:
                             gene[0] = 'S3 '
                         elif gene[0] == 'gtfC' and leaf == 'G0417':
                             gene[0] = 'S1'
-                        elif gene[0] == 'GH39' or 'AKU' in gene[0]:
+                        elif gene[0] == 'GH39' or 'AKU' in gene[0] or 'APS55' in gene[0]:
                             gene[0] = 'hpr'
                         elif gene[0] == 'tesE': #Wrongly annotated by Prokka, here I correct that.
                             gene[0] = 'mhpD'
-                        print(gene[0])
+                        print(f'{leaf}_leaf', gene[0])
                         format_str = f'Arial|14|white|{gene[0]}' #Text on the gene
                         if gene[0][0] == 'S':
                             format_str = f'Arial|14|black|{gene[0]}'
@@ -256,15 +261,23 @@ for leaf in lnames:
                         elif gene[0][0:2] == 'S1':
                             col = gene_colors['S1 ']
                         else:
-                            col = hpr_colors[n % 9] #Hypothetical proteins in greyish colors.
+                            if leaf != '55':
+                                col = hpr_colors[n % 9] #Hypothetical proteins in greyish colors.
+                            else: col = hpr_colors[::-1][n % 9]
                             n += 1
-                        info_list = [int(gene[1])-start, int(gene[2])-start, '[]', 0, 20, col[-7:], col, format_str]
+                            
+                        if leaf != '55':
+                            info_list = [int(gene[1])-start, int(gene[2])-start, '[]', 0, 20, col[-7:], col, format_str]
+                        else:
+                            info_list = [abs(int(gene[2])-end), abs(int(gene[1])-end), '[]', 0, 20, col[-7:], col, format_str]
                         
                         new_name0 = leaf.replace('-', '')
                         if new_name0 not in gene_dict.keys():
                             gene_dict[new_name0] = [info_list]
                         else:
                             gene_dict[new_name0].append(info_list)
+
+                #gene_dict[new_name0].sort(key=lambda x: x[0])
 
 # =============================================================================
 # Info for the presence/absence plot           
@@ -279,6 +292,8 @@ with open(count_file) as presence:
     gtf_pres = csv.reader(presence, delimiter = '\t')
     for line in gtf_pres:
         if line[0] != 'strain':
+            if line[0] == 'MP2':
+                line[0] = '55'
             presence_dict[line[0]] = [line[6], line[1], line[2], line[3], 
                                       line[4], line[5], line[10], line[7], 
                                       line[8], line[9]]

@@ -113,7 +113,13 @@ for filename in inputs:
                         print(locus_tag)
                 if check == False:
                     gene = locus_tag
-                p = CDS(gene, position[0], position[1], strand, locus) #Save info in object
+                start = position[0].replace('ji', '')
+                start = start.replace('>', '')
+                start = start.replace('<', '')
+                end = position[1].replace(',1', '')
+                end = end.replace('>', '')
+                end = end.replace('<', '')
+                p = CDS(gene, start, end, strand, locus) #Save info in object
 
                 basename = filename.split('/')[1].split('_')[0]
                 out_file = f'{outdir}/{phylogeny[strain]}_{basename}_gpr.tab'
