@@ -96,6 +96,28 @@ for file in input_files: #Loop through Snakemake inputs
             sname = record.id.split('_')[0] #Get strain name from locus tag
             if sname[0] == 'H':
                 sname = sname[:4] + '-' + sname[4:]
+            elif sname == '55':
+                sname = 'MP2'
+            elif sname == 'FHON2':
+                sname = 'Fhon2'
+                
+            filename = f'{add}{prefix}_all.{file[-3:]}' #Define output file name
+            with open(f'{path}/{prefix}/{filename}', 'a+') as outfile: #Create the file if it does not exist, otherwise append to file
+                outfile.write(as_fasta(record))
+            print(f'{record.id} added to {path}/{prefix}/{filename}')
+            
+            for gene_type in gene_list: #Loop through gene types
+                if record.id in myVars[gene_type]: #Retrieve locus tags per type
+                    if gene_type not in ['GS1', 'GS2', 'BRS', 'NCB'] or (file.endswith('.faa') and len(record.seq) > 700) or (file.endswith('.fna') and len(record.seq) > 2100):
+                        filename = f'{add}{gene_type}_all.{file[-3:]}' #File for a particular GH type
+                        create_write(path, prefix, filename)
+                        print(f'{record.id} added to {path}/{prefix}/{filename}')
+                    
+                        if check:
+                            filename = f'{add}{gene_type}_subset.{file[-3:]}' #File for a particular GH type in the subset
+                            create_write(path, prefix, filename)
+                            print(f'{record.id} added to {path}/{prefix}/{filename}')
+            
             if sname in representatives: #Get strain name and check if it is among the representatives
                 if sname in subset:
                     check = True
