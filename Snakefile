@@ -343,3 +343,22 @@ rule plot_delregion:
     conda: "biopython_env.yml"
     log: "logs/python/plot_delregion.log"
     script: "ete3_delregion_plot.py"
+
+##Supplementary table
+rule suppl_tab:
+    output:
+        expand("tables/{GH_type}_suppl.tab", GH_type = ["GS1", "GS2", "BRS", "S1", "S2a", "S3"])
+    params:
+        GS1 = config["GS1"],
+        GS2 = config["GS2"],
+        BRS = config["BRS"],
+        NGB = config["NGB"],
+        short = config["short"],
+        S1 = config["S1"],
+        S2a = config["S2a"],
+        S2b = config["S2b"],
+        S3 = config["S3"],
+        representatives = config["representatives"]
+    conda: "biopython_env.yml"
+    log: "logs/python/suppl_tab.log"
+    script: "get_suppl_tabs.py"
