@@ -845,6 +845,9 @@ strains:
 - H4B5-07X
 - H4B5-08X
 - MP2
+extra_strains:
+- IBH001
+- DSMZ12361
 neighbors:
 - ohrR
 - yifK
