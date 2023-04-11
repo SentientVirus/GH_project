@@ -108,6 +108,8 @@ def search_gbk(filename, loc_tag):
 GS1 = snakemake.params.GS1
 GS2 = snakemake.params.GS2
 BRS = snakemake.params.BRS
+NGB = snakemake.params.NGB
+short = snakemake.params.short
 S1 = snakemake.params.S1
 S2a = snakemake.params.S2a
 S2b = snakemake.params.S2b
@@ -140,7 +142,7 @@ myVars = globals()
 # Define list of genes to loop through
 # =============================================================================
 
-type_list = ['GS1', 'GS2', 'BRS', 'GS2_BRS', 'S1', 'S2a', 'S2b', 'S3']
+type_list = ['GS1', 'GS2', 'BRS', 'GS2_BRS', 'NGB', 'short', 'S1', 'S2a', 'S2b', 'S3']
 
 # =============================================================================
 # Save info into gbk_entry object and write to file

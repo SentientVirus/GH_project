@@ -347,7 +347,7 @@ rule plot_delregion:
 ##Supplementary table
 rule suppl_tab:
     output:
-        expand("tables/{GH_type}_suppl.tab", GH_type = ["GS1", "GS2", "BRS", "S1", "S2a", "S3"])
+        expand("tables/{GH_type}_suppl.tab", GH_type = ["GS1", "GS2", "BRS", "S1", "S2a", "S3", "NGB", "short"])
     params:
         GS1 = config["GS1"],
         GS2 = config["GS2"],
