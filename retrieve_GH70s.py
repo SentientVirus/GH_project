@@ -35,9 +35,9 @@ def handle_exception(exc_type, exc_value, exc_traceback):
         return
 
     logger.error(''.join(["Uncaught exception: ",
-                         *traceback.format_exception(exc_type, exc_value, exc_traceback)
-                         ])
-                 )
+                          *traceback.format_exception(exc_type, exc_value, exc_traceback)
+                          ])
+                  )
 
 sys.excepthook = handle_exception
 
@@ -50,7 +50,7 @@ sys.stdout = open(snakemake.log[0], 'a')
 direct = 'interproscan'
 indir = 'gbks'
 gene_types = snakemake.output
-file_list = snakemake.input
+file_list = snakemake.input #[f'gbks/{file}' for file in os.listdir('gbks') if ('Fhon13' not in file and len(file.split('-')) < 2)]
 strains = [Path(file).stem for file in file_list] #Extract strain names from files
 strains = [strain[:-2] for strain in strains] #Remove _1 from strain names
 
@@ -63,6 +63,7 @@ def get_domain_pos(directory, strains, domain_annot):
     for filename in sorted(strains, key=lambda v: v.upper()): #Loop through files in folder
         if filename == 'Fhon2':
             filename = 'fhon2'
+
         with open(f'{directory}/{filename}.tsv') as annot: #Open annotations
             file = csv.reader(annot) #Read file
             for line in file: #Loop through file
@@ -72,18 +73,21 @@ def get_domain_pos(directory, strains, domain_annot):
                     loctag = loctag.replace('fhon2', 'FHON2')
                     if filename == 'MP2':
                         if loctag == 'MP2_13350':
-                            loctag = '55_RS03850'
+                            loctag = 'APS55_RS03850'
                         elif loctag == 'MP2_13360':
-                            loctag = '55_RS03845'
+                            loctag = 'APS55_RS03845'
                         elif loctag == 'MP2_14250':
-                            loctag = '55_RS03400'
+                            loctag = 'APS55_RS03400'
+                    
                     
                     print(loctag)
                     if loctag not in gene_names.keys(): #Retrieve domain position
                         gene_names[loctag] = (int(line[6]), int(line[7]))
                     else: #Accounts for two domains in a gene
                         gene_names[f'{loctag}_2'] = (int(line[6]), int(line[7]))
+            
     return gene_names #Returns dictionary locus_tag: (domain start, domain end)
+
 
 # =============================================================================
 # Same as the function above, but gets GH32 full protein locus tags
@@ -96,7 +100,7 @@ def get_GH32(directory, strains, domain_annot):
             file = csv.reader(annot)
             for line in file:
                 line = line[0].split('\t')
-                if domain_annot in line and int(line[0].split('_')[1]) > 10**4: #Take only locus tags > 10000
+                if domain_annot in line and ('RS' in line[0] or int(line[0].split('_')[1]) > 10**4): #Take only locus tags > 10000
                     gene_names.append(line[0].replace('-', ''))
     return gene_names
 
@@ -133,8 +137,11 @@ def parse_faa_fna(indir, outdir, gene_domains, out_prefix):
                     if record.features:                             #if record.features
                         for feature in record.features:             #loop thorugh each feature
                             if feature.type == 'CDS':                 #if there is a CDS feature type
-                                locus_tag = feature.qualifiers['locus_tag'][0][3:]     #retrieve locus tag as locus_tag
-                                print(locus_tag)
+                                if feature.qualifiers['locus_tag'][0][:3] == 'AKU':
+                                    locus_tag = feature.qualifiers['locus_tag'][0][3:]  #retrieve locus tag as locus_tag
+                                else:
+                                    locus_tag = feature.qualifiers['locus_tag'][0]
+                                    #print(locus_tag)
                                 if locus_tag in locus_tags: #if locus_tag is present in locus_tags
                                     if f'{locus_tag}_2' in locus_tags:
                                         locus_tag_list = [locus_tag, f'{locus_tag}_2']
@@ -165,18 +172,19 @@ def parse_GH32(indir, outdir, gene_domains, out_prefix):
         fna.write('')
     
     for gbk_file in sorted(strains, key=lambda v: v.upper()):
-    #for gbk_file in sorted(os.listdir(indir)):
-        print(gbk_file)
         with open(f'{indir}/{gbk_file}_1.gbk') as new_gbk:
-
+            print(f'{indir}/{gbk_file}_1.gbk')
             #parse faa and fna sequences
             with open(outfile_faa, 'a') as out_faa, open(outfile_fna, 'a') as out_fna:                #open output file where all faa and fna sequences will be saved.
                 for record in SeqIO.parse(new_gbk, 'genbank'):      #for each record in gbk file
                     if record.features:                             #if record.features
                         for feature in record.features:             #loop thorugh each feature
                             if feature.type == 'CDS':                 #if there is a CDS feature type
-                                locus_tag = feature.qualifiers['locus_tag'][0][3:]  #retrieve locus tag as locus_tag
-                                print(locus_tag)
+                                if feature.qualifiers['locus_tag'][0][:3] == 'AKU':
+                                    locus_tag = feature.qualifiers['locus_tag'][0][3:]  #retrieve locus tag as locus_tag
+                                else:
+                                    locus_tag = feature.qualifiers['locus_tag'][0]
+                                #print(locus_tag)
                                 if locus_tag in locus_tags: #if locus_tag is present in locus_tags
                                     prot_record = SeqRecord(Seq(feature.qualifiers['translation'][0]), locus_tag, locus_tag, '')
                                     out_faa.write(as_fasta(prot_record))     #write >locus_tag and amino acid sequence to output file

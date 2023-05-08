@@ -67,7 +67,16 @@ def get_GH70(directory, strains, domain_annot):
             for line in file:
                 line = line[0].split('\t')
                 if domain_annot in line:
-                    gene_names.append(line[0].replace('-', ''))
+                    loctag = line[0].replace('-', '')
+                    loctag = loctag.replace('fhon2', 'FHON2')
+                    if filename == 'MP2':
+                        if loctag == 'MP2_13350':
+                            loctag = 'APS55_RS03850'
+                        elif loctag == 'MP2_13360':
+                            loctag = 'APS55_RS03845'
+                        elif loctag == 'MP2_14250':
+                            loctag = 'APS55_RS03400'
+                    gene_names.append(loctag)
     return gene_names
  
 # =============================================================================
@@ -96,7 +105,10 @@ def parse_GH70(indir, outdir, gene_domains, out_prefix):
                     if record.features:                             #if record.features
                         for feature in record.features:             #loop thorugh each feature
                             if feature.type == 'CDS':                 #if there is a CDS feature type
-                                locus_tag = feature.qualifiers['locus_tag'][0][3:]  #retrieve locus tag as locus_tag
+                                if feature.qualifiers['locus_tag'][0][:3] == 'AKU':
+                                    locus_tag = feature.qualifiers['locus_tag'][0][3:]  #retrieve locus tag as locus_tag
+                                else:
+                                    locus_tag = feature.qualifiers['locus_tag'][0]
                                 print(locus_tag)
                                 if locus_tag in locus_tags: #if locus_tag is present in locus_tags
                                     prot_record = SeqRecord(Seq(feature.qualifiers['translation'][0]), locus_tag, locus_tag, '')

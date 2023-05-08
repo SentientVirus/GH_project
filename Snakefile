@@ -2,8 +2,8 @@ configfile: "config.yml"
 rule all:
     input:
 #        expand("data/genbanks/{strain}.gbk", strain = config["strains"]),
-        expand("gbks/{strain}_1.gbk", strain = config["strains"]),
-        expand("data/fasta/{GH}/{GH}.{ext}", GH = config["GHs"], ext = ["faa", "fna"]),
+#        expand("gbks/{strain}_1.gbk", strain = config["strains"]),
+#        expand("data/fasta/{GH}/{GH}.{ext}", GH = config["GHs"], ext = ["faa", "fna"]),
 #        "plots/tabfiles/87_A0901_gpr.tab"
         
 
@@ -21,9 +21,11 @@ rule all:
 
 rule divide_gbks:
     output:
-        expand("gbks/{strain}_1.gbk", strain = config["strains"])
+        expand("gbks/{strain}_1.gbk", strain = config["strains"]),
+        expand("gbks/{newstrain}_1.gbk", newstrain = config["extra_strains"])
     input:
-        expand("/home/marina/Akunkeei_files/gbff/{strain}_genomic.gbff", strain = config["strains"])
+        expand("/home/marina/Akunkeei_files/gbff/{strain}_genomic.gbff", strain = config["strains"]),
+        expand("/home/marina/Akunkeei_files/gbff/{newstrain}_genomic.gbff", newstrain = config["extra_strains"])
     log: "logs/python/gbks.log"
     script:
         "divide_gbks.py"
@@ -32,7 +34,7 @@ rule retrieve_sequences:
     output:
         expand("data/fasta/{GH}/{GH}.{ext}", GH = config["GHs"], ext = ["faa", "fna"])
     input:
-        expand("gbks/{strain}_1.gbk", strain = config["strains"])
+        expand("gbks/{strain}_1.gbk", strain = config["strains"] + config["extra_strains"])
     log: "logs/python/GHs.log"
     conda: "biopython_env.yml"
     script:
@@ -42,7 +44,7 @@ rule retrieve_full_GH70s:
     output:
         expand("data/fasta/GH70/complete_GH70.{ext}", ext = ["faa", "fna"])
     input:
-        expand("gbks/{strain}_1.gbk", strain = config["strains"])
+        expand("gbks/{strain}_1.gbk", strain = config["strains"] + config["extra_strains"])
     log: "logs/python/GH70s.log"
     conda: "biopython_env.yml"
     script:

@@ -33,6 +33,8 @@ def parse_GenBank(file, locus_dict):
                 locus_dict[locus_name] = ''
             elif 'DEFINITION' in line:
                 locus_2_strain[locus_name] = f'{line.split()[4]}_{n}'
+                if '12361' in line:
+                    locus_2_strain[locus_name] = f'DSMZ12361_{n}'
                 n += 1
                 print(locus_2_strain[locus_name])
             # elif '_1' not in locus_name and 'ORIGIN' in line:
