@@ -89,16 +89,31 @@ rule get_neighboring_genes:
     script:
         "get_neighboring_seqs.py"
 
+rule create_GH70_functional:
+    output:
+        faa = "data/fasta/GH70/GH70_functional_repset.faa",
+        fna = "data/fasta/GH70/GH70_functional_repset.fna"
+    input:
+        faa = expand("data/fasta/GH70/{type}_repset.faa", type = ["GS1", "BRS", "GS2"]),
+        fna = expand("data/fasta/GH70/{type}_repset.fna", type = ["GS1", "BRS", "GS2"])
+    shell:
+        """
+        > {output.faa}
+        > {output.fna}
+        cat {input.faa} >> {output.faa}
+        cat {input.fna} >> {output.fna}
+        """
+
 #This pipeline requires Mafft, iqtree, pal2nal and paml. It also requires Python3 with biopython and pandas.
 #The conda environment files provide all required packages except for pal2nal (v14).
 
 rule msa_gtf:
     output:
-        GH70 = expand("data/fasta/GH70/{type}_repset.mafft.{ext}", type = ["GS1", "BRS", "GS2"], ext = ["faa", "fna"]),
-        GH32 = expand("data/fasta/GH32/{type}_repset.mafft.{ext}", type = ["S1", "S2a", "S3"], ext = ["faa", "fna"])
+        GH70 = expand("data/fasta/GH70/{type}_repset.mafft.{ext}", type = ["GH70_functional", "GS1", "BRS", "GS2"], ext = ["faa", "fna"]),
+        GH32 = expand("data/fasta/GH32/{type}_repset.mafft.{ext}", type = ["GH32", "S1", "S2a", "S3"], ext = ["faa", "fna"])
     input:
-        GH70 = expand("data/fasta/GH70/{type}_repset.{ext}", type = ["GS1", "BRS", "GS2"], ext = ["faa", "fna"]),
-        GH32 = expand("data/fasta/GH32/{type}_repset.{ext}", type = ["S1", "S2a", "S3"], ext = ["faa", "fna"])
+        GH70 = expand("data/fasta/GH70/{type}_repset.{ext}", type = ["GH70_functional", "GS1", "BRS", "GS2"], ext = ["faa", "fna"]),
+        GH32 = expand("data/fasta/GH32/{type}_repset.{ext}", type = ["GH32", "S1", "S2a", "S3"], ext = ["faa", "fna"])
     threads: 2
     conda: "environment.yml"
     log: "logs/mafft/repset_aln.log"
@@ -135,15 +150,15 @@ rule msa_other:
 
 rule iqtree_gtf:
     output:
-        prot_GH70 = expand("data/fasta/GH70/trees/{type}_repset.mafft.faa.treefile", type = ["GS1", "BRS", "GS2"]),
-        gene_GH70 = expand("data/fasta/GH70/trees/{type}_repset.mafft.fna.treefile", type = ["GS1", "BRS", "GS2"]),
-        prot_GH32 = expand("data/fasta/GH32/trees/{type}_repset.mafft.faa.treefile", type = ["S2a", "S3"]),
-        gene_GH32 = expand("data/fasta/GH32/trees/{type}_repset.mafft.fna.treefile", type = ["S2a", "S3"])
+        prot_GH70 = expand("data/fasta/GH70/trees/{type}_repset.mafft.faa.treefile", type = ["GH70_functional", "GS1", "BRS", "GS2"]),
+        gene_GH70 = expand("data/fasta/GH70/trees/{type}_repset.mafft.fna.treefile", type = ["GH70_functional", "GS1", "BRS", "GS2"]),
+        prot_GH32 = expand("data/fasta/GH32/trees/{type}_repset.mafft.faa.treefile", type = ["GH32", "S1", "S2a", "S3"]),
+        gene_GH32 = expand("data/fasta/GH32/trees/{type}_repset.mafft.fna.treefile", type = ["GH32", "S1", "S2a", "S3"])
     input:
-        prot_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.faa", type = ["GS1", "BRS", "GS2"]),
-        gene_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.fna", type = ["GS1", "BRS", "GS2"]),
-        prot_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.faa", type = ["S2a", "S3"]),
-        gene_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.fna", type = ["S2a", "S3"])
+        prot_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.faa", type = ["GH70_functional", "GS1", "BRS", "GS2"]),
+        gene_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.fna", type = ["GH70_functional", "GS1", "BRS", "GS2"]),
+        prot_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.faa", type = ["GH32", "S1", "S2a", "S3"]),
+        gene_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.fna", type = ["GH32", "S1", "S2a", "S3"])
     threads: 12
     conda: "environment.yml"
     log: "logs/iqtree/repset_trees.log"
@@ -196,20 +211,23 @@ rule iqtree_other:
 
 rule pal2nal:
     output:
-        expand("data/codons/{types}_codon.pal2nal", types = ["GS1", "GS2", "BRS", "S2a", "S3"])
+        expand("data/codons/{types}_codon.pal2nal", types = ["GH70", "GS1", "GS2", "BRS", "GH32", "S1", "S2a", "S3"])
     input:
-        aln1_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.faa", type = ["GS1", "GS2", "BRS"]),
-        aln1_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.faa", type = ["S2a", "S3"]),
-	aln2_GH70 = expand("data/fasta/GH70/{type}_repset.fna", type = ["GS1", "GS2", "BRS"]),
-        aln2_GH32 = expand("data/fasta/GH32/{type}_repset.fna", type = ["S2a", "S3"])
+        aln1_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.faa", type = ["GH70_functional", "GS1", "GS2", "BRS"]),
+        aln1_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.faa", type = ["GH32", "S1", "S2a", "S3"]),
+	aln2_GH70 = expand("data/fasta/GH70/{type}_repset.fna", type = ["GH70_functional", "GS1", "GS2", "BRS"]),
+        aln2_GH32 = expand("data/fasta/GH32/{type}_repset.fna", type = ["GH32", "S1", "S2a", "S3"])
     log: "logs/pal2nal/repset_codons.log"
     shell:
         """
         pal2nal.v14/pal2nal.pl {input.aln1_GH70[0]} {input.aln2_GH70[0]} -output paml -nogap > {output[0]} 2> {log} &&
         pal2nal.v14/pal2nal.pl {input.aln1_GH70[1]} {input.aln2_GH70[1]} -output paml -nogap > {output[1]} 2>> {log} &&
         pal2nal.v14/pal2nal.pl {input.aln1_GH70[2]} {input.aln2_GH70[2]} -output paml -nogap > {output[2]} 2>> {log} &&
-        pal2nal.v14/pal2nal.pl {input.aln1_GH32[0]} {input.aln2_GH32[0]} -output paml -nogap > {output[3]} 2>> {log} &&
-        pal2nal.v14/pal2nal.pl {input.aln1_GH32[1]} {input.aln2_GH32[1]} -output paml -nogap > {output[4]} 2>> {log}
+        pal2nal.v14/pal2nal.pl {input.aln1_GH70[3]} {input.aln2_GH70[3]} -output paml -nogap > {output[3]} 2>> {log} &&
+        pal2nal.v14/pal2nal.pl {input.aln1_GH32[0]} {input.aln2_GH32[0]} -output paml -nogap > {output[4]} 2>> {log} &&
+        pal2nal.v14/pal2nal.pl {input.aln1_GH32[1]} {input.aln2_GH32[1]} -output paml -nogap > {output[5]} 2>> {log} &&
+        pal2nal.v14/pal2nal.pl {input.aln1_GH32[2]} {input.aln2_GH32[2]} -output paml -nogap > {output[6]} 2>> {log} &&
+        pal2nal.v14/pal2nal.pl {input.aln1_GH32[3]} {input.aln2_GH32[3]} -output paml -nogap > {output[7]} 2>> {log}
         """
 
 rule pal2nal_other:
@@ -231,13 +249,13 @@ rule pal2nal_other:
 
 rule codeml_exe:
     output:
-        summary = expand("results/{type}/{type}_repset.txt", type = ["GS1", "GS2", "BRS", "S2a", "S3"]),
-        dN = expand("results/{type}/2ML.dN", type = ["GS1", "GS2", "BRS", "S2a", "S3"]),
-        dS = expand("results/{type}/2ML.dS", type = ["GS1", "GS2", "BRS", "S2a", "S3"])
+        summary = expand("results/{type}/{type}_repset.txt", type = ["GH70", "GS1", "GS2", "BRS", "GH32", "S1", "S2a", "S3"]),
+        dN = expand("results/{type}/2ML.dN", type = ["GH70", "GS1", "GS2", "BRS", "GH32", "S1", "S2a", "S3"]),
+        dS = expand("results/{type}/2ML.dS", type = ["GH70", "GS1", "GS2", "BRS", "GH32", "S1", "S2a", "S3"])
     input:
-        codons = expand("data/codons/{types}_codon.pal2nal", types = ["GS1", "GS2", "BRS", "S2a", "S3"]),
-        trees_GH70 = expand("data/fasta/GH70/trees/{type}_repset.mafft.faa.treefile", type = ["GS1", "BRS", "GS2"]),
-        trees_GH32 = expand("data/fasta/GH32/trees/{type}_repset.mafft.faa.treefile", type = ["S2a", "S3"])
+        codons = expand("data/codons/{types}_codon.pal2nal", types = ["GH70", "GS1", "GS2", "BRS", "GH32", "S1", "S2a", "S3"]),
+        trees_GH70 = expand("data/fasta/GH70/trees/{type}_repset.mafft.faa.treefile", type = ["GH70_functional", "GS1", "BRS", "GS2"]),
+        trees_GH32 = expand("data/fasta/GH32/trees/{type}_repset.mafft.faa.treefile", type = ["GH32", "S1", "S2a", "S3"])
     params:
         outdir = "/home/marina/GH_project/results"
     log: "logs/python/repset_codeml.log"
@@ -262,10 +280,10 @@ rule codeml_other:
 		
 rule run_parser:
     output:
-        dNdS = expand("results/{type}/dNdS.tsv", type = ["GS1", "GS2", "BRS", "S2a", "S3"]),
-        stats = expand("results/{type}/stats.tsv", type = ["GS1", "GS2", "BRS", "S2a", "S3"])
+        dNdS = expand("results/{type}/dNdS.tsv", type = ["GH70", "GS1", "GS2", "BRS", "GH32", "S1", "S2a", "S3"]),
+        stats = expand("results/{type}/stats.tsv", type = ["GH70", "GS1", "GS2", "BRS", "GH32", "S1", "S2a", "S3"])
     input:
-        txt = expand("results/{type}/{type}_repset.txt", type = ["GS1", "GS2", "BRS", "S2a", "S3"])
+        txt = expand("results/{type}/{type}_repset.txt", type = ["GH70", "GS1", "GS2", "BRS", "GH32", "S1", "S2a", "S3"])
     log: "logs/python/repset_outtabs.log"
     script:
         "parse_codeml.py"

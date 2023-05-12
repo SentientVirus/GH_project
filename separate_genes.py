@@ -96,8 +96,12 @@ for file in input_files: #Loop through Snakemake inputs
             sname = record.id.split('_')[0] #Get strain name from locus tag
             if sname[0] == 'H':
                 sname = sname[:4] + '-' + sname[4:]
-            elif sname == '55':
+            elif sname == 'APS55':
                 sname = 'MP2'
+            elif sname == 'LDX55':
+                sname = 'IBH001'
+            elif sname == 'K2W83':
+                sname = 'DSMZ12361'
             elif sname == 'FHON2':
                 sname = 'Fhon2'
                 

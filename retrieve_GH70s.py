@@ -100,7 +100,10 @@ def get_GH32(directory, strains, domain_annot):
             file = csv.reader(annot)
             for line in file:
                 line = line[0].split('\t')
-                if domain_annot in line and ('RS' in line[0] or int(line[0].split('_')[1]) > 10**4): #Take only locus tags > 10000
+                val = line[0].split('_')[1]
+                if val.startswith('RS'):
+                    val = val[2:]
+                if domain_annot in line and (('RS' in line[0] and int(val) > 10**3) or ('RS' not in line[0] and int(line[0].split('_')[1]) > 10**4)): #Take only locus tags > 10000
                     gene_names.append(line[0].replace('-', ''))
     return gene_names
 
