@@ -6,4 +6,9 @@ interproscan
 logs/*
 results/*
 data/*
+plots/*
+side_analyses/*
+tables/*
+temp/*
+old*
 .~*
