@@ -47,7 +47,7 @@ GS1 = snakemake.params.GS1
 GS2 = snakemake.params.GS2
 BRS = snakemake.params.BRS
 short = snakemake.params.short
-NCB = snakemake.params.NCB
+NGB = snakemake.params.NGB
 S1 = snakemake.params.S1
 S2a = snakemake.params.S2a
 S2b = snakemake.params.S2b
@@ -112,7 +112,7 @@ for file in input_files: #Loop through Snakemake inputs
             
             for gene_type in gene_list: #Loop through gene types
                 if record.id in myVars[gene_type]: #Retrieve locus tags per type
-                    if gene_type not in ['GS1', 'GS2', 'BRS', 'NCB'] or (file.endswith('.faa') and len(record.seq) > 700) or (file.endswith('.fna') and len(record.seq) > 2100):
+                    if gene_type not in ['GS1', 'GS2', 'BRS', 'NGB'] or (file.endswith('.faa') and len(record.seq) > 700) or (file.endswith('.fna') and len(record.seq) > 2100):
                         filename = f'{add}{gene_type}_all.{file[-3:]}' #File for a particular GH type
                         create_write(path, prefix, filename)
                         print(f'{record.id} added to {path}/{prefix}/{filename}')
@@ -137,7 +137,7 @@ for file in input_files: #Loop through Snakemake inputs
                     
                 for gene_type in gene_list: #Loop through gene types
                     if record.id in myVars[gene_type]: #Retrieve locus tags per type
-                        if gene_type not in ['GS1', 'GS2', 'BRS', 'NCB'] or (file.endswith('.faa') and len(record.seq) > 700) or (file.endswith('.fna') and len(record.seq) > 2100):
+                        if gene_type not in ['GS1', 'GS2', 'BRS', 'NGB'] or (file.endswith('.faa') and len(record.seq) > 700) or (file.endswith('.fna') and len(record.seq) > 2100):
                             filename = f'{add}{gene_type}_repset.{file[-3:]}' #File for a particular GH type
                             create_write(path, prefix, filename)
                             print(f'{record.id} added to {path}/{prefix}/{filename}')

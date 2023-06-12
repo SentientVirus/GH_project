@@ -40,7 +40,7 @@ sys.stdout = open(snakemake.log[0], 'a')
 # Load inputs from Snakefile
 # =============================================================================
 
-infile = snakemake.input['txt'] #'codeml_out/a_kunkeei_GH70/a_kunkeei_GH70.txt' #Replace to snakemake input
+infile = snakemake.input['txt'] #'codeml_out/a_kunkeei_GH70/a_kunkeei_GH70.txt'
 outfile1 = snakemake.output['dNdS'] #'codeml_out/a_kunkeei_GH70/new_dNdS.tsv'
 outfile2 = snakemake.output['stats'] #'codeml_out/a_kunkeei_GH70/new_stats.tsv'
 
