@@ -5,7 +5,7 @@ rule all:
 #        expand("gbks/{strain}_1.gbk", strain = config["strains"]),
 #        expand("data/fasta/{GH}/{GH}.{ext}", GH = config["GHs"], ext = ["faa", "fna"]),
 #        "plots/tabfiles/87_A0901_gpr.tab"
-        
+HOME = "/home/marina"
 
 #rule download_data:
 #    output:
@@ -24,11 +24,12 @@ rule divide_gbks:
         expand("gbks/{strain}_1.gbk", strain = config["strains"]),
         expand("gbks/{newstrain}_1.gbk", newstrain = config["extra_strains"])
     input:
-        expand("/home/marina/Akunkeei_files/gbff/{strain}_genomic.gbff", strain = config["strains"]),
-        expand("/home/marina/Akunkeei_files/gbff/{newstrain}_genomic.gbff", newstrain = config["extra_strains"])
+        expand("{home}/Akunkeei_files/gbff/{strain}_genomic.gbff", strain = config["strains"], home = HOME),
+        expand("{home}/Akunkeei_files/gbff/{newstrain}_genomic.gbff", newstrain = config["extra_strains"], home = HOME)
+    params: workdir = HOME + "/GH_project/"
     log: "logs/python/gbks.log"
     script:
-        "divide_gbks.py"
+        "code/divide_gbks.py"
 
 rule retrieve_sequences:
     output:
@@ -38,7 +39,7 @@ rule retrieve_sequences:
     log: "logs/python/GHs.log"
     conda: "biopython_env.yml"
     script:
-        "retrieve_GH70s.py"
+        "retrieve_GH70_domains.py" #"retrieve_GH70s.py"
 
 rule retrieve_full_GH70s:
     output:
@@ -55,7 +56,7 @@ rule separate_GHs:
         expand("data/fasta/{GH}/{GH}_{sufix}.{ext}", GH = config["GHs"], ext = ["faa", "fna"], sufix = ["repset", "subset", "all"]),
         expand("data/fasta/GH70/{add}{type}_{sufix}.{ext}", add = ["", "complete_"], type = ["GS1", "GS2", "BRS", "short", "NGB"], sufix = ["repset", "subset", "all"], ext = ["faa", "fna"]),
         expand("data/fasta/GH32/{type}_repset.{ext}", type = ["S1", "S2a", "S2b", "S3"], ext = ["faa", "fna"]),
-        expand("data/fasta/GH32/{type}_subset.{ext}", type = ["S2a", "S2b", "S3"], ext = ["faa", "fna"])
+        expand("data/fasta/GH32/{type}_subset.{ext}", type = ["S1", "S2a", "S2b", "S3"], ext = ["faa", "fna"])
     input:
         expand("data/fasta/{GH}/{GH}.{ext}", GH = config["GHs"], ext = ["faa", "fna"]),
         expand("data/fasta/GH70/complete_GH70.{ext}", ext = ["faa", "fna"])
@@ -92,10 +93,31 @@ rule get_neighboring_genes:
 rule create_GH70_functional:
     output:
         faa = "data/fasta/GH70/GH70_functional_repset.faa",
-        fna = "data/fasta/GH70/GH70_functional_repset.fna"
+        fna = "data/fasta/GH70/GH70_functional_repset.fna",
+        faa_outgroup = "data/fasta/GH70/GH70_functional_outgroup_repset.faa"#,
+        #fna_outgroup = "data/fasta/GH70_functional_repset_outgroup.fna"
     input:
         faa = expand("data/fasta/GH70/{type}_repset.faa", type = ["GS1", "BRS", "GS2", "NGB"]),
-        fna = expand("data/fasta/GH70/{type}_repset.fna", type = ["GS1", "BRS", "GS2", "NGB"])
+        fna = expand("data/fasta/GH70/{type}_repset.fna", type = ["GS1", "BRS", "GS2", "NGB"]),
+        outgroup = "outgroups.fasta" #Replace this to create outgroup gene tree as well
+    shell:
+        """
+        > {output.faa}
+        > {output.fna}
+        > {output.faa_outgroup}
+        cat {input.faa} >> {output.faa}
+        cat {input.fna} >> {output.fna}
+        cat {output.faa} >> {output.faa_outgroup}
+        cat {input.outgroup} >> {output.faa_outgroup}
+        """
+
+rule create_GH70_functional_all:
+    output:
+        faa = "data/fasta/GH70/GH70_functional_all.faa",
+        fna = "data/fasta/GH70/GH70_functional_all.fna"
+    input:
+        faa = expand("data/fasta/GH70/{type}_all.faa", type = ["GS1", "BRS", "GS2", "NGB"]),
+        fna = expand("data/fasta/GH70/{type}_all.fna", type = ["GS1", "BRS", "GS2", "NGB"])
     shell:
         """
         > {output.faa}
@@ -110,10 +132,16 @@ rule create_GH70_functional:
 rule msa_gtf:
     output:
         GH70 = expand("data/fasta/GH70/{type}_repset.mafft.{ext}", type = ["GH70_functional", "GS1", "BRS", "GS2", "NGB"], ext = ["faa", "fna"]),
-        GH32 = expand("data/fasta/GH32/{type}_repset.mafft.{ext}", type = ["GH32", "S1", "S2a", "S2b", "S3"], ext = ["faa", "fna"])
+        GH32 = expand("data/fasta/GH32/{type}_repset.mafft.{ext}", type = ["GH32", "S1", "S2a", "S2b", "S3"], ext = ["faa", "fna"]),
+        GH70_all = expand("data/fasta/GH70/GH70_functional_all.mafft.{ext}", ext = ["faa", "fna"]),
+        GH32_all = expand("data/fasta/GH32/GH32_all.mafft.{ext}", ext = ["faa", "fna"]),
+        GH70_out = "data/fasta/GH70/GH70_functional_outgroup_repset.mafft.faa"
     input:
         GH70 = expand("data/fasta/GH70/{type}_repset.{ext}", type = ["GH70_functional", "GS1", "BRS", "GS2", "NGB"], ext = ["faa", "fna"]),
-        GH32 = expand("data/fasta/GH32/{type}_repset.{ext}", type = ["GH32", "S1", "S2a", "S2b", "S3"], ext = ["faa", "fna"])
+        GH32 = expand("data/fasta/GH32/{type}_repset.{ext}", type = ["GH32", "S1", "S2a", "S2b", "S3"], ext = ["faa", "fna"]),
+        GH70_all = expand("data/fasta/GH70/GH70_functional_all.{ext}", ext = ["faa", "fna"]),
+        GH32_all = expand("data/fasta/GH32/GH32_all.{ext}", ext = ["faa", "fna"]),
+        GH70_out = "data/fasta/GH70/GH70_functional_outgroup_repset.faa"
     threads: 2
     conda: "environment.yml"
     log: "logs/mafft/repset_aln.log"
@@ -129,6 +157,17 @@ rule msa_gtf:
         output=$(echo $j | cut -d'.' -f 1).mafft.$(echo $j | cut -d'.' -f 2)
         mafft-linsi --thread {threads} $j > $output 2>> {log};
         done
+        for k in {input.GH70_all};
+        do
+        output=$(echo $k | cut -d'.' -f 1).mafft.$(echo $k | cut -d'.' -f 2)
+        mafft-linsi --thread {threads} $k > $output 2>> {log};
+        done
+        for l in {input.GH32_all};
+        do
+        output=$(echo $l | cut -d'.' -f 1).mafft.$(echo $l | cut -d'.' -f 2)
+        mafft-linsi --thread {threads} $l > $output 2>> {log};
+        done
+        mafft-linsi --thread {threads} {input.GH70_out} > {output.GH70_out} 2>> {log};
         """ 
 
 rule msa_other:
@@ -153,12 +192,14 @@ rule iqtree_gtf:
         prot_GH70 = expand("data/fasta/GH70/trees/{type}_repset.mafft.faa.treefile", type = ["GH70_functional", "GS1", "BRS", "GS2", "NGB"]),
         gene_GH70 = expand("data/fasta/GH70/trees/{type}_repset.mafft.fna.treefile", type = ["GH70_functional", "GS1", "BRS", "GS2", "NGB"]),
         prot_GH32 = expand("data/fasta/GH32/trees/{type}_repset.mafft.faa.treefile", type = ["GH32", "S1", "S2a", "S3"]),
-        gene_GH32 = expand("data/fasta/GH32/trees/{type}_repset.mafft.fna.treefile", type = ["GH32", "S1", "S2a", "S3"])
+        gene_GH32 = expand("data/fasta/GH32/trees/{type}_repset.mafft.fna.treefile", type = ["GH32", "S1", "S2a", "S3"]),
+        out_GH70 = "data/fasta/GH70/trees/GH70_functional_outgroup_repset.mafft.faa.treefile"
     input:
         prot_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.faa", type = ["GH70_functional", "GS1", "BRS", "GS2", "NGB"]),
         gene_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.fna", type = ["GH70_functional", "GS1", "BRS", "GS2", "NGB"]),
         prot_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.faa", type = ["GH32", "S1", "S2a", "S3"]),
-        gene_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.fna", type = ["GH32", "S1", "S2a", "S3"])
+        gene_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.fna", type = ["GH32", "S1", "S2a", "S3"]),
+        out_GH70 = "data/fasta/GH70/GH70_functional_outgroup_repset.mafft.faa"
     threads: 12
     conda: "environment.yml"
     log: "logs/iqtree/repset_trees.log"
@@ -182,6 +223,7 @@ rule iqtree_gtf:
         do
         iqtree -nt {threads} -s $l -st DNA -m GTR+G4+F -bb 1000 -bnni >> {log}
         done
+        iqtree -nt {threads} -s {input.out_GH70} -st AA -m LG+G4+F -bb 1000 -bnni >> {log}
         mv data/fasta/GH70/*.f*a.* data/fasta/GH70/trees
         mv data/fasta/GH32/*.f*a.* data/fasta/GH32/trees
         """ 
@@ -211,7 +253,7 @@ rule iqtree_other:
 
 rule pal2nal:
     output:
-        expand("data/codons/{types}_codon.pal2nal", types = ["GH70", "GS1", "GS2", "BRS", "GH32", "NGB", "S1", "S2a", "S3"])
+        expand("data/codons/{types}_codon.pal2nal", types = ["GH70", "GS1", "GS2", "BRS", "GH32", "NGB", "S1", "S2a", "S2b", "S3"])
     input:
         aln1_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.faa", type = ["GH70_functional", "GS1", "GS2", "BRS", "NGB"]),
         aln1_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.faa", type = ["GH32", "S1", "S2a", "S2b", "S3"]),

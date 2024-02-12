@@ -12,8 +12,8 @@ Created on Tue Nov 29 10:01:24 2022
 import os
 
 indir = '/'.join(snakemake.input[0].split('/')[:-1]) #Directory of input files
-outdir = '/'.join(snakemake.output[0].split('/')[:-1]) #Directory of outputs
-in_suffix = snakemake.input[0].split('.')[-1] #Duffix of inputs (gbff)
+outdir = snakemake.params.workdir + '/'.join(snakemake.output[0].split('/')[:-1]) #Directory of outputs
+in_suffix = '.' + snakemake.input[0].split('.')[-1] #Suffix of inputs (gbff)
 out_suffix = snakemake.output[0].split('.')[-1] #Suffix of outputs (gbk)
 
 new_dict = {}

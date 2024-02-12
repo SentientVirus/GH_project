@@ -15,12 +15,13 @@ Created on Tue Aug 30 14:20:09 2022
 import os
 import pandas as pd
 import seaborn as sns
+from matplotlib import pyplot as plt
 from Bio import AlignIO
 from Bio.Seq import Seq
 from statistics import mean
 
 pathname = os.path.expanduser('~') + '/GH_project/data/codons'
-file = 'GH70_codon.pal2nal'
+prefix = ['GH70', 'GS1', 'GS2', 'BRS']
 #pathname = os.path.expanduser('~') + '/codeml_analysis/subset/inputs'
 
 transtable_RNA = {'UUU': 'F', 'UUC': 'F', 'UUA': 'L', 'UUG': 'L', 'CUU': 'L',
@@ -58,31 +59,40 @@ def get_codons(sequence):
     codons = [sequence[i:i+3] for i in range(0, len(sequence), 3)]
     return codons
 
-pos_dict = {}
-with open(f'{pathname}/{file}') as handle:
-    f = (line for line in handle)
-    for line in f:
-        if '_' in line:
-            id_name = line.strip()
-            pos_dict[id_name] = ''
-        elif not any(char.isdigit() for char in line):
-            pos_dict[id_name] += line.strip()
-
-pair_dict = {}
-locus_tags = list(pos_dict.keys())
-for i in range(len(locus_tags) - 1):
-    for j in range(i + 1, len(locus_tags)):
-        pair_dict[(locus_tags[i], locus_tags[j])] = []
-        for n in range(0, len(pos_dict[locus_tags[i]]), 3):
-            if pos_dict[locus_tags[i]][n:n+3] == pos_dict[locus_tags[j]][n:n+3]:
-                pair_dict[(locus_tags[i], locus_tags[j])].append(0)
-            elif transtable[pos_dict[locus_tags[i]][n:n+3]] == transtable[pos_dict[locus_tags[j]][n:n+3]]:
-                pair_dict[(locus_tags[i], locus_tags[j])].append(1)
-            else: pair_dict[(locus_tags[i], locus_tags[j])].append(2)
-            
-df = pd.DataFrame.from_dict(pair_dict)
-sns.set(rc={'figure.figsize':(100,200)})
-sns.heatmap(df.T, cmap=['white', '#88e5c3', '#1d955e'], cbar=False)   #88e5c3 
+for pre in prefix:
+    file = f'{pre}_codon.pal2nal'
+    
+    pos_dict = {}
+    with open(f'{pathname}/{file}') as handle:
+        f = (line for line in handle)
+        for line in f:
+            if '_' in line:
+                id_name = line.strip()
+                pos_dict[id_name] = ''
+            elif not any(char.isdigit() for char in line):
+                pos_dict[id_name] += line.strip()
+    
+    pair_dict = {}
+    locus_tags = list(pos_dict.keys())
+    for i in range(len(locus_tags) - 1):
+        for j in range(i + 1, len(locus_tags)):
+            pair_dict[(locus_tags[i], locus_tags[j])] = []
+            for n in range(0, len(pos_dict[locus_tags[i]]), 3):
+                if pos_dict[locus_tags[i]][n:n+3] == pos_dict[locus_tags[j]][n:n+3]:
+                    pair_dict[(locus_tags[i], locus_tags[j])].append(0)
+                elif transtable[pos_dict[locus_tags[i]][n:n+3]] == transtable[pos_dict[locus_tags[j]][n:n+3]]:
+                    pair_dict[(locus_tags[i], locus_tags[j])].append(1)
+                else: pair_dict[(locus_tags[i], locus_tags[j])].append(2)
+                
+    df = pd.DataFrame.from_dict(pair_dict)
+    if pre == 'GS1':
+        y = 100
+    elif pre == 'GS2':
+        y = 10
+    else: y = 25
+    sns.set(rc={'figure.figsize':(80, y)})
+    sns.heatmap(df.T, cmap=['white', '#88e5c3', '#1d955e'], cbar=False)
+    plt.savefig(f'{pre}_dNdSplot.png')
 
             
     # for record in AlignIO.PhylipIO.SequentialPhylipIterator(handle):

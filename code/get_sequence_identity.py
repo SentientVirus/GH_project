@@ -40,7 +40,7 @@ def needle_align_code(query_seq, target_seq):
 
 
 for suffix in suffixes:
-    out_file = 'percentage_identity_{suffix}.tab'
+    out_file = f'percentage_identity_{suffix}.tab'
     with open(f'{out_path}/{out_file}', 'w') as out:
         out.write('locus1\tlocus2\tGH_type\t%identity\n')
     
@@ -50,18 +50,20 @@ for suffix in suffixes:
         workdir = f'{pathname}/{GH}'
         for file in os.listdir(workdir):
             if file.endswith(f'{suffix}.fna') and GH not in file and 'complete' not in file:
-                GH_type = file.split('_')[0]
-                if GH_type == 'NCB':
-                    GH_type = 'NGB'
+                print(file)
+                GH_name = file.split('_')[0]
+                print(GH_name)
+                if GH_name == 'NCB':
+                    GH_name = 'NGB'
                 with open(f'{workdir}/{file}') as handle:
                     record_list = []
                     for record in SeqIO.parse(handle, 'fasta'):
                         record_list.append(record)
                 for i in range(len(record_list)-1):
                     for j in range(i+1, len(record_list)):
-                        if GH_type != 'GS2' or (len(record_list[i].seq) > 2000 and len(record_list[j].seq) > 2000):
+                        if GH_name != 'GS2' or (len(record_list[i].seq) > 2000 and len(record_list[j].seq) > 2000):
                             perc_ident = needle_align_code(record_list[i].seq, record_list[j].seq)
                             pos_dict[(record_list[i].id, record_list[j].id)] = perc_ident
                             with open(f'{out_path}/{out_file}', 'a') as out:
-                                out.write(f'{record_list[i].id}\t{record_list[j].id}\t{GH_type}\t{perc_ident}\n')
+                                out.write(f'{record_list[i].id}\t{record_list[j].id}\t{GH_name}\t{perc_ident}\n')
         

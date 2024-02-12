@@ -77,6 +77,7 @@ file_list = sorted(os.listdir(os.getcwd()), key=sort_key)
 for filename in file_list:
     for gene_n in genes:
         with open(filename) as handle:
+            print(filename)
             for record in SeqIO.parse(handle, 'genbank'):
                 for feature in record.features:
                     # Retrieve locus tag and sequence

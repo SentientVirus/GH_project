@@ -84,7 +84,8 @@ def get_domain_pos(directory, strains, domain_annot):
                     if loctag not in gene_names.keys(): #Retrieve domain position
                         gene_names[loctag] = (int(line[6]), int(line[7]))
                     else: #Accounts for two domains in a gene
-                        gene_names[f'{loctag}_2'] = (int(line[6]), int(line[7]))
+                        no = len([key for key in gene_names.keys() if loctag in key])+1
+                        gene_names[f'{loctag}_{no}'] = (int(line[6]), int(line[7]))
             
     return gene_names #Returns dictionary locus_tag: (domain start, domain end)
 
