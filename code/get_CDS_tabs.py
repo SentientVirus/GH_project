@@ -2,7 +2,10 @@
 """
 Created on Wed Sep 29 21:57:29 2021
 
-@author: usuario
+This script retrieves positional information about the CDS in and around the
+deleted region so that this information can be later plotted.
+
+@author: Marina Mota Merlo
 """
 import os, logging, traceback
 import re

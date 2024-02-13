@@ -3,7 +3,9 @@
 """
 Created on Thu Jun 29 13:44:38 2023
 
-@author: marina
+Script in progress to create a phylogenetic network.
+
+@author: Marina Mota Merlo
 """
 
 import phylonetwork as pn

@@ -3,7 +3,12 @@
 """
 Created on Fri Nov 19 09:18:40 2021
 
-@author: marina
+From the CodeML output, this script creates a tab file
+with the dN and dS values for all the comparisons of
+core genes, and it calculates statistics for each strain
+pair (not general statistics for all core genes).
+
+@author: Marina Mota Merlo
 """
 import os
 from numpy import mean, median

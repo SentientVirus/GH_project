@@ -2,7 +2,10 @@
 """
 Created on Wed Nov 17 10:30:36 2021
 
-@author: marina
+This is a script to run CodeML and calculate pairwise substitution rates of 
+GH70 and GH32 genes. 
+
+@author: Marina Mota Merlo
 """
 
 import os, logging, traceback

@@ -2,7 +2,10 @@
 """
 Created on Tue Oct  5 00:34:10 2021
 
-@author: usuario
+This is a script that can be used to retrieve the sequences of the genes
+that are in the deleted region but are not glycosyl hydrolases.
+
+@author: Marina Mota Merlo
 """
 import os
 import logging, traceback

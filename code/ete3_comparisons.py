@@ -3,7 +3,9 @@
 """
 Created on Mon Dec 20 11:06:54 2021
 
-@author: marmo435
+This script creates phylogenies for GH70 and GH32 genes.
+
+@author: Marina Mota Merlo
 """
 
 from ete3 import Tree, TreeStyle, NodeStyle, SeqMotifFace, TextFace

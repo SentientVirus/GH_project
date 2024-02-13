@@ -3,7 +3,10 @@
 """
 Created on Fri Jun 30 17:10:01 2023
 
-@author: marina
+This is a script to add the genes from strain IBH001 to the files with a 
+set of core genes.
+
+@author: Marina Mota Merlo
 """
 import os
 import pandas as pd

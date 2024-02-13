@@ -3,7 +3,11 @@
 """
 Created on Mon Sep  4 17:00:37 2023
 
-@author: marina
+Script to change the reverse strand to the forward one, since
+some strains that come from different sources have the opposite
+strand as forward strand, for example, MP2.
+
+@author: Marina Mota Merlo
 """
 import os
 from Bio import SeqIO

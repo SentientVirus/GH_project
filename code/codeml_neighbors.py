@@ -2,7 +2,10 @@
 """
 Created on Wed Nov 17 10:30:36 2021
 
-@author: marina
+This script runs CodeML to calculate the pairwise substitution rates of the
+genes that are placed close to the GS1-2, BRS and S1-3 genes.
+
+@author: Marina Mota Merlo
 """
 
 import os, logging, traceback

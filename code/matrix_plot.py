@@ -3,7 +3,11 @@
 """
 Created on Thu Sep  7 16:54:02 2023
 
-@author: marina
+This is a plot to create matrices for genes GS1-2, BRS and NGB, where
+the dS pairwise values are plotted on the top half and the dN pairwise
+values are plotted on the bottom half.
+
+@author: Marina Mota Merlo
 """
 
 import numpy as np

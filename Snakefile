@@ -29,7 +29,7 @@ rule divide_gbks:
     params: workdir = HOME + "/GH_project/"
     log: "logs/python/gbks.log"
     script:
-        "code/divide_gbks.py"
+        "code/1-divide_gbks.py"
 
 rule retrieve_sequences:
     output:
@@ -39,7 +39,7 @@ rule retrieve_sequences:
     log: "logs/python/GHs.log"
     conda: "biopython_env.yml"
     script:
-        "retrieve_GH70_domains.py" #"retrieve_GH70s.py"
+        "code/2-retrieve_GH70_domains.py" #"retrieve_GH70s.py"
 
 rule retrieve_full_GH70s:
     output:
@@ -49,7 +49,7 @@ rule retrieve_full_GH70s:
     log: "logs/python/GH70s.log"
     conda: "biopython_env.yml"
     script:
-        "retrieve_full_GH70s.py"
+        "code/3-retrieve_full_GH70s.py"
 
 rule separate_GHs:
     output:

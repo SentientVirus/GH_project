@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Spyder Editor
+This is a script that can calculate the number of GH70/32 and glucan-binding
+domains in a protein and create a table with this information.
 
+@author: Marina Mota Merlo
 """
 import os, logging, traceback
 import csv

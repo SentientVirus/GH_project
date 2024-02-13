@@ -3,7 +3,9 @@
 """
 Created on Tue Nov 29 10:01:24 2022
 
-@author: marina
+This is a script to divide each entry in a GenBank file into different files.
+
+@author: Marina Mota Merlo
 """
 # =============================================================================
 # Script to divide multi-record GenBank files into single-record files.

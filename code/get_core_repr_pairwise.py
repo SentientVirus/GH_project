@@ -3,7 +3,11 @@
 """
 Created on Fri Nov 19 09:18:40 2021
 
-@author: marina
+This script gives averaged pairwise dN and dS values between
+strains, like get_core_pairwise.py, but this script considers
+only representative strains.
+
+@author: Marina Mota Merlo
 """
 import os
 from numpy import mean, median

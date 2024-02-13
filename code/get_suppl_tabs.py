@@ -3,7 +3,10 @@
 """
 Created on Thu Feb  9 16:51:51 2023
 
-@author: marina
+This is a script used to create tabs including information about the
+glycosyl hydrolase genes under study.
+
+@author: Marina Mota Merlo
 
 """
 

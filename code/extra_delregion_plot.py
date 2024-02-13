@@ -3,7 +3,10 @@
 """
 Created on Mon Dec 20 11:06:54 2021
 
-@author: marmo435
+Another version of the script to plot the deleted region. This version uses
+the versions of the files from NCBI, and is therefore more updated.
+
+@author: Marina Mota Merlo
 """
 
 from ete3 import Tree, TreeStyle, NodeStyle, SeqMotifFace, TextFace

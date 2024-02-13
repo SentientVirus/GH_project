@@ -3,12 +3,14 @@
 """
 Created on Thu Dec  1 16:43:13 2022
 
-@author: marina
+Script to divide GHs by type and subset of strains of interest.
+
+@author: Marina Mota Merlo
 
 """
 
 # =============================================================================
-# Script to divide GHs by type and subset
+# Import modules
 # =============================================================================
 
 import os

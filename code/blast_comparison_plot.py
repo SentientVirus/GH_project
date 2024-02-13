@@ -3,7 +3,11 @@
 """
 Created on Mon Sep  4 10:28:42 2023
 
-@author: marina
+This is the code to generate a Blast comparison plot in PygenomeViz focusing
+on the region where the GH70 genes GS1, GS2 and BRS are, together with the
+GH32 S1-3 genes.
+
+@author: Marina Mota Merlo
 """
 from Bio.Blast.Applications import NcbiblastpCommandline as cline_blast
 from matplotlib.lines import Line2D

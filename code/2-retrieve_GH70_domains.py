@@ -4,6 +4,10 @@
 """
 Created on Thu Nov 17 2022
 
+This is a script to retrieve the sequence of the domains of those genes that
+have a GH70 domain in the A. kunkeei genomes. GH70 domains are identified
+by the Pfam annotations from a previous run of Interproscan.
+
 author: Julia Pedersen and Marina Mota
 
 """

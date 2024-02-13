@@ -3,7 +3,12 @@
 """
 Created on Thu May 25 15:07:19 2023
 
-@author: marina
+This script uses a codon-by-codon alignment to check if each codon position
+is identical, synonymous or non-synonymous between genes, and then plots
+each codon position, which results in a big matrix. The types of genes in
+each pairwise comparison are also specified.
+
+@author: Marina Mota Merlo
 """
 import os
 import pandas as pd

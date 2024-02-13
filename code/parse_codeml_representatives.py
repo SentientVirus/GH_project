@@ -5,7 +5,9 @@
 
 Created on Tue June 21 2022
 
-Script from https://github.com/faylward/dnds, slightly modified by Julia Pedersen and Marina
+Script from https://github.com/faylward/dnds, slightly modified by Julia 
+Pedersen and Marina Mota. It parses the CodeML output for representative
+strains and GH70/32 genes and calculates statistics.
 
 """
 

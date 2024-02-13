@@ -3,7 +3,10 @@
 """
 Created on Thu May 25 15:07:19 2023
 
-@author: marina
+Earlier version of the heatmap plot that compares each codon position and
+plots a different color dependent on if it's identical, synonymous, etc.
+
+@author: Marina Mota Merlo
 """
 import os
 import pandas as pd

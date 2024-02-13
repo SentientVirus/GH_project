@@ -6,7 +6,7 @@ Created on Thu Feb  8 16:51:25 2024
 Script to calculate the GC content at the third codon position of genes,
 applied to glycosyl hydrolases
 
-@author: marina
+@author: Marina Mota Merlo
 """
 
 # Import modules

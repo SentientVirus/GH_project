@@ -3,7 +3,10 @@
 """
 Created on Wed Jun 28 17:38:21 2023
 
-@author: marina
+This is a script to retrieve the locus tags of core genes in IBH001, and
+relate them to the locus tags in the reference strain (A1401?).
+
+@author: Marina Mota Merlo
 """
 import os
 from Bio import SeqIO

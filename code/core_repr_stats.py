@@ -3,7 +3,10 @@
 """
 Created on Fri Nov 19 09:18:40 2021
 
-@author: marina
+This script calculares general statistics for all core genes based
+on the files where pairwise substitution rates were calculated.
+
+@author: Marina Mota Merlo
 """
 import os
 from numpy import mean, median

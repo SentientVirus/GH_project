@@ -3,7 +3,12 @@
 """
 Created on Mon Dec 20 11:06:54 2021
 
-@author: marmo435
+This script creates a plot of the phylogeny of A. kunkeei strains, with
+presence/absence of GH70 and GH32 genes. Next to all this information,
+the region of the genome that is deleted in strain H3B2-03M (the one with
+GS1-2, BRS and S1-3) is plotted.
+
+@author: Marina Mota Merlo
 """
 
 from ete3 import Tree, TreeStyle, NodeStyle, SeqMotifFace, TextFace

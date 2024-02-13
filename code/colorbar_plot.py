@@ -3,7 +3,9 @@
 """
 Created on Thu May 25 15:07:19 2023
 
-@author: marina
+Another, earlier version of the codon-by-codon heatmap plot.
+
+@author: Marina Mota Merlo
 """
 import os
 import pandas as pd

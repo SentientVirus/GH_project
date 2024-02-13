@@ -3,7 +3,11 @@
 """
 Created on Mon Dec 20 11:06:54 2021
 
-@author: marmo435
+This script creates plots of the domains of GH70 and GH32 proteins
+next to a strain phylogeny. To plot a specific gene type, the script has
+to be manually updated.
+
+@author: Marina Mota Merlo
 """
 
 from ete3 import Tree, TreeStyle, NodeStyle, SeqMotifFace, TextFace

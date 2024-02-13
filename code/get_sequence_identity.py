@@ -3,13 +3,13 @@
 """
 Created on Tue Aug 30 14:20:09 2022
 
-@author: marina
+This script reads a fasta file with nucleotide information and calculates the
+overall percentage of identity between every pair of sequences in the file.
+
+@author: Marina Mota Merlo
+
 """
 
-# =============================================================================
-# This script reads a fasta file with nucleotide information and calculates the
-# overall percentage of identity between every pair of sequences in the file.
-# =============================================================================
 
 import os, re
 from Bio import SeqIO

@@ -3,13 +3,15 @@
 """
 Created on Tue Aug 30 14:20:09 2022
 
-@author: marina
+This script reads a fasta file with nucleotide information and calculates the
+percentage of identity in the third codon position between every pair of
+sequences in the file.
+
+@author: Marina Mota Merlo
 """
 
 # =============================================================================
-# This script reads a fasta file with nucleotide information and calculates the
-# percentage of identity in the third codon position between every pair of
-# sequences in the file.
+# Load modules
 # =============================================================================
 
 import os

@@ -4,6 +4,10 @@
 """
 Created on Thu Nov 17 2022
 
+This is a script to retrieve the complete protein and nucleotide sequence of
+the genes that contain GH70 domains in A. kunkeei based on previous
+Interproscan annotations.
+
 author: Julia Pedersen and Marina Mota
 
 """
