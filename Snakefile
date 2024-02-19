@@ -29,7 +29,7 @@ rule divide_gbks:
     params: workdir = HOME + "/GH_project/"
     log: "logs/python/gbks.log"
     script:
-        "code/1-divide_gbks.py"
+        "code/01-divide_gbks.py"
 
 rule retrieve_sequences:
     output:
@@ -39,7 +39,7 @@ rule retrieve_sequences:
     log: "logs/python/GHs.log"
     conda: "biopython_env.yml"
     script:
-        "code/2-retrieve_GH70_domains.py" #"retrieve_GH70s.py"
+        "code/02-retrieve_GH70_domains.py" #"retrieve_GH70s.py"
 
 rule retrieve_full_GH70s:
     output:
@@ -49,7 +49,7 @@ rule retrieve_full_GH70s:
     log: "logs/python/GH70s.log"
     conda: "biopython_env.yml"
     script:
-        "code/3-retrieve_full_GH70s.py"
+        "code/03-retrieve_full_GH70s.py"
 
 rule separate_GHs:
     output:
@@ -77,7 +77,7 @@ rule separate_GHs:
     log: "logs/python/subtypes.log"
     conda: "biopython_env.yml"
     script:
-        "separate_genes.py"
+        "code/04-separate_genes.py"
 
 rule get_neighboring_genes:
     output:
@@ -88,7 +88,7 @@ rule get_neighboring_genes:
     log: "logs/python/neighbors.log"
     params: gene_names = config["neighbors"]
     script:
-        "get_neighboring_seqs.py"
+        "code/02.1-get_neighboring_seqs.py"
 
 rule create_GH70_functional:
     output:
@@ -346,7 +346,7 @@ rule codeml_exe:
     log: "logs/python/repset_codeml.log"
     conda: "environment.yml"
     script:
-        "codeml_biopython.py"
+        "code/11-codeml_biopython.py"
 
 rule codeml_other:
     output:
@@ -361,7 +361,7 @@ rule codeml_other:
     log: "logs/python/neighbors_codeml.log"
     conda: "environment.yml"
     script:
-        "codeml_neighbors.py"
+        "code/11.1-codeml_neighbors.py"
 		
 rule run_parser:
     output:
@@ -371,7 +371,7 @@ rule run_parser:
         txt = expand("results/{type}/{type}_repset.txt", type = ["GH70", "GS1", "GS2", "BRS", "NGB", "GH32", "S1", "S2a", "S3"])
     log: "logs/python/repset_outtabs.log"
     script:
-        "parse_codeml.py"
+        "code/12-parse_codeml.py"
 
 rule parse_neighbors:
     output:
@@ -381,7 +381,7 @@ rule parse_neighbors:
         txt = expand("results/a_kunkeei_{CDS}/a_kunkeei_{CDS}.txt", CDS = config["neighbors"])
     log: "logs/python/neighbors_outtabs.log"
     script:
-        "parse_codeml.py"
+        "code/12.1-parse_codeml.py"
 
 ## Rules to generate plots
 def getTargetFiles():
@@ -406,7 +406,7 @@ rule get_CDS_tabs:
     log: "logs/python/CDS_tabfiles.log"
 #    shadow: "minimal"
     script:
-         "get_CDS_tabs.py"
+         "code/13-get_CDS_tabs.py"
 
 rule presence_absence_tab:
     output: 
@@ -427,7 +427,7 @@ rule presence_absence_tab:
     conda: "biopython_env.yml"
     log: "logs/python/presence_absence.log"
     script:
-        "gtf_CB_per_strain.py"
+        "code/14-gtf_CB_per_strain.py"
 
 rule plot_delregion:
     output: "plots/trees/phylogeny.png"
@@ -447,7 +447,7 @@ rule plot_delregion:
         S3 = config["S3"]
     conda: "biopython_env.yml"
     log: "logs/python/plot_delregion.log"
-    script: "ete3_delregion_plot.py"
+    script: "code/15-ete3_delregion_plot.py"
 
 ##Supplementary table
 rule suppl_tab:
@@ -466,4 +466,6 @@ rule suppl_tab:
         representatives = config["representatives"]
     conda: "biopython_env.yml"
     log: "logs/python/suppl_tab.log"
-    script: "get_suppl_tabs.py"
+    script: "code/16-get_suppl_tabs.py"
+
+##Add the remaining scripts
