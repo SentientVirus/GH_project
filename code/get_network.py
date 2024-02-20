@@ -52,75 +52,112 @@ NGB = ['A0901_05380', 'A1003_04750', 'A1202_05530', 'A1401_04720',
        'H4B205J_04990', 'H4B211M_04810', 'H4B405J_04950', 'H4B406M_05270', 
        'H4B503X_04680', 'H4B504J_05510', 'H4B505J_04980', 'K2W83_RS02365']
 
+S1 = ['G0101_12790', 'G0102_12700', 'H4B205J_12980', 'H4B211M_12990', 
+      'H4B501J_12880', 'K2W83_RS06175']
+
+S2a = ['A0901_13270', 'A1001_12300', 'A1805_12810', 'H1B104J_13000', 
+       'H3B203M_12470', 'H4B206J_13400', 'H4B402J_12590', 'H4B412M_13230', 
+       'H4B503X_12660']
+
+S2b = ['A1805_12800', 'H1B104J_12990', 'H4B412M_13220']
+
+S3 = ['A0901_13360', 'A1001_12360', 'A1404_13450', 'H3B203M_12520',
+      'H4B206J_13490', 'H4B402J_12660', 'H4B412M_13310', 'H4B503X_12760']
 
 # =============================================================================
 # 1. Here I define the paths to input and output files
 # =============================================================================
 home = os.path.expanduser('~')
 
+outdir = f'{home}/GH_project/plots/network'
+
+if not os.path.exists(outdir):
+    os.makedirs(outdir)
+
 GH_types = ['GH70', 'GH32']
 
-for GH in GH_types:
+# OBS! I want to switch to sequence identities instead of dS values, use the percentage identity repset file in tables/
 
-    infile = f'{home}/GH_project/results/{GH}/dNdS.tsv'
-    
-    outfile = f'{home}/GH_project/plots/network/{GH}_dS_network.svg'
-    
-    # =============================================================================
-    # 2. Here I open the file with dS values and store each locus tag as a node
-    # label (perhaps assigning random node colors or coloring by phylogroup), and 
-    # each pairwise dS value as an edge value.
-    # =============================================================================
-    
-    with open(infile) as reader:
-        df = pd.read_csv(reader, sep = '\t')
-        node_names = list(set(list(df['locus1'])+list(df['locus2'])))
-        edge_list = [(row['locus1'], row['locus2'], row['dS']) for index, row in df.iterrows()]
-    
-    G = nx.Graph()
-    G.add_nodes_from(node_names)
-    G.add_weighted_edges_from(edge_list)
-    
-    subset_edges = [edge for edge in edge_list if edge[2] <= 2]
-    
-    colors = ['#ff0025' if loctag in GS1 else '#ff00a4' if loctag in GS2 else '#da00ff' if loctag in BRS else '#5a00ff' if loctag in NGB else 'grey' for loctag in node_names]
-    
-    edge_colors = ['#da707e' if (edge[0] in GS1 and edge[1] in GS1) else '#da70b3' if (edge[0] in GS2 and edge[1] in GS2) else '#cc70da' if (edge[0] in BRS and edge[1] in BRS) else '#9770da' if (edge[0] in NGB and edge[1] in NGB) else '#d1d1d1' for edge in list(G.edges())]
-    
-    # =============================================================================
-    # 3. Here I plot everything as a network (using the code above)
-    # =============================================================================
-    
-    fig, ax = plt.subplots()
-    ax.margins(0.1)
-    ax.axis('off')
-    fig.set_size_inches(48, 32)
-    #colors = [value['color'] for value in list(G.nodes.values())]
-    weights = [pos_w[2]['weight'] for pos_w in list(G.edges.data())]
-    final_weights = [21/(w*10+1) if w <= 2 else 0 for w in weights]
-    
-    net_pos = nx.spring_layout(G)
-    
-    # Divide this into a command to plot edges with lower alpha and a command to plot
-    # nodes with higher alpha
-    
-    nx.draw_networkx_edges(G, pos = net_pos, edgelist = G.edges(), alpha = 0.5,
-                           edge_color = edge_colors, width = final_weights, ax = ax)
-    
-    nx.draw_networkx_nodes(G, pos = net_pos, nodelist = G.nodes(), alpha = 1, node_color = colors,
-                           node_shape = '*', node_size = 1200, ax = ax)
-    # nx.draw(G, pos=net_pos, with_labels = False, alpha = 0.8, font_size = 20,
-    #         edge_color = edge_colors, width = final_weights, node_color = colors, 
-    #         node_shape = '*', node_size = 1200, ax = ax)
-    
-    nx.draw_networkx_labels(G, pos=net_pos, font_size = 20, font_weight='bold',
-                            verticalalignment = 'baseline', ax = ax,
-                            horizontalalignment = 'center')
-    
-    
-    # =============================================================================
-    # 4. Here I save the network to .svg and .tiff or similar
-    # =============================================================================
-    
-    fig.savefig(outfile, format='svg', dpi=800, pad_inches = 0)
-    #fig.savefig(outfile.replace('.svg', '.tiff'), format='tiff', dpi=800, pad_inches = 0)
+infile = f'{home}/GH_project/tables/percentage_identity_repset.tab' #f'{home}/GH_project/results/GH70/dNdS.tsv'
+
+outfile = f'{home}/GH_project/plots/network/GH70_identity_network.svg'
+
+# =============================================================================
+# 2. Here I open the file with dS values and store each locus tag as a node
+# label (perhaps assigning random node colors or coloring by phylogroup), and 
+# each pairwise dS value as an edge value.
+# =============================================================================
+GH70_list = ['/GS1', '/GS2', '/BRS', '/NGB']
+
+with open(infile) as reader:
+    df = pd.read_csv(reader, sep = '\t')
+    node_names = []
+    edge_list = []
+    tag_dict = {}
+    # node_names = list(set(list(df['locus1'])+list(df['locus2'])))
+    # edge_list = [(row['locus1'], row['locus2'], row['dS']) for index, row in df.iterrows()]
+    for index, row in df.iterrows():
+        if any(GH in row['GH_type'] for GH in GH70_list):
+            node_names += [row[0], row[1]]
+            edge_list.append((row[0], row[1], row[3]))
+            tag_dict[row[0]] = row[2].split('/')[0]
+            tag_dict[row[1]] = row[2].split('/')[1]
+
+node_names = set(node_names)
+color_dict = {'GS1': '#ff0025', 'BRS': '#da00ff', 'GS2': '#ff00a4', 'NGB': '#5a00ff'}
+G = nx.Graph()
+G.add_nodes_from(node_names)
+G.add_weighted_edges_from(edge_list)
+
+# subset_edges = [edge for edge in edge_list if edge[2] <= 2]
+
+colors = [color_dict[tag_dict[loctag]] for loctag in node_names]
+
+edge_colors = ['#d1d1d1' if tag_dict[edge[0]] != tag_dict[edge[1]] else '#da707e' if (tag_dict[edge[0]] == 'GS1') else '#da70b3' if (tag_dict[edge[0]] == 'GS2') else '#cc70da' if (tag_dict[edge[0]] == 'BRS') else '#9770da' if (tag_dict[edge[0]] == 'NGB') else 'black' for edge in list(G.edges())]
+
+# =============================================================================
+# 3. Here I plot everything as a network (using the code above)
+# =============================================================================
+
+fig, ax = plt.subplots()
+ax.margins(0.1)
+ax.axis('off')
+fig.set_size_inches(48, 32)
+#colors = [value['color'] for value in list(G.nodes.values())]
+weights = [pos_w[2]['weight']/10 if pos_w[2]['weight'] > 2/3*100 else 0 for pos_w in list(G.edges.data())]
+#final_weights = [21/(w*10+1) if w <= 2 else 0 for w in weights]
+
+# This part is needed to specify that I want sequences that are have a high
+# percentage of identity to cluster together, not the opposite
+distances = dict(nx.shortest_path_length(G, weight='weight'))
+for k, v in distances.items():
+    for k2, v2 in v.items():
+        print(k, k2)
+        if distances[k][k2] != 0:
+            distances[k][k2] = 1/distances[k][k2]
+
+net_pos = nx.kamada_kawai_layout(G, dist = distances)#, dist = {('A1202_05350', 'FHON2_04830'): 1})
+
+# Divide this into a command to plot edges with lower alpha and a command to plot
+# nodes with higher alpha
+
+nx.draw_networkx_edges(G, pos = net_pos, edgelist = G.edges(), alpha = 0.5,
+                        edge_color = edge_colors, width = weights, ax = ax)
+
+nx.draw_networkx_nodes(G, pos = net_pos, nodelist = G.nodes(), alpha = 1, node_color = colors,
+                        node_shape = '*', node_size = 1200, ax = ax)
+# nx.draw(G, pos=net_pos, with_labels = False, alpha = 0.8, font_size = 20,
+#         edge_color = edge_colors, width = final_weights, node_color = colors, 
+#         node_shape = '*', node_size = 1200, ax = ax)
+
+nx.draw_networkx_labels(G, pos=net_pos, font_size = 20, font_weight='bold',
+                        verticalalignment = 'baseline', ax = ax,
+                        horizontalalignment = 'center')
+
+
+# =============================================================================
+# 4. Here I save the network to .svg and .tiff or similar
+# =============================================================================
+
+fig.savefig(outfile, format='svg', dpi=800, pad_inches = 0)
+#fig.savefig(outfile.replace('.svg', '.tiff'), format='tiff', dpi=800, pad_inches = 0)
