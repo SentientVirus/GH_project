@@ -4,9 +4,9 @@
 Created on Mon Dec 20 11:06:54 2021
 
 This script creates a plot of the phylogeny of A. kunkeei strains, with
-presence/absence of GH70 and GH32 genes. Next to all this information,
-the region of the genome that is deleted in strain H3B2-03M (the one with
-GS1-2, BRS and S1-3) is plotted.
+a representation of the GS1, GS2 and BRS genes that are present. The
+phylogenies used include representative strains only, and only the GS2
+and BRS phylogenies were included.
 
 @author: Marina Mota Merlo
 """
@@ -125,7 +125,6 @@ gene_colors = {'nox': '#7E9C07', 'GS1': '#FF0000', 'tes': '#BB9900', 'opp': '#2F
 segment_length = 18000
 gapscale = 1000
 padding = 500
-#scale = 200 #Width for the presence/absence plot
 config_file = '../config.yml'
 indir = '../plots/tabfiles'
 outdir = '../plots/trees'
@@ -157,9 +156,9 @@ for GH in GH_types:
         os.makedirs(outdir)
     outplot = f'{GH}_phylogeny.png'
     
-    # =============================================================================
-    # Read types from Snakemake
-    # =============================================================================
+# =============================================================================
+# Read types from Snakemake
+# =============================================================================
     
     # GS2 = snakemake.params.GS2
     # BRS = snakemake.params.BRS
@@ -176,9 +175,9 @@ for GH in GH_types:
         
     tabs = [file for file in os.listdir(indir) if any(list(strain in file for strain in strains))] #snakemake.input.tabs #Maybe I should regenerate the tabs adding locus tag and annotation separately...
     
-    # =============================================================================
-    # Create rooted tree from treefile
-    # =============================================================================
+# =============================================================================
+# Create rooted tree from treefile
+# =============================================================================
     t = Tree(treefile, format = 1) #Create tree
     
     #Root tree
@@ -188,14 +187,12 @@ for GH in GH_types:
         outnode = t.get_common_ancestor('LDX55_06330', 'H4B204J_13340') # BRS
     t.set_outgroup(outnode)
     
-    # =============================================================================
-    # Set style of tree
-    # =============================================================================
+# =============================================================================
+# Set style of tree
+# =============================================================================
     ts = TreeStyle() #Create default tree style
     ts.show_branch_length = False # Hide support values
     ts.scale =  500 #General tree scale
-    #ts.tree_width = 200
-    #ts.force_topology = True
     ts.branch_vertical_margin = 5 # Space between branches
     ts.show_leaf_name = False # Hide unformatted leaf names
     ts.show_scale = False # Hide tree scale
@@ -204,28 +201,15 @@ for GH in GH_types:
     ts.legend_position = 3 #Bottom left
     ts.legend.add_face(TextFace(' '*58, fsize = 10), column = 0)
     
-    # #Add gene name text at the botton of the tree
-    # names = ['GH70', 'GS1', 'GS2', 'BRS', 'NCB', 'Short', ' ', 'GH32', 'S1', 'S2', 
-    #          'S3']
-    # for n in range(len(names)):
-    #     if names[n] in names[8:10]:
-    #         text_face = TextFace(f'{names[n]}  ', fsize=15, tight_text = True)
-    #     else:
-    #         text_face = TextFace(f'{names[n]}', fsize=15, tight_text = True)
-    #     text_face.rotation = 290
-    #     text_face.margin_bottom = -9 #Reduce space between labels
-    #     ts.legend.add_face(text_face, column = n+1)
-    
-    
     #Formatting of nodes (and branch lines)
     ns = NodeStyle()
     ns['size'] = 0 #Nodes are not visible
     for n in t.traverse():
         n.set_style(ns)
     
-    # =============================================================================
-    # Save CDS information for the main plot
-    # =============================================================================
+# =============================================================================
+# Save CDS information for the main plot
+# =============================================================================
     #Get strain names
     leaves = t.get_leaves() #Sorted by phylogeny
     lnames = [replace_strain_name(leaf.name) for leaf in leaves]
@@ -241,10 +225,13 @@ for GH in GH_types:
             if strain in file.replace('-', ''): # If strain name (without -) is in the tab file:
                 print(strain, leaf)
                 check = False
+                
                 with open(f'{indir}/{file}', 'r') as gfile:
                     genes = csv.reader(gfile, delimiter='\t')
+                    
                     for gene in genes:
                         border = 'white'
+                        
                         if any(list(gs in gene[0] for gs in GS1+GS2+BRS)):
                             if any(list(gs in gene[0] for gs in GS1)) or (gene[0] == 'gtfC' and check == False):
                                 print(gene[0], 'is GS1')
@@ -252,19 +239,17 @@ for GH in GH_types:
                                     start = int(gene[1]) - padding - gapscale
                                     end = start + segment_length
                                     check = True
-                                # else:
-                                #     end = int(gene[1]) - 100
-                                #     start = end - segment_length
                                 gene[0] = 'GS1'
+                                
                             elif any(list(gs.replace('_2', '') in gene[0] for gs in GS2)) or (gene[0] == 'gtfC' and check == True):
                                 if GH == 'GS2':
                                     border = 'black'
                                 if any(list(bs.replace('_2', '') in gene[0] for bs in BRS)):
                                     print(gene[0], 'is GS2_BRS')
-                                    print(leaf, replace_strain_name(gene[0][3:]))
                                     if GH == 'BRS' and replace_strain_name(gene[0]) == leaf.replace('_2', ''):
                                         border = 'black'
                                     gene[0] = 'GS2_BRS'
+                                    
                                 else:
                                     print(gene[0], 'is GS2')
                                     gene[0] = 'GS2'
@@ -272,30 +257,21 @@ for GH in GH_types:
                                         start = int(gene[1]) - padding - gapscale
                                         end = start + segment_length
                                         check = True
+                                        
                             elif any(list(bs in gene[0] for bs in BRS)):
                                 print(gene[0], 'is BRS')
-                                print(leaf, replace_strain_name(gene[0][3:]))
                                 if GH == 'BRS' and replace_strain_name(gene[0]) == leaf.replace('_2', ''):
                                     border = 'black'
                                 if 'A1401_12770' in gene[0]:
-                                #     border = 'black'
                                     gene[1] = int(gene[1]) + 11
+                                    
                                 gene[0] = 'BRS'
                                     
                             format_str = f'Arial|14|white|{gene[0]}' #Text on the gene
-                            # if gene[0][0] == 'S':
-                            #     format_str = f'Arial|14|black|{gene[0]}'
-                            # if gene[0] != 'hpr' and gene[0][0:2] != 'S1':
-                            #     col = gene_colors[gene[0][0:3]]
                             if gene[0] == 'GS2_BRS': #I use a gradient for multi-GH70 domain proteins.
                                 col = f'{"rgradient:" + gene_colors["BRS"] + "|" + gene_colors["GS2"]}'
                             else:
                                 col = gene_colors[gene[0]]
-                            # else:
-                            #     if leaf != '55':
-                            #         col = hpr_colors[n % 9] #Hypothetical proteins in greyish colors.
-                            #     else: col = hpr_colors[::-1][n % 9]
-                            #     n += 1
                             if border == 'white':
                                 border = col[-7:]
                                 
@@ -305,8 +281,6 @@ for GH in GH_types:
                                 gene_dict[leaf] = [info_list]
                             else:
                                 gene_dict[leaf].append(info_list)
-    
-                    # #gene_dict[new_name0].sort(key=lambda x: x[0])
         
     length_dict = {key:gene_dict[key][-1][1]+100 for key in gene_dict}
     
@@ -314,86 +288,23 @@ for GH in GH_types:
     
     seq_dict = {l: f'{"-"*(gapscale)+"A"*(int(length_dict[l])-gapscale+padding-100)}' for l in lnames} #Create a sequence of desired length
     
-    # # =============================================================================
-    # # Info for the presence/absence plot           
-    # # =============================================================================
-    # comp_dir = '/'.join(count_file.split('/')[:-1])
-    
-    # presence_dict = {}
-    # val_list = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    
-    # #Here I get the count info for GH70 domains and save it into a dictionary
-    # with open(count_file) as presence:
-    #     gtf_pres = csv.reader(presence, delimiter = '\t')
-    #     for line in gtf_pres:
-    #         if line[0] != 'strain':
-    #             if line[0] == 'MP2':
-    #                 line[0] = '55'
-    #             presence_dict[line[0]] = [line[6], line[1], line[2], line[3], 
-    #                                       line[4], line[5], line[10], line[7], 
-    #                                       line[8], line[9]]
-    #             val_list = [max(val_list[i], int(presence_dict[line[0]][i])) for i in range(len(val_list))]
-    
-    # =============================================================================
-    # Create the plot
-    # =============================================================================
+# =============================================================================
+# Create the plot
+# =============================================================================
     for leaf in leaves:
-        # new_name = leaf.name.replace('-', '')
-        # if new_name == 'fhon2':
-        #     new_name = 'Fhon2'
-        # elif new_name == 'MP2':
-        #     new_name = '55'
         lname = replace_strain_name(leaf.name)
         strain = lname.split('_')[0]
         color = leaf_color.get(strain, None) #Color leaves according to strain phylogroup
         name_face = TextFace(lname, fgcolor = color, fsize = 18)
         leaf.add_face(name_face, column=0, position='branch-right') #Add formatted leaf names
-        # if new_name in presence_dict.keys():
-        #     seq = '-'*scale + 140*'-' #Create a gap-only sequence that can be hidden
-        #     num_list = presence_dict[new_name]
-        #     motif = [int(1/20*scale), scale, 'o', 0, 21, '#DADADA', '#DADADA', None] #Define position of grey circles
-        #     motifs = [motif.copy() for _ in range(10)]
-        #     #motifs.append([161, 180, 'o', 0, 20, 'white', 'white', None])
-        #     colors = [leaf_color[leaf.name], '#FF0000', '#FF009B', '#D930BD', 
-        #               '#B600FF', '#7000FF', leaf_color[leaf.name], '#FF9600', 
-        #               '#FFC800', '#FFEF00']
-        #     for i in range(len(num_list)): #Color circles depending on presence/absence of GH70 type + add count
-        #         motifs[i][0] += int(3/20*scale)*i
-        #         motifs[i][1] = motifs[i][0] + int(2/20*scale)
-        #         if i >= 6:
-        #             motifs[i][0] += int(2/20*scale)
-        #             motifs[i][1] += int(2/20*scale)
-        #         if int(num_list[i]) > 0:
-        #             motifs[i][5] = colors[i]
-        #             motifs[i][6] = colors[i]
-        #             motifs[i][7] = f'Arial|12|white|{num_list[i]}'
-        #             if 10 >= i > 6:
-        #                 motifs[i][7] = f'Arial|12|black|{num_list[i]}'
-    
+
         if lname in seq_dict.keys():
             gene_list = gene_dict[lname]
-            #seqFace = SeqMotifFace(seq, motifs = motifs, seq_format = 'line', gap_format = 'blank') #Add presence/absence info to node
-            #(t & f'{lname}').add_face(seqFace, 1, 'aligned') #The number represents the column
             seqFace = SeqMotifFace(seq_dict[lname], motifs = gene_list, seq_format = 'line', gap_format = 'blank', scale_factor = 0.03) #Original 0.04, Add genomic segment info to node
             (t & f'{leaf.name}').add_face(seqFace, 2, 'aligned')
         
-    # # =============================================================================
-    # # Print tree
-    # # =============================================================================
-    # t.ladderize(1)
-    # #node_A = t.get_common_ancestor('H4B5-03X', 'H1B3-02M')
-    # #node_A.ladderize(1)
-    # node_A = t.get_common_ancestor('A1802', 'H3B1-02X')
-    # node_A.ladderize(0)
-    # node_B = t.get_common_ancestor('H4B5-01J', 'H4B4-12M')
-    # node_B.ladderize(1)
-    # node_C = t.get_common_ancestor('A1802', 'H4B4-06M')
-    # node_C.ladderize(1)
-    # node_D = t.get_common_ancestor('H3B1-02X', 'H2B1-05J')
-    # node_D.ladderize(1)
-    # #node_C = t.get_common_ancestor('H4B5-04J', 'H4B4-04J')
-    # #node_C.ladderize(0)
-    # #node_D = t.get_common_ancestor('H4B2-06J', 'H3B1-01X')
-    # #node_D.ladderize(1)
+# =============================================================================
+# Print tree
+# =============================================================================
     t.convert_to_ultrametric() #For nicer visualization
     t.render(f'{outdir}/{outplot}', tree_style = ts) 
