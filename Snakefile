@@ -386,7 +386,8 @@ rule parse_neighbors:
 ## Rules to generate plots
 def getTargetFiles():
     targets = []
-    for s in config["strains"]:
+    all_strains = config["strains"] + config["extra_strains"]
+    for s in all_strains:
         no = str(config["no_dict"][s][0])
         while len(no) < 3:
             no = "0" + no
@@ -401,12 +402,12 @@ rule get_CDS_tabs:
         output_tabs 
         #lambda wildcards: expand("plots/tabfiles/{no}_{strain}_gpr.tab", strain = config["strains"], no = config["no_dict"][{wildcards.strain}])
     input:
-        gbff = expand("gbks/{strain}_1.gbk", strain = config["strains"]),
-        tree = "phylogeny.txt"
-    log: "logs/python/CDS_tabfiles.log"
+        gbff = expand("gbks/{strain}_1.gbk", strain = config["strains"] + config["extra_strains"]),
+        tree = "trees/phylogeny.txt"
+    log: "logs/python/05.2-CDS_tabfiles.log"
 #    shadow: "minimal"
     script:
-         "code/13-get_CDS_tabs.py"
+         "code/05.2-get_CDS_tabs.py"
 
 rule presence_absence_tab:
     output: 
