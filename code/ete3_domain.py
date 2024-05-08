@@ -107,7 +107,7 @@ for GH_type in GH_types:
            #     color = '#9E4F00'
            # elif n.support < 20:
            #     color = '#9E0000'
-           if n.support >= 50:
+           if n.support >= 80:
                support_face = TextFace(int(n.support), fgcolor = color, fsize = 24)
                n.add_face(support_face, column=0, position='branch-top')
        

@@ -20,6 +20,7 @@ import re, csv, os, logging, traceback
 from matplotlib.colors import to_hex
 from math import sqrt
 import yaml
+import numpy as np
 
 # =============================================================================
 # Logging
@@ -122,13 +123,19 @@ gene_colors = {'nox': '#7E9C07', 'GS1': '#FF0000', 'tes': '#BB9900', 'opp': '#2F
 # Set target region and load input files
 # =============================================================================
 
+# Idea: Re-do the trees and use A1003 to root all of them
+# TO DO: Add S1-3 to the GS1 tree
+# TO DO: Implement change of color or alpha on domains
+
 segment_length = 18000
 gapscale = 1000
 padding = 500
 config_file = '../config.yml'
 indir = '../plots/tabfiles'
 outdir = '../plots/trees'
-GH_types = ['GS2', 'BRS']
+GH_types = ['GS1', 'GS2', 'BRS']
+domain_path = '../../interproscan'
+doub_GS1_strains = ['H3B2-06M', 'H4B1-11J', 'H4B5-05J', 'H4B4-06M']
 # comp_dir = os.path.commonpath(tabs)
 
 def replace_strain_name(locus_tag):
@@ -148,9 +155,10 @@ def fix_strand(my_info_list):
         my_info_list[my_index][1] = end
     return my_info_list
 
+domain_dict = {}
 for GH in GH_types:
     print(f'GH70 {GH} genes...', end = '\n\n')
-    treefile = f'../data/fasta/GH70/trees/{GH}_repset.mafft.faa.treefile' #snakemake.input.tree #'kunkeei_nonclosed.tree'
+    treefile = f'../data/fasta/GH70/trees/{GH}_repset.mafft.faa.treefile'
     # count_file = snakemake.input.counts
     if not os.path.exists(outdir):
         os.makedirs(outdir)
@@ -168,20 +176,37 @@ for GH in GH_types:
         GS1_repr = py_config['GS1_repr']
         GS2_repr = py_config['GS2_repr']
         BRS_repr = py_config['BRS_repr']
+        GH70_repr = list(np.unique(GS1_repr + GS2_repr + BRS_repr))
         GS1 = py_config['GS1']
         GS2 = py_config['GS2']
         BRS = ['A1401_12770'] + py_config['BRS']
+        GH70_doms = GS1 + GS2 + BRS
         strains = py_config['representatives']
         
     tabs = [file for file in os.listdir(indir) if any(list(strain in file for strain in strains))] #snakemake.input.tabs #Maybe I should regenerate the tabs adding locus tag and annotation separately...
+
+# =============================================================================
+# Read Interproscan to get the start and end positions of domains within each gene   
+# =============================================================================
+    domains = [file for file in os.listdir(domain_path) if any(list(strain.replace('Fhon2', 'fhon2') in file for strain in strains))] 
+    for domain in domains:
+        domain_file = f'{domain_path}/{domain}'    
+        with open(domain_file, 'r') as dfile:
+            freader = csv.reader(dfile, delimiter = '\t')
+            for line in freader:
+                gene_locus = replace_strain_name(line[0]).replace('-', '').replace('fhon2', 'Fhon2')
+                if ((line[0] in GH70_doms) or (gene_locus.upper() in GH70_doms) or ('MP2' in domain_file and int(gene_locus.split('_')[1]) < 14000)) and 'Glycosyl hydrolase family 70' in line[5]:
+                    domain_dict[gene_locus] = (line[6], line[7])
     
 # =============================================================================
 # Create rooted tree from treefile
 # =============================================================================
-    t = Tree(treefile, format = 1) #Create tree
+    t = Tree(treefile, format = 0) #Create tree
     
     #Root tree
-    if GH == 'GS2':
+    if GH == 'GS1':
+        outnode = 'A1003_12540'
+    elif GH == 'GS2':
         outnode = t.get_common_ancestor('H3B104X_13220', 'H4B504J_13480') # GS2
     else:
         outnode = t.get_common_ancestor('LDX55_06330', 'H4B204J_13340') # BRS
@@ -194,6 +219,7 @@ for GH in GH_types:
     ts.show_branch_length = False # Hide support values
     ts.scale =  500 #General tree scale
     ts.branch_vertical_margin = 5 # Space between branches
+    ts.show_branch_support = False
     ts.show_leaf_name = False # Hide unformatted leaf names
     ts.show_scale = False # Hide tree scale
     
@@ -204,8 +230,18 @@ for GH in GH_types:
     #Formatting of nodes (and branch lines)
     ns = NodeStyle()
     ns['size'] = 0 #Nodes are not visible
+    ns['vt_line_width'] = 2
+    ns['hz_line_width'] = 2
+    ns['hz_line_type'] = 0
     for n in t.traverse():
         n.set_style(ns)
+        if n not in t.get_leaves() and n.support > 1:
+            if n.support >= 95:
+                color = 'black' #'#0E9E00'
+            else: color = 'dimgrey'
+            if n.support >= 80:
+                support_face = TextFace(int(n.support), fgcolor = color, fsize = 10)
+                n.add_face(support_face, column=0, position='branch-top')
     
 # =============================================================================
 # Save CDS information for the main plot
@@ -217,6 +253,9 @@ for GH in GH_types:
     
     gene_dict = {}
     
+    # OBS! I should modify this part to add different colors to domains,
+    # 
+    
     #Add leaf names and plot region
     for leaf in lnames: # Loop through leaf names (locus tags)
         # n = 0
@@ -225,6 +264,7 @@ for GH in GH_types:
             if strain in file.replace('-', ''): # If strain name (without -) is in the tab file:
                 print(strain, leaf)
                 check = False
+                GS1_check = 0
                 
                 with open(f'{indir}/{file}', 'r') as gfile:
                     genes = csv.reader(gfile, delimiter='\t')
@@ -233,12 +273,14 @@ for GH in GH_types:
                         border = 'white'
                         
                         if any(list(gs in gene[0] for gs in GS1+GS2+BRS)):
-                            if any(list(gs in gene[0] for gs in GS1)) or (gene[0] == 'gtfC' and check == False):
+                            if any(list(gs in gene[0] for gs in GS1)) or (gene[0] == 'gtfC' and check == False) or (strain in doub_GS1_strains and GS1_check < 2):
                                 print(gene[0], 'is GS1')
                                 if strain != 'MP2':
-                                    start = int(gene[1]) - padding - gapscale
-                                    end = start + segment_length
+                                    if GS1_check == 0:
+                                        start = int(gene[1]) - padding - gapscale
+                                        end = start + segment_length
                                     check = True
+                                    GS1_check += 1
                                 gene[0] = 'GS1'
                                 
                             elif any(list(gs.replace('_2', '') in gene[0] for gs in GS2)) or (gene[0] == 'gtfC' and check == True):
@@ -282,7 +324,7 @@ for GH in GH_types:
                             else:
                                 gene_dict[leaf].append(info_list)
         
-    length_dict = {key:gene_dict[key][-1][1]+100 for key in gene_dict}
+    length_dict = {key:20000 for key in gene_dict} #gene_dict[key][-1][1]+100 for key in gene_dict}
     
     [fix_strand(gene_dict[key]) for key in gene_dict if 'MP2' not in key]
     
@@ -306,5 +348,5 @@ for GH in GH_types:
 # =============================================================================
 # Print tree
 # =============================================================================
-    t.convert_to_ultrametric() #For nicer visualization
+    #t.convert_to_ultrametric() #For nicer visualization
     t.render(f'{outdir}/{outplot}', tree_style = ts) 
