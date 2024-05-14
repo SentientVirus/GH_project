@@ -118,7 +118,7 @@ gene_colors = {'nox': '#7E9C07', 'GS1': '#FF0000', 'tes': '#BB9900', 'opp': '#2F
                'S2a': '#FFC800', 'S2b': '#FFC800', 'S3 ': '#FFEF00', 'skf': '#0082E8',
                'din': '#00D198'}
 
-
+alt_colors = {'GS1': '#C7727D', 'GS2': '#C772A8', 'BRS': '#C772C2'}
 # =============================================================================
 # Set target region and load input files
 # =============================================================================
@@ -157,13 +157,13 @@ def fix_strand(my_info_list):
 
 domain_dict = {}
 for GH in GH_types:
-    print(f'GH70 {GH} genes...', end = '\n\n')
+    print(f'\n\nGH70 {GH} genes...', end = '\n')
     treefile = f'../data/fasta/GH70/trees/{GH}_repset.mafft.faa.treefile'
     # count_file = snakemake.input.counts
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     outplot = f'{GH}_phylogeny.png'
-    
+    (int(line[6]), int(line[7]))
 # =============================================================================
 # Read types from Snakemake
 # =============================================================================
@@ -182,13 +182,27 @@ for GH in GH_types:
         BRS = ['A1401_12770'] + py_config['BRS']
         GH70_doms = GS1 + GS2 + BRS
         strains = py_config['representatives']
-        
+        GS2_BRS =  [replace_strain_name(GH_gene.replace('_2', '')) for GH_gene in GS2 if GH_gene.replace('_2', '') in BRS] + [replace_strain_name(GH_gene) for GH_gene in BRS if GH_gene.replace('_2', '') in GS2]
+    
+    # Create dictionary assigning gene types
+    gene_types = {}
+    for gene_dom in GH70_doms:
+        gene = replace_strain_name(gene_dom)
+        if gene_dom in GS1:
+            gene_types[gene] = 'GS1'
+        elif gene_dom in GS2:
+            if gene_dom in BRS:
+                gene_types[gene] = 'GS2_BRS'
+            else: gene_types[gene] = 'GS2'
+        else:
+            gene_types[gene] = 'BRS'
+            
     tabs = [file for file in os.listdir(indir) if any(list(strain in file for strain in strains))] #snakemake.input.tabs #Maybe I should regenerate the tabs adding locus tag and annotation separately...
 
 # =============================================================================
 # Read Interproscan to get the start and end positions of domains within each gene   
 # =============================================================================
-    domains = [file for file in os.listdir(domain_path) if any(list(strain.replace('Fhon2', 'fhon2') in file for strain in strains))] 
+    domains = [file for file in os.listdir(domain_path) if any(list(strain.replace('Fhon2', 'fhon2') in file for strain in strains))]
     for domain in domains:
         domain_file = f'{domain_path}/{domain}'    
         with open(domain_file, 'r') as dfile:
@@ -196,7 +210,12 @@ for GH in GH_types:
             for line in freader:
                 gene_locus = replace_strain_name(line[0]).replace('-', '').replace('fhon2', 'Fhon2')
                 if ((line[0] in GH70_doms) or (gene_locus.upper() in GH70_doms) or ('MP2' in domain_file and int(gene_locus.split('_')[1]) < 14000)) and 'Glycosyl hydrolase family 70' in line[5]:
-                    domain_dict[gene_locus] = (line[6], line[7])
+                    if 'MP2' in domain_file:
+                        gene_locus = gene_locus.replace('_13350', '_03850').replace('_13360', '_03845')
+                    pos = (int(line[6]), int(line[7]))
+                    if gene_locus in domain_dict.keys() and domain_dict[gene_locus] != pos:
+                        gene_locus = f'{gene_locus}_2'
+                    domain_dict[gene_locus] = pos
     
 # =============================================================================
 # Create rooted tree from treefile
@@ -284,12 +303,12 @@ for GH in GH_types:
                                 gene[0] = 'GS1'
                                 
                             elif any(list(gs.replace('_2', '') in gene[0] for gs in GS2)) or (gene[0] == 'gtfC' and check == True):
-                                if GH == 'GS2':
-                                    border = 'black'
+                                # if GH == 'GS2':
+                                #     border = 'black'
                                 if any(list(bs.replace('_2', '') in gene[0] for bs in BRS)):
                                     print(gene[0], 'is GS2_BRS')
-                                    if GH == 'BRS' and replace_strain_name(gene[0]) == leaf.replace('_2', ''):
-                                        border = 'black'
+                                    # if GH == 'BRS' and replace_strain_name(gene[0]) == leaf.replace('_2', ''):
+                                    #     border = 'black'
                                     gene[0] = 'GS2_BRS'
                                     
                                 else:
@@ -302,8 +321,8 @@ for GH in GH_types:
                                         
                             elif any(list(bs in gene[0] for bs in BRS)):
                                 print(gene[0], 'is BRS')
-                                if GH == 'BRS' and replace_strain_name(gene[0]) == leaf.replace('_2', ''):
-                                    border = 'black'
+                                # if GH == 'BRS' and replace_strain_name(gene[0]) == leaf.replace('_2', ''):
+                                #     border = 'black'
                                 if 'A1401_12770' in gene[0]:
                                     gene[1] = int(gene[1]) + 11
                                     
@@ -330,6 +349,44 @@ for GH in GH_types:
     
     seq_dict = {l: f'{"-"*(gapscale)+"A"*(int(length_dict[l])-gapscale+padding-100)}' for l in lnames} #Create a sequence of desired length
     
+    gene_domains = {}
+    # OBS! Check what the problem is here
+    for key in gene_dict.keys():
+        print(key)
+        new_domains = []
+        add_BRS = True
+        for element in gene_dict[key]:
+            if  (GH == 'BRS' and (key in GS2_BRS) and GH in element[7]) or ((GH != 'BRS' or (GH == 'BRS' and add_BRS == True)) and f'|{GH}' in element[7]):
+                if GH == 'BRS' and key in GS2_BRS:
+                    add_BRS = False
+                new_domain = element.copy()
+                new_domain[0] = element[0] + domain_dict[key][0] - 1
+                new_domain[1] = element[0] + domain_dict[key][1] - 1
+                element[2] = '[]'
+                for GH_typ in GH_types:
+                    if GH_typ in element[7] and 'GS2_BRS' not in element[7]:
+                        element[5] = alt_colors[GH_typ]
+                        element[6] = alt_colors[GH_typ]
+                    else:
+                        element[5] = element[5].replace(gene_colors[GH_typ], alt_colors[GH_typ])
+                        element[6] = element[6].replace(gene_colors[GH_typ], alt_colors[GH_typ])
+                next_domain = element.copy()
+                next_domain[0] = new_domain[1] + 1
+                element[1] = new_domain[0] - 1
+                new_domains.append(element)
+                new_domains.append(new_domain)
+                new_domains.append(next_domain)
+            else:
+                element[2] = '[]'
+                for GH_typ2 in GH_types:
+                    if GH_typ2 in element[7] and 'GS2_BRS' not in element[7]:
+                        element[5] = alt_colors[GH_typ2]
+                        element[6] = alt_colors[GH_typ2]
+                    elif GH_typ2 in element[7]:
+                        element[5] = element[5].replace(gene_colors[GH_typ2], alt_colors[GH_typ2])
+                        element[6] = element[6].replace(gene_colors[GH_typ2], alt_colors[GH_typ2])
+                new_domains.append(element)
+        gene_dict[key] = new_domains # I need to add some kind of check where I check that the key gene type is the same as the gene type to add domains, and then I need to check that it is the right domain when there are two genes that are classified as the same
 # =============================================================================
 # Create the plot
 # =============================================================================
