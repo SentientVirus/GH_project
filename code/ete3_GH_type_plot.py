@@ -119,6 +119,8 @@ gene_colors = {'nox': '#7E9C07', 'GS1': '#FF0000', 'tes': '#BB9900', 'opp': '#2F
                'din': '#00D198'}
 
 alt_colors = {'GS1': '#C7727D', 'GS2': '#C772A8', 'BRS': '#C772C2'}
+
+# OBS! DSM has a S1 gene, include!!
 # =============================================================================
 # Set target region and load input files
 # =============================================================================
@@ -163,7 +165,7 @@ for GH in GH_types:
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     outplot = f'{GH}_phylogeny.png'
-    (int(line[6]), int(line[7]))
+
 # =============================================================================
 # Read types from Snakemake
 # =============================================================================
@@ -212,7 +214,7 @@ for GH in GH_types:
                 if ((line[0] in GH70_doms) or (gene_locus.upper() in GH70_doms) or ('MP2' in domain_file and int(gene_locus.split('_')[1]) < 14000)) and 'Glycosyl hydrolase family 70' in line[5]:
                     if 'MP2' in domain_file:
                         gene_locus = gene_locus.replace('_13350', '_03850').replace('_13360', '_03845')
-                    pos = (int(line[6]), int(line[7]))
+                    pos = (int(line[6])*3, int(line[7])*3)
                     if gene_locus in domain_dict.keys() and domain_dict[gene_locus] != pos:
                         gene_locus = f'{gene_locus}_2'
                     domain_dict[gene_locus] = pos
@@ -336,7 +338,7 @@ for GH in GH_types:
                             if border == 'white':
                                 border = col[-7:]
                                 
-                            info_list = [int(gene[1])-start, int(gene[2])-start, '()', 0, 20, border, col, format_str]
+                            info_list = [int(gene[1])-start, int(gene[2])-start, '[]', 0, 20, border, col, format_str]
                             
                             if leaf not in gene_dict.keys():
                                 gene_dict[leaf] = [info_list]
@@ -354,15 +356,33 @@ for GH in GH_types:
     for key in gene_dict.keys():
         print(key)
         new_domains = []
-        add_BRS = True
+        # add_BRS = True
         for element in gene_dict[key]:
-            if  (GH == 'BRS' and (key in GS2_BRS) and GH in element[7]) or ((GH != 'BRS' or (GH == 'BRS' and add_BRS == True)) and f'|{GH}' in element[7]):
-                if GH == 'BRS' and key in GS2_BRS:
-                    add_BRS = False
+            divide = False
+        #     if (GH == 'BRS' and key in GS2_BRS and 'GS2_BRS' in element[7]) or (GH == 'BRS' and key not in GS2_BRS):
+        #         add_BRS = True
+        #         print(element[7], GH)
+        #     else:
+        #         add_BRS = False
+            if GH == 'BRS' and key in GS2_BRS and GH in element[7] and element == gene_dict[key][-1]:
+                divide = True
+                print(key, GH, 'True1')
+            elif GH == 'BRS' and f'|{GH}' in element[7] and 'GS2_BRS' not in gene_dict[key][-1][7] and element[1] - element[0] > 2000:
+                divide = True
+                print(key, GH, 'True2')
+            elif GH != 'BRS' and f'|{GH}' in element[7]:
+                divide = True
+                print(key, GH, 'True3')
+                
+            if divide:
                 new_domain = element.copy()
                 new_domain[0] = element[0] + domain_dict[key][0] - 1
                 new_domain[1] = element[0] + domain_dict[key][1] - 1
-                element[2] = '[]'
+                new_domain[7] = new_domain[7].replace('GS2_BRS', GH)
+                # if f'{key}_2' in GS2_BRS or key.replace('_2', '') in GS2_BRS or key in GS2_BRS:
+                #     new_domain[7] = new_domain[7].replace('GS2_BRS', GH)
+                #     print(GH)
+                # element[2] = '[]'
                 for GH_typ in GH_types:
                     if GH_typ in element[7] and 'GS2_BRS' not in element[7]:
                         element[5] = alt_colors[GH_typ]
@@ -370,6 +390,7 @@ for GH in GH_types:
                     else:
                         element[5] = element[5].replace(gene_colors[GH_typ], alt_colors[GH_typ])
                         element[6] = element[6].replace(gene_colors[GH_typ], alt_colors[GH_typ])
+                element[7] = element[7].replace('GS2_BRS', '').replace(gene_types[key], '')
                 next_domain = element.copy()
                 next_domain[0] = new_domain[1] + 1
                 element[1] = new_domain[0] - 1
@@ -377,7 +398,7 @@ for GH in GH_types:
                 new_domains.append(new_domain)
                 new_domains.append(next_domain)
             else:
-                element[2] = '[]'
+                # element[2] = '[]'
                 for GH_typ2 in GH_types:
                     if GH_typ2 in element[7] and 'GS2_BRS' not in element[7]:
                         element[5] = alt_colors[GH_typ2]
