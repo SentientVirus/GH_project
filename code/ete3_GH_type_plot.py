@@ -21,6 +21,7 @@ from matplotlib.colors import to_hex
 from math import sqrt
 import yaml
 import numpy as np
+from collections import Counter
 
 # =============================================================================
 # Logging
@@ -120,14 +121,13 @@ gene_colors = {'nox': '#7E9C07', 'GS1': '#FF0000', 'tes': '#BB9900', 'opp': '#2F
 
 alt_colors = {'GS1': '#C7727D', 'GS2': '#C772A8', 'BRS': '#C772C2'}
 
-# OBS! DSM has a S1 gene, include!!
 # =============================================================================
 # Set target region and load input files
 # =============================================================================
 
 # Idea: Re-do the trees and use A1003 to root all of them
-# TO DO: Add S1-3 to the GS1 tree
-# TO DO: Implement change of color or alpha on domains
+# TO DO: Add S1-3 to the GS1 tree (and the S1 in DSM to the GS2/BRS trees)
+# TO DO: Center domains
 
 segment_length = 18000
 gapscale = 1000
@@ -184,7 +184,14 @@ for GH in GH_types:
         BRS = ['A1401_12770'] + py_config['BRS']
         GH70_doms = GS1 + GS2 + BRS
         strains = py_config['representatives']
+        # Retrieve BRS domains of the GS2_BRS proteins
         GS2_BRS =  [replace_strain_name(GH_gene.replace('_2', '')) for GH_gene in GS2 if GH_gene.replace('_2', '') in BRS] + [replace_strain_name(GH_gene) for GH_gene in BRS if GH_gene.replace('_2', '') in GS2]
+        # Retrieve the most different GS1 group in strains with two GS1
+        curated_strains = [strain.replace('-', '').replace('DSMZ12361', 'DSM') for strain in strains]
+        GS1_strains = [replace_strain_name(gs).split('_')[0] for gs in GS1 if replace_strain_name(gs).split('_')[0] in curated_strains]
+        double_GS1 = [strain for strain, count in Counter(GS1_strains).items() if count > 1]
+        GS1_dom = [glu1 for glu1 in GS1 if any(dgs in glu1 for dgs in double_GS1)]
+        max_GS1 = {strain: gsd for strain in double_GS1 for gsd in GS1_dom if strain in gsd}
     
     # Create dictionary assigning gene types
     gene_types = {}
@@ -274,9 +281,6 @@ for GH in GH_types:
     
     gene_dict = {}
     
-    # OBS! I should modify this part to add different colors to domains,
-    # 
-    
     #Add leaf names and plot region
     for leaf in lnames: # Loop through leaf names (locus tags)
         # n = 0
@@ -352,7 +356,7 @@ for GH in GH_types:
     seq_dict = {l: f'{"-"*(gapscale)+"A"*(int(length_dict[l])-gapscale+padding-100)}' for l in lnames} #Create a sequence of desired length
     
     gene_domains = {}
-    # OBS! Check what the problem is here
+
     for key in gene_dict.keys():
         print(key)
         new_domains = []
@@ -370,8 +374,12 @@ for GH in GH_types:
             elif GH == 'BRS' and f'|{GH}' in element[7] and 'GS2_BRS' not in gene_dict[key][-1][7] and element[1] - element[0] > 2000:
                 divide = True
                 print(key, GH, 'True2')
-            elif GH != 'BRS' and f'|{GH}' in element[7]:
+            elif GH == 'GS2' and f'|{GH}' in element[7]:
                 divide = True
+            elif GH == 'GS1' and f'|{GH}' in element[7]:
+                check = key in max_GS1.values()
+                if element == gene_dict[key][check] or 'MP2' in key:
+                    divide = True
                 print(key, GH, 'True3')
                 
             if divide:
