@@ -115,9 +115,11 @@ gene_colors = {'nox': '#7E9C07', 'GS1': '#FF0000', 'tes': '#BB9900', 'opp': '#2F
                'clp': '#00D793', 'ser': '#00D75B', 'obg': '#00D782', 'uvr': '#00D7A6',
                'mac': '#00D7C0', 'mva': '#00C7D7', 'apt': '#00A0D7', 'rec': '#0079D7',
                'oxy': '#CACD33', 'npr': '#AECD33', 'znu': '#97CD33', 'hba': '#80CD33',
-               'hrt': '#68CD33', 'btu': '#33CD89', 'ten': '#33CDAC', 'S1 ': '#FF9600',
-               'S2a': '#FFC800', 'S2b': '#FFC800', 'S3 ': '#FFEF00', 'skf': '#0082E8',
+               'hrt': '#68CD33', 'btu': '#33CD89', 'ten': '#33CDAC', 'S1': '#C79D72',
+               'S2a': '#C7AD72', 'S2b': '#C7A972', 'S3': '#C7B872', 'skf': '#0082E8',
                'din': '#00D198'}
+
+# Old colors {'S3': '#FFEF00', 'S2a': '#FFC800', S2b: '#FFC800', 'S1': '#FF9600'}
 
 alt_colors = {'GS1': '#C7727D', 'GS2': '#C772A8', 'BRS': '#C772C2'}
 
@@ -126,7 +128,7 @@ alt_colors = {'GS1': '#C7727D', 'GS2': '#C772A8', 'BRS': '#C772C2'}
 # =============================================================================
 
 # Idea: Re-do the trees and use A1003 to root all of them
-# TO DO: Add S1-3 to the GS1 tree (and the S1 in DSM to the GS2/BRS trees)
+# TO DO: Add S3 to the GS1 tree (and the S1 in DSM to the GS2/BRS trees)?
 # TO DO: Center domains
 
 segment_length = 18000
@@ -144,6 +146,10 @@ def replace_strain_name(locus_tag):
     locus_tag = locus_tag.replace('LDX55', 'IBH001').replace('APS55', 'MP2').replace('K2W83', 'DSM').replace('RS', '').replace('FHON', 'Fhon').replace('AKU', '')
     return locus_tag
 
+def remove_minus(strains):
+    new_list = [strain.replace('-', '') for strain in strains]
+    return new_list
+
 def fix_strand(my_info_list):  
     for el in reversed(my_info_list):
         my_index = my_info_list.index(el)
@@ -157,6 +163,41 @@ def fix_strand(my_info_list):
         my_info_list[my_index][1] = end
     return my_info_list
 
+# =============================================================================
+# Read types from Snakemake
+# =============================================================================
+# Read locus tags of different gene subsets
+with open(config_file) as conf:
+    py_config = yaml.safe_load(conf)
+    GS1_repr = py_config['GS1_repr']
+    GS2_repr = py_config['GS2_repr']
+    BRS_repr = py_config['BRS_repr']
+    GH70_repr = list(np.unique(GS1_repr + GS2_repr + BRS_repr))
+    
+    S1_repr = remove_minus(py_config['S1_repr'])
+    S2a_repr = remove_minus(py_config['S2a_repr'])
+    S2b_repr = remove_minus(py_config['S2b_repr'])
+    
+    
+    GS1 = py_config['GS1']
+    GS2 = py_config['GS2']
+    S1 = py_config['S1']
+    S2a = py_config['S2a']
+    S2b = py_config['S2b']
+    # S3 = py_config['S3'] # Let's wait and see if the rest works before...
+    BRS = ['A1401_12770'] + py_config['BRS']
+    GH70_doms = GS1 + GS2 + BRS
+    strains = py_config['representatives']
+    s_nominus = [strain.replace('-', '') for strain in strains]
+    # Retrieve BRS domains of the GS2_BRS proteins
+    GS2_BRS =  [replace_strain_name(GH_gene.replace('_2', '')) for GH_gene in GS2 if GH_gene.replace('_2', '') in BRS] + [replace_strain_name(GH_gene) for GH_gene in BRS if GH_gene.replace('_2', '') in GS2]
+    # Retrieve the most different GS1 group in strains with two GS1
+    curated_strains = [strain.replace('-', '').replace('DSMZ12361', 'DSM') for strain in strains]
+    GS1_strains = [replace_strain_name(gs).split('_')[0] for gs in GS1 if replace_strain_name(gs).split('_')[0] in curated_strains]
+    double_GS1 = [strain for strain, count in Counter(GS1_strains).items() if count > 1]
+    GS1_dom = [glu1 for glu1 in GS1 if any(dgs in glu1 for dgs in double_GS1)]
+    max_GS1 = {strain: gsd for strain in double_GS1 for gsd in GS1_dom if strain in gsd}
+
 domain_dict = {}
 for GH in GH_types:
     print(f'\n\nGH70 {GH} genes...', end = '\n')
@@ -167,32 +208,8 @@ for GH in GH_types:
     outplot = f'{GH}_phylogeny.png'
 
 # =============================================================================
-# Read types from Snakemake
+# Save gene types to dictionary
 # =============================================================================
-    
-    # GS2 = snakemake.params.GS2
-    # BRS = snakemake.params.BRS
-    
-    with open(config_file) as conf:
-        py_config = yaml.safe_load(conf)
-        GS1_repr = py_config['GS1_repr']
-        GS2_repr = py_config['GS2_repr']
-        BRS_repr = py_config['BRS_repr']
-        GH70_repr = list(np.unique(GS1_repr + GS2_repr + BRS_repr))
-        GS1 = py_config['GS1']
-        GS2 = py_config['GS2']
-        BRS = ['A1401_12770'] + py_config['BRS']
-        GH70_doms = GS1 + GS2 + BRS
-        strains = py_config['representatives']
-        # Retrieve BRS domains of the GS2_BRS proteins
-        GS2_BRS =  [replace_strain_name(GH_gene.replace('_2', '')) for GH_gene in GS2 if GH_gene.replace('_2', '') in BRS] + [replace_strain_name(GH_gene) for GH_gene in BRS if GH_gene.replace('_2', '') in GS2]
-        # Retrieve the most different GS1 group in strains with two GS1
-        curated_strains = [strain.replace('-', '').replace('DSMZ12361', 'DSM') for strain in strains]
-        GS1_strains = [replace_strain_name(gs).split('_')[0] for gs in GS1 if replace_strain_name(gs).split('_')[0] in curated_strains]
-        double_GS1 = [strain for strain, count in Counter(GS1_strains).items() if count > 1]
-        GS1_dom = [glu1 for glu1 in GS1 if any(dgs in glu1 for dgs in double_GS1)]
-        max_GS1 = {strain: gsd for strain in double_GS1 for gsd in GS1_dom if strain in gsd}
-    
     # Create dictionary assigning gene types
     gene_types = {}
     for gene_dom in GH70_doms:
@@ -203,8 +220,9 @@ for GH in GH_types:
             if gene_dom in BRS:
                 gene_types[gene] = 'GS2_BRS'
             else: gene_types[gene] = 'GS2'
-        else:
+        elif gene_dom in BRS:
             gene_types[gene] = 'BRS'
+        else: print('Something is VERY wrong here...')
             
     tabs = [file for file in os.listdir(indir) if any(list(strain in file for strain in strains))] #snakemake.input.tabs #Maybe I should regenerate the tabs adding locus tag and annotation separately...
 
@@ -297,8 +315,30 @@ for GH in GH_types:
                     for gene in genes:
                         border = 'white'
                         
-                        if any(list(gs in gene[0] for gs in GS1+GS2+BRS)):
-                            if any(list(gs in gene[0] for gs in GS1)) or (gene[0] == 'gtfC' and check == False) or (strain in doub_GS1_strains and GS1_check < 2):
+                        if any(list(gs in gene[0] for gs in GH70_doms + S1 + S2a + S2b)): #GS1+GS2+BRS)):
+                            if any(list(bs in gene[0] for bs in S2b)):
+                                print(gene[0], 'is S2b')
+                                start = int(gene[1]) - padding - gapscale
+                                end = start + segment_length
+                                GS1_check += 1
+                                gene[0] = 'S2b'
+                                
+                            elif any(list(bs in gene[0] for bs in S2a)):
+                                print(gene[0], 'is S2a')
+                                if GS1_check == 0:
+                                    start = int(gene[1]) - padding - gapscale
+                                    end = start + segment_length  
+                                    GS1_check += 1
+                                gene[0] = 'S2a'
+                                
+                            elif any(list(bs in gene[0] for bs in S1)):
+                                print(gene[0], 'is S1')
+                                start = int(gene[1]) - padding - gapscale
+                                end = start + segment_length
+                                GS1_check += 1
+                                gene[0] = 'S1'
+                                
+                            elif any(list(gs in gene[0] for gs in GS1)) or (gene[0] == 'gtfC' and check == False) or (strain in doub_GS1_strains and GS1_check < 2):
                                 print(gene[0], 'is GS1')
                                 if strain != 'MP2':
                                     if GS1_check == 0:
@@ -333,7 +373,8 @@ for GH in GH_types:
                                     gene[1] = int(gene[1]) + 11
                                     
                                 gene[0] = 'BRS'
-                                    
+
+
                             format_str = f'Arial|14|white|{gene[0]}' #Text on the gene
                             if gene[0] == 'GS2_BRS': #I use a gradient for multi-GH70 domain proteins.
                                 col = f'{"rgradient:" + gene_colors["BRS"] + "|" + gene_colors["GS2"]}'
@@ -377,8 +418,9 @@ for GH in GH_types:
             elif GH == 'GS2' and f'|{GH}' in element[7]:
                 divide = True
             elif GH == 'GS1' and f'|{GH}' in element[7]:
-                check = key in max_GS1.values()
-                if element == gene_dict[key][check] or 'MP2' in key:
+                check2 = (key in max_GS1.values()) + (key.split('_')[0] in S2b_repr) + (key.split('_')[0] in S2a_repr) + (key.split('_')[0] in S1_repr)
+                print(key, check2)
+                if element == gene_dict[key][check2] or 'MP2' in key:
                     divide = True
                 print(key, GH, 'True3')
                 
