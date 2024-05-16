@@ -113,7 +113,7 @@ alt_colors = {'GS1': '#C7727D', 'GS2': '#C772A8', 'BRS': '#C772C2'}
 # the maximum start position and the start position of the pre-GS1 domain
 # to all the values in the dictionary.
 
-segment_length = 18000
+segment_length = 25000
 gapscale = 1000
 padding = 500
 config_file = '../config.yml'
@@ -386,10 +386,10 @@ for GH in GH_types:
                             else:
                                 gene_dict[leaf].append(info_list)
             
-    if GH != 'GS1':
-        length_dict = {key:20000 for key in gene_dict} #gene_dict[key][-1][1]+100 for key in gene_dict}
-    else: length_dict = {key:23000 for key in gene_dict}
-        
+    # if GH != 'GS1':
+    #     length_dict = {key:20000 for key in gene_dict} #gene_dict[key][-1][1]+100 for key in gene_dict}
+    # else: length_dict = {key:23000 for key in gene_dict}
+    length_dict = {key:segment_length for key in gene_dict}
     
     [fix_strand(gene_dict[key]) for key in gene_dict if 'MP2' not in key]
     
@@ -414,7 +414,7 @@ for GH in GH_types:
             if GH == 'BRS' and key in GS2_BRS and GH in element[7] and element == gene_dict[key][-1]:
                 divide = True
                 print(key, GH, 'True1')
-            elif GH == 'BRS' and f'|{GH}' in element[7] and 'GS2_BRS' not in gene_dict[key][-1][7] and element[1] - element[0] > 2000:
+            elif GH == 'BRS' and f'|{GH}' in element[7] and element[1] - element[0] > 2000 and ((key == 'H4B204J_13340' or key == 'IBH001_06330') or ('GS2_BRS' not in gene_dict[key][-1][7])):
                 divide = True
                 print(key, GH, 'True2')
             elif GH == 'GS2' and f'|{GH}' in element[7]:
@@ -464,8 +464,14 @@ for GH in GH_types:
 # =============================================================================
 # Code to center domains
 # =============================================================================
-
-
+    sum_dict = {}
+    for key,value in gene_dict.items():
+        for entry in gene_dict[key]:
+            if GH in entry[7] and entry[6] in gene_colors.values():
+                sum_dict[key] = entry[0]
+    max_value = max(sum_dict.values())
+    sub_dict = {k: max_value - v for k, v in sum_dict.items()}
+    
 
 # =============================================================================
 # Create the plot
