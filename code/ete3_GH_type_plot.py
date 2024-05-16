@@ -91,33 +91,10 @@ color_dict = {'1': 'blue', '2': 'orange', '3': 'green', '4': 'red', '5': 'purple
 hpr_colors = ['#ADB8CE', '#8C95A7', '#687287', '#505B6F', '#58506F', '#64506F',
               '#6F5150', '#6F6250', '#696F50']
 
-gene_colors = {'nox': '#7E9C07', 'GS1': '#FF0000', 'tes': '#BB9900', 'opp': '#2FAD26',
-               'sbn': '#6FB039', 'eps': '#39B0AB', 'ada': '#1AA682', 'fab': '#20B5D6',
-               'ybi': '#92C62A', 'yhf': '#21E190', 'gal': '#B8C14C', 'acc': '#00E7C8',
-               'mhp': '#0FD168', 'mnt': '#0FA2D1', 'umu': '#0F7FD1', 'ywq': '#00AB72',
-               'tag': '#0081B2', 'yhd': '#76B200', 'mdt': '#33CD8E', 'maa': '#117EDA',
-               'bet': '#69DA11', 'rnh': '#35DA11', 'kef': '#11DA60', 'ydg': '#11DA9D',
-               'yic': '#53C1A0', 'cfi': '#53C173', 'dpp': '#6BC153', 'drr': '#53C1A0',
-               'cap': '#00AB72', 'hpc': '#5399C1', 'nam': '#C1BB53', 'gsi': '#ADC153',
-               'gla': '#BEE800', 'yfk': '#63E800', 'COQ': '#00E85F', 'lem': '#00E8A6',
-               'ald': '#00E5E8', 'yvg': '#00BBE8', 'acp': '#0082E8', 'thi': '#00E8D0',
-               'ins': '#7FE800', 'adh': '#E8DA00', 'met': '#E8C500', 'dsr': '#E85800',
-               'pur': '#C8B817', 'yra': '#17ABC8', 'nch': '#B600FF', 'BRS': '#D930BD',
-               'gtf': '#000000', 'GS2': '#FF009B', 'glf': '#54C190', 'mur': '#48CDA7',
-               'pgl': '#4ACD48', 'asd': '#48CDC3', 'dap': '#7ACD48', 'lys': '#A8CB3C',
-               'ppc': '#D2D518', 'ydh': '#18BED5', 'nai': '#18D581', 'pep': '#18D56B',
-               'gly': '#18D548', 'sho': '#AAD518', 'rlm': '#C4BF2A', 'yfe': '#2AC4B8',
-               'hom': '#2AAAC4', 'dac': '#98C42A', 'arn': '#67C42A', 'asp': '#2EDDA5',
-               'suf': '#95DD2E', 'nrd': '#D1CD00', 'ela': '#00D165', 'nap': '#00D178',
-               'ade': '#00D198', 'gar': '#00D1B7', 'thl': '#00C7D1', 'mco': '#D1A800',
-               'gnd': '#BED100', 'zwf': '#9ED100', 'lep': '#75D100', 'yda': '#42D100',
-               'gmu': '#D7A300', 'add': '#D7C400', 'crc': '#00D72A', 'slm': '#00D775',
-               'clp': '#00D793', 'ser': '#00D75B', 'obg': '#00D782', 'uvr': '#00D7A6',
-               'mac': '#00D7C0', 'mva': '#00C7D7', 'apt': '#00A0D7', 'rec': '#0079D7',
-               'oxy': '#CACD33', 'npr': '#AECD33', 'znu': '#97CD33', 'hba': '#80CD33',
-               'hrt': '#68CD33', 'btu': '#33CD89', 'ten': '#33CDAC', 'S1': '#C79D72',
-               'S2a': '#C7AD72', 'S2b': '#C7A972', 'S3': '#C7B872', 'skf': '#0082E8',
-               'din': '#00D198'}
+gene_colors = {'GS1': '#FF0000', 'BRS': '#D930BD', 'GS2': '#FF009B',
+               'S1': '#C79D72', 'S2a': '#C7AD72', 'S2b': '#C7A972', 
+               'S3': '#C7B872', 'mhpD': '#CCCCCC', 'hpcG': '#CCCCCC', 
+               'oppA': '#CCCCCC'}
 
 # Old colors {'S3': '#FFEF00', 'S2a': '#FFC800', S2b: '#FFC800', 'S1': '#FF9600'}
 
@@ -128,8 +105,13 @@ alt_colors = {'GS1': '#C7727D', 'GS2': '#C772A8', 'BRS': '#C772C2'}
 # =============================================================================
 
 # Idea: Re-do the trees and use A1003 to root all of them
-# TO DO: Add S3 to the GS1 tree (and the S1 in DSM to the GS2/BRS trees)?
-# TO DO: Center domains
+# TO DO: Should I keep extra genes in the trees?
+# TO DO: Center domains, my idea is to get the segment that represents the CDS
+# before the domain with the bright color in GS1 and BRS and loop through the
+# full dictionary to get the maximum start position. Store also all start
+# positions. Then, for each key in the dictionary, sum the difference between
+# the maximum start position and the start position of the pre-GS1 domain
+# to all the values in the dictionary.
 
 segment_length = 18000
 gapscale = 1000
@@ -177,6 +159,7 @@ with open(config_file) as conf:
     S1_repr = remove_minus(py_config['S1_repr'])
     S2a_repr = remove_minus(py_config['S2a_repr'])
     S2b_repr = remove_minus(py_config['S2b_repr'])
+    S3_repr = remove_minus(py_config['S3_repr'])
     
     
     GS1 = py_config['GS1']
@@ -184,7 +167,7 @@ with open(config_file) as conf:
     S1 = py_config['S1']
     S2a = py_config['S2a']
     S2b = py_config['S2b']
-    # S3 = py_config['S3'] # Let's wait and see if the rest works before...
+    S3 = py_config['S3'] # Let's wait and see if the rest works before...
     BRS = ['A1401_12770'] + py_config['BRS']
     GH70_doms = GS1 + GS2 + BRS
     strains = py_config['representatives']
@@ -308,14 +291,19 @@ for GH in GH_types:
                 print(strain, leaf)
                 check = False
                 GS1_check = 0
-                
+                S3_check = False
+                if strain in S3_repr:
+                    S3_check = True
+                S2a_check = False
+                print(strain, S3_check)
                 with open(f'{indir}/{file}', 'r') as gfile:
                     genes = csv.reader(gfile, delimiter='\t')
                     
                     for gene in genes:
                         border = 'white'
                         
-                        if any(list(gs in gene[0] for gs in GH70_doms + S1 + S2a + S2b)): #GS1+GS2+BRS)):
+                        if any(list(gs in gene[0] for gs in GH70_doms + S1 + S2a + S2b + S3)) or (S3_check == True and S2a_check == True and ('oppA' in gene[0] or 'mhpD' in gene[0] or 'hpcG' in gene[0])): #GS1+GS2+BRS)):
+                                
                             if any(list(bs in gene[0] for bs in S2b)):
                                 print(gene[0], 'is S2b')
                                 start = int(gene[1]) - padding - gapscale
@@ -329,6 +317,7 @@ for GH in GH_types:
                                     start = int(gene[1]) - padding - gapscale
                                     end = start + segment_length  
                                     GS1_check += 1
+                                S2a_check = True
                                 gene[0] = 'S2a'
                                 
                             elif any(list(bs in gene[0] for bs in S1)):
@@ -373,6 +362,13 @@ for GH in GH_types:
                                     gene[1] = int(gene[1]) + 11
                                     
                                 gene[0] = 'BRS'
+                                
+                            elif any(list(bs in gene[0] for bs in S3)):
+                                print(gene[0], 'is S3')
+                                gene[0] = 'S3'
+                            
+                            else:
+                                print(gene[0], 'is other')
 
 
                             format_str = f'Arial|14|white|{gene[0]}' #Text on the gene
@@ -389,13 +385,19 @@ for GH in GH_types:
                                 gene_dict[leaf] = [info_list]
                             else:
                                 gene_dict[leaf].append(info_list)
+            
+    if GH != 'GS1':
+        length_dict = {key:20000 for key in gene_dict} #gene_dict[key][-1][1]+100 for key in gene_dict}
+    else: length_dict = {key:23000 for key in gene_dict}
         
-    length_dict = {key:20000 for key in gene_dict} #gene_dict[key][-1][1]+100 for key in gene_dict}
     
     [fix_strand(gene_dict[key]) for key in gene_dict if 'MP2' not in key]
     
     seq_dict = {l: f'{"-"*(gapscale)+"A"*(int(length_dict[l])-gapscale+padding-100)}' for l in lnames} #Create a sequence of desired length
     
+# =============================================================================
+# Code to add a more intense color to the domains in the plot
+# =============================================================================
     gene_domains = {}
 
     for key in gene_dict.keys():
@@ -418,7 +420,7 @@ for GH in GH_types:
             elif GH == 'GS2' and f'|{GH}' in element[7]:
                 divide = True
             elif GH == 'GS1' and f'|{GH}' in element[7]:
-                check2 = (key in max_GS1.values()) + (key.split('_')[0] in S2b_repr) + (key.split('_')[0] in S2a_repr) + (key.split('_')[0] in S1_repr)
+                check2 = (key in max_GS1.values()) + (key.split('_')[0] in S2b_repr) + (key.split('_')[0] in S2a_repr) + (key.split('_')[0] in S1_repr) #+ (key.split('_')[0] in S3_repr)
                 print(key, check2)
                 if element == gene_dict[key][check2] or 'MP2' in key:
                     divide = True
@@ -458,6 +460,13 @@ for GH in GH_types:
                         element[6] = element[6].replace(gene_colors[GH_typ2], alt_colors[GH_typ2])
                 new_domains.append(element)
         gene_dict[key] = new_domains # I need to add some kind of check where I check that the key gene type is the same as the gene type to add domains, and then I need to check that it is the right domain when there are two genes that are classified as the same
+
+# =============================================================================
+# Code to center domains
+# =============================================================================
+
+
+
 # =============================================================================
 # Create the plot
 # =============================================================================
