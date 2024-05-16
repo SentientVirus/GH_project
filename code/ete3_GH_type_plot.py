@@ -4,21 +4,16 @@
 Created on Mon Dec 20 11:06:54 2021
 
 This script creates a plot of the phylogeny of A. kunkeei strains, with
-a representation of the GS1, GS2 and BRS genes that are present. The
-phylogenies used include representative strains only, and only the GS2
-and BRS phylogenies were included.
+a representation of the Gh70 and GH32 genes that are present in a particular
+region of the genome. The phylogenies used include representative strains only, 
+and only the GS1, GS2 and BRS phylogenies were included.
 
 @author: Marina Mota Merlo
 """
 
 from ete3 import Tree, TreeStyle, NodeStyle, SeqMotifFace, TextFace
-import colorsys
-import random
 #Use PhyloTree
-from Bio import SeqIO
-import re, csv, os, logging, traceback
-from matplotlib.colors import to_hex
-from math import sqrt
+import csv, os, logging, traceback
 import yaml
 import numpy as np
 from collections import Counter
@@ -80,7 +75,7 @@ leaf_color = {'A0901': '#2AA380', 'A1001': '#A3C615', 'A1002': '#2AA380',
               'H4B402J': '#2C85D8', 'H4B403J': '#2AA380', 'H4B404J': '#2AA380', 
               'H4B405J': '#2AA380', 'H4B406M': '#2AA380', 'H4B410M': '#2AA380', 
               'H4B411M': '#2AA380', 'H4B412M': '#2C85D8', 'H4B501J': '#2C85D8', 
-              'H4B502X': '#2C85D8', 'H4B503X': '#2C85D8', 'H4B504J': '#21C1D1', #'#2AA380', 
+              'H4B502X': '#2C85D8', 'H4B503X': '#2C85D8', 'H4B504J': '#21C1D1', 
               'H4B505J': '#21C1D1', 'H4B507J': '#2C85D8', 'H4B507X': '#2C85D8', 
               'H4B508X': '#2C85D8', 'MP2': '#21C1D1', 'IBH001': 'black', 
               'DSM': 'black'}
@@ -106,8 +101,7 @@ alt_colors = {'GS1': '#FFC6C6', 'GS2': '#FFC6E9', 'BRS': '#FFC6FC'}
 
 # Idea: Re-do the trees and use A1003 to root all of them
 # TO DO: Should I keep extra genes in the trees?
-# TO DO: Test lighter colors for the GH
-# TO DO: Add back the GS2_BRS annotation to one of the sides of the GS2_BRS after dividing into domains
+# TO DO: Annotate script and integrate into Snakemake
 
 segment_length = 25000
 gapscale = 1000
@@ -118,17 +112,39 @@ outdir = '../plots/trees'
 GH_types = ['GS1', 'GS2', 'BRS']
 domain_path = '../../interproscan'
 doub_GS1_strains = ['H3B2-06M', 'H4B1-11J', 'H4B5-05J', 'H4B4-06M']
-# comp_dir = os.path.commonpath(tabs)
 
 def replace_strain_name(locus_tag):
+    """Function to change locus tags that do not correspond with strain names
+    to strain names. The function also removes RS from RefSeq locus tags to
+    make the final tags that are plotted more readable. It also removes AKU
+    from the non-RefSeq locus tags, as it indicates the species, which is
+    the same for all the strains, hence redundant.
+    
+    Parameters
+    ----------
+    locus_tag : str
+        The locus tag to be overwritten."""
+        
     locus_tag = locus_tag.replace('LDX55', 'IBH001').replace('APS55', 'MP2').replace('K2W83', 'DSM').replace('RS', '').replace('FHON', 'Fhon').replace('AKU', '')
     return locus_tag
 
 def remove_minus(strains):
+    """"Simple function to remove the - symbol from any string in a list of
+    strings."""
     new_list = [strain.replace('-', '') for strain in strains]
     return new_list
 
-def fix_strand(my_info_list):  
+def fix_strand(my_info_list):
+    """My genes of interest are in the reverse strand, but the locus tags are
+    ordered based on the forward strand. This function reverts the order of
+    the genes before plotting.
+    
+    Parameters
+    ----------
+    my_info_list : 
+        Dictionary of tuples, where the keys are the gene names and the values
+        are the start and end positions."""
+        
     for el in reversed(my_info_list):
         my_index = my_info_list.index(el)
         if my_index == len(my_info_list)-1:
