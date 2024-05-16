@@ -91,14 +91,14 @@ color_dict = {'1': 'blue', '2': 'orange', '3': 'green', '4': 'red', '5': 'purple
 hpr_colors = ['#ADB8CE', '#8C95A7', '#687287', '#505B6F', '#58506F', '#64506F',
               '#6F5150', '#6F6250', '#696F50']
 
-gene_colors = {'GS1': '#FF0000', 'BRS': '#D930BD', 'GS2': '#FF009B',
-               'S1': '#C79D72', 'S2a': '#C7AD72', 'S2b': '#C7A972', 
-               'S3': '#C7B872', 'mhpD': '#CCCCCC', 'hpcG': '#CCCCCC', 
+gene_colors = {'GS1': '#FF0000', 'GS2': '#FF009B', 'BRS': '#FF00F2', #'BRS': '#D930BD',
+               'S1': '#FFEBCB', 'S2a': '#FFF2CB', 'S2b': '#FFF5CB', 
+               'S3': '#FFFBCB', 'mhpD': '#CCCCCC', 'hpcG': '#CCCCCC', 
                'oppA': '#CCCCCC'}
 
 # Old colors {'S3': '#FFEF00', 'S2a': '#FFC800', S2b: '#FFC800', 'S1': '#FF9600'}
 
-alt_colors = {'GS1': '#C7727D', 'GS2': '#C772A8', 'BRS': '#C772C2'}
+alt_colors = {'GS1': '#FFC6C6', 'GS2': '#FFC6E9', 'BRS': '#FFC6FC'}
 
 # =============================================================================
 # Set target region and load input files
@@ -106,12 +106,8 @@ alt_colors = {'GS1': '#C7727D', 'GS2': '#C772A8', 'BRS': '#C772C2'}
 
 # Idea: Re-do the trees and use A1003 to root all of them
 # TO DO: Should I keep extra genes in the trees?
-# TO DO: Center domains, my idea is to get the segment that represents the CDS
-# before the domain with the bright color in GS1 and BRS and loop through the
-# full dictionary to get the maximum start position. Store also all start
-# positions. Then, for each key in the dictionary, sum the difference between
-# the maximum start position and the start position of the pre-GS1 domain
-# to all the values in the dictionary.
+# TO DO: Test lighter colors for the GH
+# TO DO: Add back the GS2_BRS annotation to one of the sides of the GS2_BRS after dividing into domains
 
 segment_length = 25000
 gapscale = 1000
@@ -371,7 +367,7 @@ for GH in GH_types:
                                 print(gene[0], 'is other')
 
 
-                            format_str = f'Arial|14|white|{gene[0]}' #Text on the gene
+                            format_str = f'Arial|14|black|{gene[0]}' #Text on the gene
                             if gene[0] == 'GS2_BRS': #I use a gradient for multi-GH70 domain proteins.
                                 col = f'{"rgradient:" + gene_colors["BRS"] + "|" + gene_colors["GS2"]}'
                             else:
@@ -389,7 +385,12 @@ for GH in GH_types:
     # if GH != 'GS1':
     #     length_dict = {key:20000 for key in gene_dict} #gene_dict[key][-1][1]+100 for key in gene_dict}
     # else: length_dict = {key:23000 for key in gene_dict}
-    length_dict = {key:segment_length for key in gene_dict}
+    if GH == 'BRS':
+        length_dict = {key:segment_length for key in gene_dict}
+    elif GH == 'GS1':
+        length_dict = {key:segment_length+2000 for key in gene_dict}
+    elif GH == 'GS2':
+        length_dict = {key:segment_length-5500 for key in gene_dict}
     
     [fix_strand(gene_dict[key]) for key in gene_dict if 'MP2' not in key]
     
@@ -431,6 +432,7 @@ for GH in GH_types:
                 new_domain[0] = element[0] + domain_dict[key][0] - 1
                 new_domain[1] = element[0] + domain_dict[key][1] - 1
                 new_domain[7] = new_domain[7].replace('GS2_BRS', GH)
+                new_domain[7] = new_domain[7].replace('black', 'white')
                 # if f'{key}_2' in GS2_BRS or key.replace('_2', '') in GS2_BRS or key in GS2_BRS:
                 #     new_domain[7] = new_domain[7].replace('GS2_BRS', GH)
                 #     print(GH)
@@ -442,8 +444,13 @@ for GH in GH_types:
                     else:
                         element[5] = element[5].replace(gene_colors[GH_typ], alt_colors[GH_typ])
                         element[6] = element[6].replace(gene_colors[GH_typ], alt_colors[GH_typ])
-                element[7] = element[7].replace('GS2_BRS', '').replace(gene_types[key], '')
+                if 'GS2_BRS' not in element[7]:
+                    element[7] = element[7].replace(gene_types[key], '')
                 next_domain = element.copy()
+                if GH == 'GS2' and 'GS2_BRS' in element[7]:
+                    element[7] = element[7].replace('GS2_BRS', '')
+                elif GH == 'BRS' and 'GS2_BRS' in next_domain[7]:
+                    next_domain[7] = next_domain[7].replace('GS2_BRS', '')
                 next_domain[0] = new_domain[1] + 1
                 element[1] = new_domain[0] - 1
                 new_domains.append(element)
@@ -467,10 +474,15 @@ for GH in GH_types:
     sum_dict = {}
     for key,value in gene_dict.items():
         for entry in gene_dict[key]:
-            if GH in entry[7] and entry[6] in gene_colors.values():
+            if GH in entry[7] and any(color in entry[6] for color in gene_colors.values()):
                 sum_dict[key] = entry[0]
     max_value = max(sum_dict.values())
     sub_dict = {k: max_value - v for k, v in sum_dict.items()}
+    
+    for key in gene_dict.keys():
+        for element in gene_dict[key]:
+            element[0] += sub_dict[key]
+            element[1] += sub_dict[key]
     
 
 # =============================================================================
