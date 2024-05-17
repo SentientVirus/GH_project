@@ -86,14 +86,14 @@ color_dict = {'1': 'blue', '2': 'orange', '3': 'green', '4': 'red', '5': 'purple
 hpr_colors = ['#ADB8CE', '#8C95A7', '#687287', '#505B6F', '#58506F', '#64506F',
               '#6F5150', '#6F6250', '#696F50']
 
-gene_colors = {'GS1': '#FF0000', 'GS2': '#FF009B', 'BRS': '#FF00F2', #'BRS': '#D930BD',
-               'S1': '#FFEBCB', 'S2a': '#FFF2CB', 'S2b': '#FFF5CB', 
-               'S3': '#FFFBCB', 'mhpD': '#CCCCCC', 'hpcG': '#CCCCCC', 
+gene_colors = {'GS1': '#FF7575', 'GS2': '#FF75B6', 'BRS': '#E875FF', #'BRS': '#D930BD',
+               'S1': '#FFE0C3', 'S2a': '#FFF0CB', 'S2b': '#FFF0CB', 
+               'S3': '#FFFCD0', 'mhpD': '#CCCCCC', 'hpcG': '#CCCCCC', 
                'oppA': '#CCCCCC'}
 
 # Old colors {'S3': '#FFEF00', 'S2a': '#FFC800', S2b: '#FFC800', 'S1': '#FF9600'}
 
-alt_colors = {'GS1': '#FFC6C6', 'GS2': '#FFC6E9', 'BRS': '#FFC6FC'}
+alt_colors = {'GS1': '#FFC0C0', 'GS2': '#FFC0DE', 'BRS': '#F4C0FF'}
 
 # =============================================================================
 # Set target region and load input files
@@ -308,11 +308,12 @@ for GH in GH_types:
                     S3_check = True
                 S2a_check = False
                 print(strain, S3_check)
+                border = 'grey'
                 with open(f'{indir}/{file}', 'r') as gfile:
                     genes = csv.reader(gfile, delimiter='\t')
                     
                     for gene in genes:
-                        border = 'white'
+                        # border = 'black'
                         
                         if any(list(gs in gene[0] for gs in GH70_doms + S1 + S2a + S2b + S3)) or (S3_check == True and S2a_check == True and ('oppA' in gene[0] or 'mhpD' in gene[0] or 'hpcG' in gene[0])): #GS1+GS2+BRS)):
                                 
@@ -388,8 +389,8 @@ for GH in GH_types:
                                 col = f'{"rgradient:" + gene_colors["BRS"] + "|" + gene_colors["GS2"]}'
                             else:
                                 col = gene_colors[gene[0]]
-                            if border == 'white':
-                                border = col[-7:]
+                            # if border == 'white':
+                            #     border = 'black' #col[-7:]
                                 
                             info_list = [int(gene[1])-start, int(gene[2])-start, '[]', 0, 20, border, col, format_str]
                             
@@ -448,17 +449,18 @@ for GH in GH_types:
                 new_domain[0] = element[0] + domain_dict[key][0] - 1
                 new_domain[1] = element[0] + domain_dict[key][1] - 1
                 new_domain[7] = new_domain[7].replace('GS2_BRS', GH)
-                new_domain[7] = new_domain[7].replace('black', 'white')
+                # new_domain[7] = new_domain[7].replace('black', 'white')
+                new_domain[5] = 'black'
                 # if f'{key}_2' in GS2_BRS or key.replace('_2', '') in GS2_BRS or key in GS2_BRS:
                 #     new_domain[7] = new_domain[7].replace('GS2_BRS', GH)
                 #     print(GH)
                 # element[2] = '[]'
                 for GH_typ in GH_types:
                     if GH_typ in element[7] and 'GS2_BRS' not in element[7]:
-                        element[5] = alt_colors[GH_typ]
+                        #element[5] = alt_colors[GH_typ]
                         element[6] = alt_colors[GH_typ]
                     else:
-                        element[5] = element[5].replace(gene_colors[GH_typ], alt_colors[GH_typ])
+                        #element[5] = element[5].replace(gene_colors[GH_typ], alt_colors[GH_typ])
                         element[6] = element[6].replace(gene_colors[GH_typ], alt_colors[GH_typ])
                 if 'GS2_BRS' not in element[7]:
                     element[7] = element[7].replace(gene_types[key], '')
@@ -470,16 +472,16 @@ for GH in GH_types:
                 next_domain[0] = new_domain[1] + 1
                 element[1] = new_domain[0] - 1
                 new_domains.append(element)
-                new_domains.append(new_domain)
                 new_domains.append(next_domain)
+                new_domains.append(new_domain)
             else:
                 # element[2] = '[]'
                 for GH_typ2 in GH_types:
                     if GH_typ2 in element[7] and 'GS2_BRS' not in element[7]:
-                        element[5] = alt_colors[GH_typ2]
+                        #element[5] = alt_colors[GH_typ2]
                         element[6] = alt_colors[GH_typ2]
                     elif GH_typ2 in element[7]:
-                        element[5] = element[5].replace(gene_colors[GH_typ2], alt_colors[GH_typ2])
+                        #element[5] = element[5].replace(gene_colors[GH_typ2], alt_colors[GH_typ2])
                         element[6] = element[6].replace(gene_colors[GH_typ2], alt_colors[GH_typ2])
                 new_domains.append(element)
         gene_dict[key] = new_domains # I need to add some kind of check where I check that the key gene type is the same as the gene type to add domains, and then I need to check that it is the right domain when there are two genes that are classified as the same
