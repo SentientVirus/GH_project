@@ -125,41 +125,6 @@ def get_tabs(phylo_dict, folder_path, outpath):
         outfile = f'{outpath}/{GH_type}_{i}.tab'
         cline_input = cline_blast(cmd = 'blastn', query = strain2_file, subject = strain1_file, remote = False, out = outfile, outfmt = 7)
         os.system(str(cline_input));
- 
-# =============================================================================
-# Define inputs
-# =============================================================================
-outpath = os.path.expanduser('~') + '/GH_project/blast_tabs/subplots'
-folder_path = os.path.expanduser('~') + '/Akunkeei_files/fna/reverse'
-folder_path2 = os.path.expanduser('~') + '/Akunkeei_files/gbff/modified_gbff'
-GH_types= ['GS1', 'GS2', 'BRS']
-
-# =============================================================================
-# In this section, we loop through GH types and run Blast between pairs of 
-# strains following the phylogeny.
-# =============================================================================
-GH_type = 'GS1'
-treefile = os.path.expanduser('~') + f'/GH_project/data/fasta/GH70/trees/{GH_type}_repset.mafft.faa.treefile'
-t = Tree(treefile, format = 0)
-if GH_type == 'GS1':
-    outnode = 'A1003_12540' # GS1
-t.set_outgroup(outnode)
-generat_0r = list(t.get_leaf_names())
-phylo_order = {no + 1: generat_0r[-(no + 1)] for no in reversed(range(len(generat_0r)))}
-
-# OBS! Maybe I should re-do the Blast comparisons reversing the genome.
-
-phylo_list = [get_strain_name(leaf, True) for leaf in generat_0r]
-phylo_strains = {key: get_strain_name(phylo_order[key], True) for key in phylo_order.keys()}
-get_tabs(phylo_strains, folder_path, outpath)
-
-
-
-# =============================================================================
-# In this section, we establish the start and end positions for every strain
-# and save them to a dictionary. I also get the chromosome IDs to change them
-# to strain IDs.
-# =============================================================================
 
 def get_info(phylo_dict, tag_dict, folder_path2, length = 0): #OBS! Genome lengths are wrong because plasmid lengths are summed!
     locus_dict = {'IBH001': 'LDX55_06270', 'DSMZ12361': 'K2W83_RS06135', 'MP2': 'APS55_RS03895'}
@@ -204,177 +169,222 @@ def get_info(phylo_dict, tag_dict, folder_path2, length = 0): #OBS! Genome lengt
                 end = start - length
                 pos_dict[loctag] = (end, start)
     return accession_strain, pos_dict, lengths_dict
+
+# =============================================================================
+# Define inputs
+# =============================================================================
+outpath = os.path.expanduser('~') + '/GH_project/blast_tabs/subplots'
+folder_path = os.path.expanduser('~') + '/Akunkeei_files/fna/reverse'
+folder_path2 = os.path.expanduser('~') + '/Akunkeei_files/gbff/modified_gbff'
+outfig = os.path.expanduser('~') + '/GH_project/plots/trees'
+GH_types= ['GS1', 'GS2', 'BRS']
+
+# =============================================================================
+# In this section, we loop through GH types and run Blast between pairs of 
+# strains following the phylogeny.
+# =============================================================================
+for GH_type in GH_types:
+    treefile = os.path.expanduser('~') + f'/GH_project/data/fasta/GH70/trees/{GH_type}_repset.mafft.faa.treefile'
+    t = Tree(treefile, format = 0)
+    if GH_type == 'GS1':
+        outnode = 'A1003_12540' # GS1
+    elif GH_type == 'GS2':
+        outnode = t.get_common_ancestor('H3B104X_13220', 'H4B505J_12900')
+    elif GH_type == 'BRS':
+        outnode = t.get_common_ancestor('H3B101A_13250', 'LDX55_06330')
+    else: raise Exception(f'{GH_type} is not a valid GH70 gene type') 
+    t.set_outgroup(outnode)
+    generat_0r = list(t.get_leaf_names())
+    phylo_order = {no + 1: generat_0r[-(no + 1)] for no in reversed(range(len(generat_0r)))}
     
-acc, pos, lengths = get_info(phylo_strains, phylo_order, folder_path2, 40000)
-
-
-# =============================================================================
-# Now, ready for the plotting!
-# =============================================================================
-# Set plot style
-gv = GenomeViz(
-    fig_track_height = 0.4,
-    link_track_ratio = 3.0,
-    align_type = 'center',
-    tick_style = 'bar',
-    )
-for i in range(1, len(phylo_strains.keys())+1):
-    strain = phylo_strains[i]
-    locus = phylo_order[i]
-
-    genbank_file = f'{folder_path2}/{strain}_genomic.gbff'
-    if strain != 'MP2':
-        rev = True
-    else: rev = False
-    genbk = gbk_read(genbank_file, reverse = rev, min_range = pos[locus][0], max_range = pos[locus][1])
-    features = genbk.extract_features('CDS')
-    track_name = genbk.name.replace('_genomic', '').replace(strain, locus)
-        
-    track = gv.add_feature_track(genbk.name.replace('_genomic', '').replace(strain, locus), size = genbk.range_size, start_pos = genbk.min_range, labelcolor = leaf_color[strain.replace('-', '')])
-    #Loop through CDS
-    for cds in features:
-        protstart = int(cds.location.start) #Get CDS start
-        end = int(cds.location.end) #Get CDS end
-        strand = cds.strand #Get strand
-        color = 'skyblue'
-        if 'transposase' not in cds.qualifiers['product'][0] and 'gene' in cds.qualifiers.keys():
-            gene_name = cds.qualifiers['gene'][0]
-            if '_partial' in gene_name:
-                gene_name = gene_name.replace('_partial', '*')
-            elif 'gene' in cds.qualifiers.keys() and '_I' in gene_name:
-                gene_name = gene_name.replace('_I', '')
+    # OBS! Maybe I should re-do the Blast comparisons reversing the genome.
+    
+    phylo_list = [get_strain_name(leaf, True) for leaf in generat_0r]
+    phylo_strains = {key: get_strain_name(phylo_order[key], True) for key in phylo_order.keys()}
+    get_tabs(phylo_strains, folder_path, outpath)
+    
+    
+    
+    # =============================================================================
+    # In this section, we establish the start and end positions for every strain
+    # and save them to a dictionary. I also get the chromosome IDs to change them
+    # to strain IDs.
+    # =============================================================================
+    acc, pos, lengths = get_info(phylo_strains, phylo_order, folder_path2, 40000)
+    
+    
+    # =============================================================================
+    # Now, ready for the plotting!
+    # =============================================================================
+    # Set plot style
+    gv = GenomeViz(
+        fig_track_height = 0.4,
+        link_track_ratio = 3.0,
+        align_type = 'center',
+        tick_style = 'bar',
+        )
+    for i in range(1, len(phylo_strains.keys())+1):
+        strain = phylo_strains[i]
+        locus = phylo_order[i]
+    
+        genbank_file = f'{folder_path2}/{strain}_genomic.gbff'
+        if strain != 'MP2':
+            rev = True
+        else: rev = False
+        genbk = gbk_read(genbank_file, reverse = rev, min_range = pos[locus][0], max_range = pos[locus][1])
+        features = genbk.extract_features('CDS')
+        track_name = genbk.name.replace('_genomic', '').replace(strain, locus)
+        locname = get_strain_name(locus)
+            
+        track = gv.add_feature_track(genbk.name.replace('_genomic', '').replace(strain, locname), size = genbk.range_size, start_pos = genbk.min_range, labelcolor = leaf_color[strain.replace('-', '')])
+        #Loop through CDS
+        for cds in features:
+            protstart = int(cds.location.start) #Get CDS start
+            end = int(cds.location.end) #Get CDS end
+            strand = cds.strand #Get strand
+            color = 'skyblue'
+            if 'transposase' not in cds.qualifiers['product'][0] and 'gene' in cds.qualifiers.keys():
+                gene_name = cds.qualifiers['gene'][0]
+                if '_partial' in gene_name:
+                    gene_name = gene_name.replace('_partial', '*')
+                elif 'gene' in cds.qualifiers.keys() and '_I' in gene_name:
+                    gene_name = gene_name.replace('_I', '')
+                else:
+                    gene_name = ''
+                if gene_name == 'GS1' or gene_name[:-1] == 'GS1':
+                    color = '#ff7575'
+                elif gene_name == 'GS2' or gene_name[:-1] == 'GS2':
+                    color = '#ff75b6'
+                elif (gene_name == 'BRS' or gene_name[:-1] == 'BRS'):
+                    color = '#e875ff'
+                elif gene_name == 'GS2BRS':
+                    color = '#ff75ee'
+                elif gene_name  == 'S1':
+                    color = '#ffb875'
+                elif gene_name == 'S2a' or gene_name == 'S2b':
+                    color = '#ffd775'
+                elif gene_name == 'S3':
+                    color = '#fff575'
+            elif 'transposase' in cds.qualifiers['product'][0]:
+                gene_name = ''
+                color = 'black'
             else:
                 gene_name = ''
-            if gene_name == 'GS1' or gene_name[:-1] == 'GS1':
-                color = '#ff7575'
-            elif gene_name == 'GS2' or gene_name[:-1] == 'GS2':
-                color = '#ff75b6'
-            elif (gene_name == 'BRS' or gene_name[:-1] == 'BRS'):
-                color = '#e875ff'
-            elif gene_name == 'GS2BRS':
-                color = '#ff75ee'
-            elif gene_name  == 'S1':
-                color = '#ffb875'
-            elif gene_name == 'S2a' or gene_name == 'S2b':
-                color = '#ffd775'
-            elif gene_name == 'S3':
-                color = '#fff575'
-        elif 'transposase' in cds.qualifiers['product'][0]:
+            gene_n = gene_name.replace('*', '')
+            if gene_n in ['branch', 'branch2', 'GTB', 'wzyC', 'GH39', 'rfbX', 'ydiL']:
+                gene_name = ''
+            elif gene_name == 'yifK2':
+                gene_name = 'yifK'
+            #This sets the CDS arrows and adds gene names
+            track.add_feature(protstart, end, strand, label = gene_name, 
+                              labelcolor = 'black', labelsize = 12, facecolor = color, 
+                              linewidth = 1, labelrotation = 45, labelvpos = 'top', 
+                              labelhpos = 'center', labelha = 'left', arrow_shaft_ratio = 1.0)
+            track.set_sublabel(position = 'bottom-left')
             gene_name = ''
-            color = 'black'
-        else:
-            gene_name = ''
-        gene_n = gene_name.replace('*', '')
-        if gene_n in ['branch', 'branch2', 'GTB', 'wzyC', 'GH39', 'rfbX', 'ydiL']:
-            gene_name = ''
-        elif gene_name == 'yifK2':
-            gene_name = 'yifK'
-        #This sets the CDS arrows and adds gene names
-        track.add_feature(protstart, end, strand, label = gene_name, 
-                          labelcolor = 'black', labelsize = 12, facecolor = color, 
-                          linewidth = 1, labelrotation = 45, labelvpos = 'top', 
-                          labelhpos = 'center', labelha = 'left', arrow_shaft_ratio = 1.0)
-        track.set_sublabel(position = 'bottom-left')
-        gene_name = ''
+            
+    # =============================================================================
+    # Here I modify sligthly the tab files that I created.
+    # =============================================================================
+    # There is something wrong with the pairs in the tabs, they are not the same
+    # as in the loop and that's why this doesn't work. Theory: the indexing of the
+    # dictionary starts from 1, but normal indexing doesn't.
+    for i in range(1, len(phylo_strains.keys())):
+        tab_name = f'{outpath}/{GH_type}_{i}.tab'
+        strain = phylo_strains[i]
+        locus = phylo_order[i]
+        next_locus = phylo_order[i + 1]
+        print(locus, next_locus)
+        with open(tab_name) as tabfile:
+            k = 0
+            for line in tabfile:
+                    #print(line)
+                    k += 1
+                    #We can also use this loop to generate a list with the fields:
+                    if 'Fields' in line:
+                        headers = line
+                    elif k > 10:
+                        break
+        header_list = headers.split(',') #Divide comma-separated fields
+        header_list[0] = header_list[0].replace('# Fields: ', '') #Remove start of line
+        header_list = [header.strip().strip('\n') for header in header_list] #Remove spaces and line breaks from beginning
         
-# =============================================================================
-# Here I modify sligthly the tab files that I created.
-# =============================================================================
-# There is something wrong with the pairs in the tabs, they are not the same
-# as in the loop and that's why this doesn't work. Theory: the indexing of the
-# dictionary starts from 1, but normal indexing doesn't.
-for i in range(1, len(phylo_strains.keys())):
-    tab_name = f'{outpath}/{GH_type}_{i}.tab'
-    strain = phylo_strains[i]
-    locus = phylo_order[i]
-    next_locus = phylo_order[i + 1]
-    print(locus, next_locus)
-    with open(tab_name) as tabfile:
-        k = 0
-        for line in tabfile:
-                #print(line)
-                k += 1
-                #We can also use this loop to generate a list with the fields:
-                if 'Fields' in line:
-                    headers = line
-                elif k > 10:
-                    break
-    header_list = headers.split(',') #Divide comma-separated fields
-    header_list[0] = header_list[0].replace('# Fields: ', '') #Remove start of line
-    header_list = [header.strip().strip('\n') for header in header_list] #Remove spaces and line breaks from beginning
+        file_df = pd.read_csv(tab_name, sep = '\t', skiprows = 5, header = None) #Read as tab-separated file, skip 5 rows and don't set the remaining rows as headers
+        file_df = file_df[:-1] #Remove the last row, that also contains a comment
+        file_df.columns = header_list #Add column names
+        strain2 = file_df.values[0, 0]
+        strain2_name = list(acc.keys())[i] #list(acc.keys())[list(acc.values()).index(strain2)]
+        file_df = file_df.replace(strain2, strain2_name)
+        strain1 = file_df.values[0, 1]
+        strain1_name = list(acc.keys())[i-1] #list(acc.keys())[list(acc.values()).index(strain1)]
+        file_df = file_df.replace(strain1, strain1_name)
+        # print(f'{i}:\t{strain1_name}\t{strain2_name}')
+        query_pos =  (int(pos[phylo_order[i + 1]][0] - lengths[phylo_order[i + 1]][1]), int(pos[phylo_order[i + 1]][1] - lengths[phylo_order[i + 1]][1]))
+        subject_pos = (int(pos[phylo_order[i]][0] - lengths[phylo_order[i]][1]), int(pos[phylo_order[i]][1] - lengths[phylo_order[i]][1]))
     
-    file_df = pd.read_csv(tab_name, sep = '\t', skiprows = 5, header = None) #Read as tab-separated file, skip 5 rows and don't set the remaining rows as headers
-    file_df = file_df[:-1] #Remove the last row, that also contains a comment
-    file_df.columns = header_list #Add column names
-    strain2 = file_df.values[0, 0]
-    strain2_name = list(acc.keys())[i] #list(acc.keys())[list(acc.values()).index(strain2)]
-    file_df = file_df.replace(strain2, strain2_name)
-    strain1 = file_df.values[0, 1]
-    strain1_name = list(acc.keys())[i-1] #list(acc.keys())[list(acc.values()).index(strain1)]
-    file_df = file_df.replace(strain1, strain1_name)
-    # print(f'{i}:\t{strain1_name}\t{strain2_name}')
-    query_pos =  (int(pos[phylo_order[i + 1]][0] - lengths[phylo_order[i + 1]][1]), int(pos[phylo_order[i + 1]][1] - lengths[phylo_order[i + 1]][1]))
-    subject_pos = (int(pos[phylo_order[i]][0] - lengths[phylo_order[i]][1]), int(pos[phylo_order[i]][1] - lengths[phylo_order[i]][1]))
-
-    tab_df = file_df.copy()
-    # print(f'{i}:\t{tab_df.iloc[0]["query acc.ver"]}\t{tab_df.iloc[0]["subject acc.ver"]}')
-    
-    tab_df = tab_df.drop(tab_df[tab_df['q. end'] < query_pos[0]].index)
-    tab_df = tab_df.drop(tab_df[tab_df['s. end'] < subject_pos[0]].index)
-    tab_df['q. start'][tab_df['q. start'] < query_pos[0]] = query_pos[0]
-    tab_df['s. start'][tab_df['s. start'] < subject_pos[0]] = subject_pos[0]
-    tab_df = tab_df.drop(tab_df[tab_df['q. start'] > query_pos[1]].index)
-    tab_df = tab_df.drop(tab_df[tab_df['s. start'] > subject_pos[1]].index)
-    tab_df['q. end'][tab_df['q. end'] > query_pos[1]] = query_pos[1]
-    tab_df['s. end'][tab_df['s. end'] > subject_pos[1]] = subject_pos[1]
-    tab_df = tab_df[~tab_df['query acc.ver'].str.startswith('#')]
-    tab_df = tab_df.reset_index()
-    
-    for j in range(len(tab_df)):
-        #We define the links
-        link1 = (tab_df.loc[j, 'query acc.ver'], tab_df.loc[j, 'q. start'] + lengths[next_locus][1], tab_df.loc[j, 'q. end'] + lengths[next_locus][1])
-        link2 = (tab_df.loc[j, 'subject acc.ver'], tab_df.loc[j, 's. start'] + lengths[locus][1], tab_df.loc[j, 's. end'] + lengths[locus][1])
-        #We define the percentage of identity (important to color the links)
-        identity = tab_df.loc[j, '% identity']
-        #Here we add the links to the gv plot
-        gv.add_link(link1, link2, v = identity, vmin = 50, curve = True)
-        gv.tick_style = 'bar' #This adds the scale of the plot (20 Kb)
+        tab_df = file_df.copy()
+        # print(f'{i}:\t{tab_df.iloc[0]["query acc.ver"]}\t{tab_df.iloc[0]["subject acc.ver"]}')
         
-fig = gv.plotfig(400) #We plot the figure
-gv.set_colorbar(fig, vmin = 50, bar_height = 0.05) #We add a color bar to interpret the colors
-handles = [
-    Line2D([], [], marker='', color='black', label='Tracks', ms=20, ls='none'),
-    Line2D([], [], marker='>', color='skyblue', label='CDS', ms=20, ls='none'),
-    Line2D([], [], marker='>', color='#ff7575', label='GS1 glycosyl hydrolase', ms=20, ls='none'),
-    Line2D([], [], marker='>', color='#ff75b6', label='GS2 glycosyl hydrolase', ms=20, ls='none'),
-    Line2D([], [], marker='>', color='#ff75ee', label='Double-GH70 domain', ms=20, ls='none'),
-    Line2D([], [], marker='>', color='#e875ff', label='BRS glycosyl hydrolase', ms=20, ls='none'),
-    Line2D([], [], marker='>', color='#ffb875', label='S1 glycosyl hydrolase', ms=20, ls='none'),
-    Line2D([], [], marker='>', color='#ffd775', label='S2 glycosyl hydrolase', ms=20, ls='none'),
-    Line2D([], [], marker='>', color='#fff575', label='S3 glycosyl hydrolase', ms=20, ls='none'),
-    Line2D([], [], marker='>', color='black', label='Transposase', ms=20, ls='none'),
-    Line2D([], [], marker='', color='#E5BA60', label='', ms=20, ls='none'),
-    Line2D([], [], marker='', color='black', label='Matches', ms=20, ls='none'),
-    Line2D([], [], marker='s', color='grey', label='Forward match', ms=20, ls='none'),
-    Line2D([], [], marker='s', color='red', label='Reverse match', ms=20, ls='none'),
-    Line2D([], [], marker='', color='#E5BA60', label='', ms=20, ls='none'),
-    Line2D([], [], marker='', color='#E5BA60', label='Strain names', lw=2, ms=20, ls='none'),
-    Line2D([], [], marker='X', color='#1E55F6', label='Phylogroup A', ms=15, ls='none'),
-    Line2D([], [], marker='X', color='#00AEFF', label='Phylogroup B', ms=15, ls='none'),
-    Line2D([], [], marker='X', color='#A027FF', label='Phylogroup C', ms=15, ls='none'),
-    Line2D([], [], marker='X', color='#FF74D6', label='Phylogroup E', ms=15, ls='none'),
-    Line2D([], [], marker='X', color='#E5BA60', label='Phylogroup F', ms=15, ls='none'),
-    Line2D([], [], marker='X', color='black', label='Not in Dyrhage et al. (2022)', ms=15, ls='none')
-]
-
-legend = fig.legend(handles=handles, bbox_to_anchor=(1.05, 1))
-legend.get_texts()[0].set_fontweight('bold')
-legend.get_texts()[11].set_fontweight('bold')
-legend.get_texts()[15].set_fontweight('bold')
-
-# Set the fontsize for legend labels
-legend_fontsize = 20
-for text in legend.get_texts():
-    text.set_fontsize(legend_fontsize)
+        tab_df['query acc.ver'] =  tab_df['query acc.ver'].apply(lambda x: get_strain_name(str(x))) #tab_df['query acc.ver'].str.replace('LDX55', 'IBH001').replace('K2W83_RS', 'DSM_').replace('APS55_RS', 'MP2_').replace('FHON', 'Fhon')
+        tab_df['subject acc.ver'] = tab_df['subject acc.ver'].apply(lambda x: get_strain_name(str(x))) #tab_df['subject acc.ver'].str.replace('LDX55', 'IBH001').replace('K2W83_RS', 'DSM_').replace('APS55_RS', 'MP2_').replace('FHON', 'Fhon')
+        
+        tab_df = tab_df.drop(tab_df[tab_df['q. end'] < query_pos[0]].index)
+        tab_df = tab_df.drop(tab_df[tab_df['s. end'] < subject_pos[0]].index)
+        tab_df['q. start'][tab_df['q. start'] < query_pos[0]] = query_pos[0]
+        tab_df['s. start'][tab_df['s. start'] < subject_pos[0]] = subject_pos[0]
+        tab_df = tab_df.drop(tab_df[tab_df['q. start'] > query_pos[1]].index)
+        tab_df = tab_df.drop(tab_df[tab_df['s. start'] > subject_pos[1]].index)
+        tab_df['q. end'][tab_df['q. end'] > query_pos[1]] = query_pos[1]
+        tab_df['s. end'][tab_df['s. end'] > subject_pos[1]] = subject_pos[1]
+        tab_df = tab_df[~tab_df['query acc.ver'].str.startswith('#')]
+        tab_df = tab_df.reset_index()
+        
+        for j in range(len(tab_df)):
+            #We define the links
+            link1 = (tab_df.loc[j, 'query acc.ver'], tab_df.loc[j, 'q. start'] + lengths[next_locus][1], tab_df.loc[j, 'q. end'] + lengths[next_locus][1])
+            link2 = (tab_df.loc[j, 'subject acc.ver'], tab_df.loc[j, 's. start'] + lengths[locus][1], tab_df.loc[j, 's. end'] + lengths[locus][1])
+            #We define the percentage of identity (important to color the links)
+            identity = tab_df.loc[j, '% identity']
+            #Here we add the links to the gv plot
+            gv.add_link(link1, link2, v = identity, vmin = 50, curve = True)
+            gv.tick_style = 'bar' #This adds the scale of the plot (20 Kb)
+            
+    fig = gv.plotfig(400) #We plot the figure
+    gv.set_colorbar(fig, vmin = 50, bar_height = 0.05) #We add a color bar to interpret the colors
+    handles = [
+        Line2D([], [], marker='', color='black', label='Tracks', ms=20, ls='none'),
+        Line2D([], [], marker='>', color='skyblue', label='CDS', ms=20, ls='none'),
+        Line2D([], [], marker='>', color='#ff7575', label='GS1 glycosyl hydrolase', ms=20, ls='none'),
+        Line2D([], [], marker='>', color='#ff75b6', label='GS2 glycosyl hydrolase', ms=20, ls='none'),
+        Line2D([], [], marker='>', color='#ff75ee', label='Double-GH70 domain', ms=20, ls='none'),
+        Line2D([], [], marker='>', color='#e875ff', label='BRS glycosyl hydrolase', ms=20, ls='none'),
+        Line2D([], [], marker='>', color='#ffb875', label='S1 glycosyl hydrolase', ms=20, ls='none'),
+        Line2D([], [], marker='>', color='#ffd775', label='S2 glycosyl hydrolase', ms=20, ls='none'),
+        Line2D([], [], marker='>', color='#fff575', label='S3 glycosyl hydrolase', ms=20, ls='none'),
+        Line2D([], [], marker='>', color='black', label='Transposase', ms=20, ls='none'),
+        Line2D([], [], marker='', color='#E5BA60', label='', ms=20, ls='none'),
+        Line2D([], [], marker='', color='black', label='Matches', ms=20, ls='none'),
+        Line2D([], [], marker='s', color='grey', label='Forward match', ms=20, ls='none'),
+        Line2D([], [], marker='s', color='red', label='Reverse match', ms=20, ls='none'),
+        Line2D([], [], marker='', color='#E5BA60', label='', ms=20, ls='none'),
+        Line2D([], [], marker='', color='#E5BA60', label='Strain names', lw=2, ms=20, ls='none'),
+        Line2D([], [], marker='X', color='#1E55F6', label='Phylogroup A', ms=15, ls='none'),
+        Line2D([], [], marker='X', color='#00AEFF', label='Phylogroup B', ms=15, ls='none'),
+        Line2D([], [], marker='X', color='#A027FF', label='Phylogroup C', ms=15, ls='none'),
+        Line2D([], [], marker='X', color='#FF74D6', label='Phylogroup E', ms=15, ls='none'),
+        Line2D([], [], marker='X', color='#E5BA60', label='Phylogroup F', ms=15, ls='none'),
+        Line2D([], [], marker='X', color='black', label='Not in Dyrhage et al. (2022)', ms=15, ls='none')
+    ]
     
-fig.savefig('GS1_try.svg')
+    legend = fig.legend(handles=handles, bbox_to_anchor=(1.05, 1))
+    legend.get_texts()[0].set_fontweight('bold')
+    legend.get_texts()[11].set_fontweight('bold')
+    legend.get_texts()[15].set_fontweight('bold')
+    
+    # Set the fontsize for legend labels
+    legend_fontsize = 20
+    for text in legend.get_texts():
+        text.set_fontsize(legend_fontsize)
+        
+    fig.savefig(f'{GH_type}_blast.svg')
+    fig.savefig(f'{GH_type}_blast.png')
