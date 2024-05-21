@@ -177,7 +177,7 @@ outpath = os.path.expanduser('~') + '/GH_project/blast_tabs/subplots'
 folder_path = os.path.expanduser('~') + '/Akunkeei_files/fna/reverse'
 folder_path2 = os.path.expanduser('~') + '/Akunkeei_files/gbff/modified_gbff'
 outfig = os.path.expanduser('~') + '/GH_project/plots/trees'
-GH_types= ['GS1', 'GS2', 'BRS']
+GH_types = ['GS1', 'GS2', 'BRS']
 
 # =============================================================================
 # In this section, we loop through GH types and run Blast between pairs of 
@@ -386,5 +386,5 @@ for GH_type in GH_types:
     for text in legend.get_texts():
         text.set_fontsize(legend_fontsize)
         
-    fig.savefig(f'{GH_type}_blast.svg')
-    fig.savefig(f'{GH_type}_blast.png')
+    fig.savefig(f'{outfig}/{GH_type}_blast.svg')
+    fig.savefig(f'{outfig}/{GH_type}_blast.png')
