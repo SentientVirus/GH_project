@@ -91,30 +91,11 @@ phylo_order = {1:'G0101', 2:'H4B2-05J', 3:'H4B2-11M', 4:'H1B1-04J',
 
 #Paths to inputs and outputs
 outpath = '../blast_tabs'
-# folder_path = '~/Akunkeei_files/fna'
 folder_path2 = '../Akunkeei_files/gbff'
 
-# =============================================================================
-# 2. Code to run Blast comparisons 
-# =============================================================================
-#OBS! Keep this part in an independent script
-
-# def get_tabs(phylo_dict, folder_path, outpath):
-#     if not os.path.exists(outpath):
-#         os.makedirs(outpath)
-#     for i in range(1, len(phylo_dict)):
-#         strain1_file = f'{folder_path}/{phylo_dict[i]}_genomic.fna'
-#         strain2_file = f'{folder_path}/{phylo_dict[i+1]}_genomic.fna'
-#         outfile = f'{outpath}/NGB_{i}.tab'
-#         cline_input = cline_blast(cmd = 'blastn', query = strain2_file, subject = strain1_file, remote = False, out = outfile, outfmt = 7)
-#         os.system(str(cline_input));
-
-# get_tabs(phylo_order, folder_path, outpath)
-
-
 
 # =============================================================================
-# 3. Establish the start and end positions for every strain and save them to a 
+# 2. Establish the start and end positions for every strain and save them to a 
 # dictionary. Get the chromosome IDs to change them to strain IDs.
 # =============================================================================
 
@@ -189,7 +170,7 @@ def get_info(phylo_dict, folder_path2, length = 0): #OBS! Genome lengths are wro
 acc, pos, lengths = get_info(phylo_order, folder_path2, 40000) #Run function
 
 # =============================================================================
-# 4. Create tracks with the CDS to plot
+# 3. Create tracks with the CDS to plot
 # =============================================================================
 
 # Set plot style
@@ -268,7 +249,7 @@ for i in range(1, len(phylo_order.keys())+1): #Loop through strain names in the 
 
             
 # =============================================================================
-# 5. Plot Blast comparisons
+# 4. Plot Blast comparisons
 # =============================================================================
 for i in range(1, len(phylo_order.keys())): #Loop through strains in the order in which they will be plotted    
     with open(f'{outpath}/NGB_{i}.tab') as tabfile: #Open Blast comparison file for each strain
