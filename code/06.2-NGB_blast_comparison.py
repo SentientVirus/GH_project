@@ -3,7 +3,8 @@
 """
 Created on Mon Sep  4 10:28:42 2023
 
-This is a script to use PyGenomeViz to plot the region of the genome where
+This is a script to generate tab files to later
+use PyGenomeViz to plot the region of the genome where
 the NGB gene is in the representative set of strains.
 
 @author: Marina Mota Merlo

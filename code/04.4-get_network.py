@@ -3,7 +3,7 @@
 """
 Created on Thu Jun 29 13:44:38 2023
 
-Script in progress to create a phylogenetic network.
+Script to create a phylogenetic network.
 
 @author: Marina Mota Merlo
 """
