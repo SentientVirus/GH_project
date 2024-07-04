@@ -44,17 +44,20 @@ sys.stdout = open(log, 'a')
 # =============================================================================
 # 1. Defining inputs and functions
 # =============================================================================
-strains_of_interest = ['A1401', 'G0403', 'H3B1-01J', 'H3B1-04J', 'H4B2-02J',
-                       'H4B2-04J', 'DSM']
+strains_of_interest = ['A1401', 'DSMZ12361', 'H3B1-01J', 'H3B1-04J', 'H4B2-04J', 
+                       'G0403', 'H4B2-02J', 'IBH001']
 genes_of_interest = ['A1401_12760', 'G0403_13110', 'G0403_13120', 
                      'H3B101J_13010', 'H3B104J_13020', 'H4B202J_12890', 
-                     'H4B204J_13350', 'LDX55_06335']
+                     'H4B204J_13350', 'IBH001_06335', 'DSM_06185']
 types = {'AKUH3B101J_13010': 'GS2_BRS, alpha-1,3', 
          'AKUA1401_12760': 'BRS, incomplete alpha-1,3',
          'AKUH3B104J_13020': 'GS2_BRS, alpha-1,3',
          'AKUG0403_13110': 'BRS, alpha-1,2', 'AKUG0403_13120': 'GS2',
          'AKUH4B204J_13350': 'GS2_BRS, alpha-1,3', 
-         'AKUH4B202J_12890': 'GS2_BRS, alpha-1,2', 'LDX55_06335': 'GtfZ, alpha-1,3'}
+         'AKUH4B202J_12890': 'GS2_BRS, alpha-1,2', 
+         'IBH001_06335': 'GS2_BRS, alpha-1,2',
+         'DSM_06185': 'GtfZ, alpha-1,3'}
+
 
 faa = os.path.expanduser('~') + '/Akunkeei_files/faa'
 out_faa = os.path.expanduser('~') + '/GH_project/GS2_BRS_repeats/files/input_seqs.faa'
@@ -79,25 +82,29 @@ with open(log, 'w+') as flog:
 # =============================================================================
 # 2. Save input sequences to fasta file
 # =============================================================================
-for file in os.listdir(faa):
-    if any([strain in file for strain in strains_of_interest]):
-        with open(f'{faa}/{file}') as strain_faa:
-            fr = SeqIO.parse(strain_faa, 'fasta')
-            for seq in fr:
-                locus_tag = ''
-                description_list = seq.description.split(' ')
-                for item in description_list:
-                    if 'AKU' in item:
-                        locus_tag = item
-                if any([gene in locus_tag for gene in genes_of_interest]):
-                    print(f'Retrieving gene with locus tag {locus_tag}...')
-                    gene_name = types[locus_tag].split(',')[0]
-                    description = types[locus_tag]
-                    record = SeqRecord(seq.seq, id = locus_tag, name = gene_name,
-                                       description = description)
-                    print(f'Creating record with id {locus_tag} and length {len(seq.seq)}')
-                    with open(out_faa, 'a+') as f:
-                        SeqIO.write(record, f, 'fasta')
+for strain in strains_of_interest:
+    # if any([strain in file for strain in strains_of_interest]):
+    with open(f'{faa}/{strain}_protein.faa') as strain_faa:
+        print(f'Reading file {faa}/{strain}_protein.faa')
+        fr = SeqIO.parse(strain_faa, 'fasta')
+        for seq in fr:
+            locus_tag = ''
+            description_list = seq.description.split(' ')
+            for item in description_list:
+                if ('AKU' in item) or ('WP_220382103.1' in item) or ('UZX33033.1' in item):
+                    locus_tag = item
+                    locus_tag = locus_tag.replace('UZX33033.1', 'IBH001_06335')
+                    locus_tag = locus_tag.replace('WP_220382103.1', 'DSM_06185')
+            if any([gene in locus_tag for gene in genes_of_interest]):
+                print(f'Retrieving gene with locus tag {locus_tag}...')
+                gene_name = types[locus_tag].split(',')[0]
+                description = types[locus_tag]
+                locus_tag = locus_tag.replace('AKU', '')
+                record = SeqRecord(seq.seq, id = locus_tag, name = gene_name,
+                                   description = description)
+                print(f'Creating record with id {locus_tag} and length {len(seq.seq)}')
+                with open(out_faa, 'a+') as f:
+                    SeqIO.write(record, f, 'fasta')
             
             
 

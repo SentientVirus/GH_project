@@ -1,5 +1,5 @@
 threads=16
-in_og="files/outgroups_ingroups.fasta"
+in_og="files/ingroups.fasta"
 out_og="results/interproscan/GH70_species.tsv"
 annot_log="logs/01-interproscan.log"
 

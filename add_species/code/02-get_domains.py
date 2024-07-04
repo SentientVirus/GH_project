@@ -13,8 +13,8 @@ import os
 
 in_file = 'results/interproscan/GH70_species.tsv'
 GH70_text = 'Glycosyl hydrolase family 70'
-fasta_file = 'files/outgroups_ingroups.fasta'
-outfile = 'results/domains/outgroup_domains.fasta'
+fasta_file = 'files/ingroups.fasta'
+outfile = 'results/domains/ingroup_domains.fasta'
 outdir = os.path.dirname(outfile)
 
 if not os.path.exists(outdir):
