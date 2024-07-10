@@ -16,6 +16,9 @@ import subprocess
 # =============================================================================
 log = os.path.expanduser('~') + '/GH_project/RDP5_analysis/logs/get_alignments.log'
 
+if os.path.exists(log):
+    os.remove(log)
+
 if not os.path.exists(os.path.dirname(log)):
     os.makedirs(os.path.dirname(log))
 
@@ -54,14 +57,16 @@ threads = 16 #Threads to run mafft
 
 # Strains and comparisons of interest
 strain_groups = {'H3B2-03M': 0, 'H4B4-02J': 0, 'H4B5-03X': 0, 'H1B3-02M': 1,
-                 'H3B2-09X': 1, 'H4B5-05J': 1, 'MP2': 2, 'H3B2-02X': 2}
+                 'H3B2-09X': 1, 'H4B5-05J': 1, 'MP2': 2, 'H3B2-02X': 2,
+                 'H3B2-03J': 2}
 
 group_names = {0: 'root_GS1_S2-3_subset', 1: 'GS1-2_BRS', 2: 'only_GS1+GS2'}
 
 GS1_loctag = {'H3B2-03M': 'AKUH3B203M_12480', 'H4B4-02J': 'AKUH4B402J_12600',
               'H4B5-03X': 'AKUH4B503X_12670', 'H1B3-02M': 'AKUH1B302M_12880',
               'H4B5-05J': 'AKUH4B505J_12880', 'H3B2-09X': 'AKUH3B209X_13340',
-              'H3B2-02X': 'AKUH3B202X_12850', 'MP2': 'APS55_RS03850'}
+              'H3B2-02X': 'AKUH3B202X_12850', 'H3B2-03J': 'AKUH3B203J_13370',
+              'MP2': 'APS55_RS03850'}
 
 if not os.path.exists(pos_dir):
     os.makedirs(pos_dir)
