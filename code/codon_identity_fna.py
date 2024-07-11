@@ -17,6 +17,7 @@ import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
 from Bio import SeqIO
+from Bio.Seq import Seq
 import matplotlib.gridspec as gridspec
 # =============================================================================
 # 0. Logging
@@ -62,6 +63,7 @@ aln_path = f'{seq_outdir}/alignments'
 codon_path = os.path.expanduser('~') + '/GH_project/data/codons/other_genes/subset'
 outdir = os.path.expanduser('~') + '/GH_project/plots/substitution_subsets'
 pal2nal_path = os.path.expanduser('~') + '/GH_project/pal2nal.v14/pal2nal.pl'
+outplot = f'{outdir}/matrix_subs_plot.png'
 
 # Threads for mafft (set to automatic)
 thr = -1
@@ -135,11 +137,15 @@ def retrieve_gene_seqs(input_dir):
     for nbr in os.listdir(input_dir):
         check2 = False
         check = False
+        add_gene = True
         if 'other_genes' in input_dir and nbr.startswith('a_kunkeei') and 'mafft' not in nbr:
             gene_name = nbr.split('_')[2].split('.')[0]
             check = True
-        elif 'GH' in input_dir and any(gh_gene in nbr for gh_gene in GH_genes) and 'repset' in nbr and 'mafft' not in nbr:
-            gene_name = nbr.split('_')[0]
+        elif ('GH' in input_dir and any(gh_gene in nbr for gh_gene in GH_genes) and 'all' in nbr and 'mafft' not in nbr) and (('GH70' in input_dir and 'complete' in nbr) or 'GH32' in input_dir):
+            if 'GH70' not in input_dir:
+                gene_name = nbr.split('_')[0]
+            else:
+                gene_name = nbr.split('_')[1]
             check = True
         if check:
             suffix = nbr.split('.')[-1]
@@ -155,6 +161,7 @@ def retrieve_gene_seqs(input_dir):
                     seq.id = seq.id.replace('55_RS', 'MP2_')
                     print(seq.id)
                     seq.description = seq.description.replace('55_RS', 'MP2_')
+                    seq.description = seq.description.replace('APS', '')
                     strain = seq.id.split('_')[0]
                     if strain[0] == 'H':
                         strain = strain[:4] + '-' + strain[4:]
@@ -162,12 +169,23 @@ def retrieve_gene_seqs(input_dir):
                         prefix = group_names[strain_groups[strain]]
                         with open(f'{seq_outdir}/{prefix}_{gene_name}.{suffix}', 'a+') as seqfile:
                             print(f'Writing gene {seq.id} to {seq_outdir}/{prefix}_{gene_name}.{suffix}')
-                            if strain != 'H1B3-02M' and prefix == group_names[1] and gene_name == GH_genes[1] and check2 == False:
-                                with open(f'{aa_path}/{gene_types[0]}/trunc_{GH_genes[1]}.{suffix}') as gs2_trunc:
-                                    record = SeqIO.read(gs2_trunc, 'fasta')
-                                    SeqIO.write(record, seqfile, 'fasta')
-                                check2 = True
-                            SeqIO.write(seq, seqfile, 'fasta')
+                            # if strain != 'H1B3-02M' and prefix == group_names[1] and gene_name == GH_genes[1] and check2 == False:
+                            #     with open(f'{aa_path}/{gene_types[0]}/trunc_{GH_genes[1]}.{suffix}') as gs2_trunc:
+                            #         record = SeqIO.read(gs2_trunc, 'fasta')
+                            #         SeqIO.write(record, seqfile, 'fasta')
+                            #     check2 = True
+                            if seq.id == 'H3B209X_13360':
+                                # seq_add = str(seq.seq)
+                                add_gene = False
+                            else: add_gene = True
+                            # elif seq.id == 'H3B209X_13370':
+                            #     seq.id = seq.id.replace('70', '60-70')
+                            #     seq.seq = Seq(str(seq.seq) + seq_add)
+                            #     seq.description = seq.description.replace('70', '60-70')
+                            #     add_gene = True
+                            # else: add_gene = True
+                            if add_gene:
+                                SeqIO.write(seq, seqfile, 'fasta')
                             
 def get_unique_values(tuple_list):
     '''This function loops through a tuple with pairs of locus tags and returns 
@@ -199,6 +217,7 @@ for folder in gene_types:
 for file in os.listdir(seq_outdir):
     if file.endswith('faa'):
         outfile_base = file.replace('faa', 'mafft.faa')
+        print(f'Get alignments for {file.replace(".faa", "")}')
         subprocess.run(f'mafft-linsi --thread {thr} {seq_outdir}/{file} > {aln_path}/{outfile_base} 2>> {log}',
                        shell = True)
         subprocess.run(f'{pal2nal_path} {aln_path}/{outfile_base} {seq_outdir}/{file.replace("faa", "fna")} -output fasta > {aln_path}/{outfile_base.replace("mafft.faa", "pal2nal.fna")} 2>> {log};',
@@ -326,7 +345,7 @@ for comparison in group_names.values():
         ax.set_ylabel('Comparison', fontsize = 24)
         ax.set_xlabel('Codon position', fontsize = 24)
         ax.set_title(gene, fontsize = 30)
-        nbins = ax.get_xlim()[1]//25
+        nbins = ax.get_xlim()[1]//30
         if count == 0:
             plt.yticks(rotation=90)
         plt.tick_params(axis='x', which='major', labelsize=20) # Increase font size of ax ticks
@@ -335,6 +354,7 @@ for comparison in group_names.values():
         print(f'Added {gene} plot to comparison {comparison}!')
     
     count += 1
-    print(f'Plot for {comparison} saved to {outdir}/matrix_dNdSplot.png!')
+    print(f'Plot for {comparison} saved to {outplot}!')
     # Save plot
-plt.savefig(f'{outdir}/matrix_dNdSplot.png', bbox_inches='tight')
+plt.savefig(outplot, bbox_inches='tight')
+plt.savefig(outplot.replace('.png', '.tiff'), bbox_inches='tight')
