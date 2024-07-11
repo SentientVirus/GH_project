@@ -110,7 +110,7 @@ def get_codons(sequence):
     codons = [sequence[i:i+3] for i in range(0, len(sequence), 3)]
     return codons
 
-# OBS! Try to remove the gaps where there are no GHs and to make the plots proportional to alignment length.
+# OBS! Try to put all the images together in one
 def retrieve_gene_seqs(input_dir):
     for nbr in os.listdir(input_dir):
         check = False
@@ -153,28 +153,6 @@ for file in os.listdir(seq_outdir):
 # 1. From amino acid sequences of genes in the 30kb region, including glycosyl
 # hydrolases, create faa and fna files
 # =============================================================================
-# for nbr in os.listdir(f'{aa_path}/{neighbor}'):
-#     if nbr.startswith('a_kunkeei') and 'mafft' not in nbr:
-#         if nbr.endswith('.faa'):
-#             suffix = 'faa'
-#         elif nbr.endswith('.fna'):
-#             suffix = 'fna'
-#         gene_name = nbr.split('_')[2].split('.')[0]
-#         print(f'Retrieving gene {gene_name}')
-#         with open(f'{aa_path}/{neighbor}/{nbr}') as nbr_file:
-#             seqs = SeqIO.parse(nbr_file, 'fasta')
-#             for seq in seqs:
-#                 seq.id = seq.id.replace('55_RS', 'MP2_')
-#                 seq.description = seq.description.replace('55_RS', 'MP2_')
-#                 strain = seq.id.split('_')[0]
-#                 if strain[0] == 'H':
-#                     strain = strain[:4] + '-' + strain[4:]
-#                 if strain in strain_groups.keys():
-#                     prefix = group_names[strain_groups[strain]]
-#                     with open(f'{seq_outdir}/{prefix}_{gene_name}.{suffix}', 'a+') as seqfile:
-#                         print(f'Writing gene {seq.id} to {seq_outdir}/{prefix}_{gene_name}.{suffix}')
-#                         SeqIO.write(seq, seqfile, 'fasta')
-
 for folder in gene_types:
     retrieve_gene_seqs(f'{aa_path}/{folder}')
     
@@ -192,6 +170,7 @@ for file in os.listdir(seq_outdir):
 # =============================================================================
 # 3. Start the plotting!
 # =============================================================================
+# Get the length of each alignment to scale gene length in the plots
 length_dict = {}
 for comparison in group_names.values():
     length_dict[comparison] = []
@@ -210,6 +189,8 @@ for comparison in group_names.values():
                     break
         else: length_dict[comparison].append(0)
 
+# Create a dataframe assigning different values to identical codons (0),
+# synonymous substitutions (1), non-synonymous substitutions (2) and gaps (3)
 df_aln_dict = {}
 pos_dict_2 = {}
 for comparison in group_names.values():
@@ -249,6 +230,7 @@ for comparison in group_names.values():
             df_aln_dict[gene] = df_aln # Save dataframe to dictionary
             pos_dict_2[gene] = pos_dict
             
+            # Assign colors to the values in the dataframe
             cmap = []
             if 0 in df_aln_dict[gene].values:
                 cmap.append('white')
@@ -259,14 +241,20 @@ for comparison in group_names.values():
             if 3 in df_aln_dict[gene].values:
                 cmap.append('#9a9a9a')
             
+            # Create a plot for the gene and comparison
             ax = fig.add_subplot(spec[0, gene_no-1])
             h3 = sns.heatmap(df_aln_dict[gene].T, cmap = cmap, cbar=False, ax=ax)
             ax.patch.set(lw=5, ec='black')
-            ax.set_ylabel('Comparison', fontsize = 20)
-            ax.set_xlabel('Codon position')
-            ax.set_title(gene, fontsize = 24)
+            ax.set_ylabel('Comparison', fontsize = 24)
+            ax.set_xlabel('Codon position', fontsize = 24)
+            ax.set_title(gene, fontsize = 30)
+            nbins = ax.get_xlim()[1]//25
+            plt.tick_params(axis='x', which='major', labelsize=20) # Increase font size of ax ticks
+            plt.tick_params(axis='y', which='major', labelsize=11)
+            plt.locator_params(axis='x', nbins=nbins) 
             print(f'Added {gene} plot to comparison {comparison}!')
 
-    plt.tight_layout(h_pad = 2, w_pad = -0.5)
+    plt.tight_layout(h_pad = 2, w_pad = 2) # Adjust space between genes
+    # Save plot
     plt.savefig(f'{outdir}/{comparison}_dNdSplot.png')
     print(f'Plot for {comparison} saved to {outdir}/{comparison}_dNdSplot.png!')
