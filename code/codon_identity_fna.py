@@ -133,6 +133,7 @@ def retrieve_gene_seqs(input_dir):
         to be one of the types in GH genes (or S1) and the extension has to be
         faa or fna'''
     for nbr in os.listdir(input_dir):
+        check2 = False
         check = False
         if 'other_genes' in input_dir and nbr.startswith('a_kunkeei') and 'mafft' not in nbr:
             gene_name = nbr.split('_')[2].split('.')[0]
@@ -141,10 +142,11 @@ def retrieve_gene_seqs(input_dir):
             gene_name = nbr.split('_')[0]
             check = True
         if check:
-            if nbr.endswith('.faa'):
-                suffix = 'faa'
-            elif nbr.endswith('.fna'):
-                suffix = 'fna'
+            suffix = nbr.split('.')[-1]
+            # if nbr.endswith('.faa'):
+            #     suffix = 'faa'
+            # elif nbr.endswith('.fna'):
+            #     suffix = 'fna'
             print(f'Retrieving gene {gene_name}')
             with open(f'{input_dir}/{nbr}') as nbr_file:
                 seqs = SeqIO.parse(nbr_file, 'fasta')
@@ -160,6 +162,11 @@ def retrieve_gene_seqs(input_dir):
                         prefix = group_names[strain_groups[strain]]
                         with open(f'{seq_outdir}/{prefix}_{gene_name}.{suffix}', 'a+') as seqfile:
                             print(f'Writing gene {seq.id} to {seq_outdir}/{prefix}_{gene_name}.{suffix}')
+                            if strain != 'H1B3-02M' and prefix == group_names[1] and gene_name == GH_genes[1] and check2 == False:
+                                with open(f'{aa_path}/{gene_types[0]}/trunc_{GH_genes[1]}.{suffix}') as gs2_trunc:
+                                    record = SeqIO.read(gs2_trunc, 'fasta')
+                                    SeqIO.write(record, seqfile, 'fasta')
+                                check2 = True
                             SeqIO.write(seq, seqfile, 'fasta')
                             
 def get_unique_values(tuple_list):
@@ -169,7 +176,7 @@ def get_unique_values(tuple_list):
     for n1, n2 in tuple_list:
         strain = n1.split('_')[0]
         strain2 = n2.split('_')[0]
-        strains.append(f'{strain}-{strain2}')
+        strains.append(f'{strain}_{strain2}')
     return strains
 
 # =============================================================================
