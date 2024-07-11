@@ -10,6 +10,8 @@ each pairwise comparison are also specified.
 
 @author: Marina Mota Merlo
 """
+
+# OBS! Add the grey to the absent comparisons of mhpD too!
 import os, subprocess
 import logging, traceback, sys
 import pandas as pd
@@ -110,7 +112,6 @@ def get_codons(sequence):
     codons = [sequence[i:i+3] for i in range(0, len(sequence), 3)]
     return codons
 
-# OBS! Try to put all the images together in one
 def retrieve_gene_seqs(input_dir):
     for nbr in os.listdir(input_dir):
         check = False
@@ -141,6 +142,14 @@ def retrieve_gene_seqs(input_dir):
                         with open(f'{seq_outdir}/{prefix}_{gene_name}.{suffix}', 'a+') as seqfile:
                             print(f'Writing gene {seq.id} to {seq_outdir}/{prefix}_{gene_name}.{suffix}')
                             SeqIO.write(seq, seqfile, 'fasta')
+                            
+def get_unique_values(tuple_list):
+    strains = []
+    for n1, n2 in tuple_list:
+        strain = n1.split('_')[0]
+        strain2 = n2.split('_')[0]
+        strains.append(f'{strain}_{strain2}')
+    return strains
 
 # =============================================================================
 # 0. Remove outputs of prior iterations
@@ -188,14 +197,32 @@ for comparison in group_names.values():
                     length_dict[comparison].append(aln_length)
                     break
         else: length_dict[comparison].append(0)
+        
+absent_genes = {}
+for comparison in group_names.values():
+    for gene in ['S2a', 'GS2', 'BRS', 'S3']:
+        gene_number = list(filter(lambda x: gene_order[x] == gene, gene_order))[0]
+        if length_dict[comparison][gene_number-1] != 0:
+            absent_genes[gene] = (gene_number, length_dict[comparison][gene_number-1])
+            
+for comparison in group_names.values():
+    for gene in ['S2a', 'GS2', 'BRS', 'S3']:
+        gene_number = absent_genes[gene][0]
+        if length_dict[comparison][gene_number-1] == 0:
+            length_dict[comparison][gene_number-1] = absent_genes[gene][1]
+        
 
 # Create a dataframe assigning different values to identical codons (0),
 # synonymous substitutions (1), non-synonymous substitutions (2) and gaps (3)
 df_aln_dict = {}
 pos_dict_2 = {}
+fig = plt.figure(constrained_layout=False, figsize=(160, 30))
+spec = gridspec.GridSpec(nrows=3, ncols=26, figure=fig, width_ratios=length_dict[comparison])
+count = 0
 for comparison in group_names.values():
-    fig = plt.figure(constrained_layout=False, figsize=(160, 10))
-    spec = gridspec.GridSpec(nrows=1, ncols=26, figure=fig, width_ratios=length_dict[comparison])
+    plt.tight_layout(h_pad = 2, w_pad = 2) # Adjust space between genes
+    # fig = plt.figure(constrained_layout=False, figsize=(160, 10))
+    # spec = gridspec.GridSpec(nrows=1, ncols=26, figure=fig, width_ratios=length_dict[comparison])
     for gene_no in range(1, len(gene_order)+1):
         gene = gene_order[gene_no]
         file = f'{comparison}_{gene}.pal2nal.fna' # Input alignment
@@ -225,36 +252,49 @@ for comparison in group_names.values():
                         else: pair_dict[(locus_tags[i], locus_tags[j])].append(2) # 2 for non-synonymous codons
                         
             df_aln = pd.DataFrame.from_dict(pair_dict) # Convert dictionary to dataframe
-            df_aln.index += 1 # Make the index start with 1, not 0
+            fstrains = get_unique_values(list(df_aln.columns))
 
-            df_aln_dict[gene] = df_aln # Save dataframe to dictionary
             pos_dict_2[gene] = pos_dict
             
-            # Assign colors to the values in the dataframe
-            cmap = []
-            if 0 in df_aln_dict[gene].values:
-                cmap.append('white')
-            if 1 in df_aln_dict[gene].values:
-                cmap.append('#67e3ff')
-            if 2 in df_aln_dict[gene].values:
-                cmap.append('#0079d8')
-            if 3 in df_aln_dict[gene].values:
-                cmap.append('#9a9a9a')
+        else:
+            if gene == 'S2a' or gene == 'S3':
+                gene_group = 0
+            elif gene == 'BRS':
+                gene_group = 1
+            g_no = list(filter(lambda x: gene_order[x] == gene, gene_order))[0]
+            gene_len = length_dict[group_names[gene_group]][g_no-1]
+            df_aln = pd.DataFrame({fstrains[0]:[3]*gene_len, fstrains[1]:[3]*gene_len, fstrains[2]:[3]*gene_len})
             
-            # Create a plot for the gene and comparison
-            ax = fig.add_subplot(spec[0, gene_no-1])
-            h3 = sns.heatmap(df_aln_dict[gene].T, cmap = cmap, cbar=False, ax=ax)
-            ax.patch.set(lw=5, ec='black')
-            ax.set_ylabel('Comparison', fontsize = 24)
-            ax.set_xlabel('Codon position', fontsize = 24)
-            ax.set_title(gene, fontsize = 30)
-            nbins = ax.get_xlim()[1]//25
-            plt.tick_params(axis='x', which='major', labelsize=20) # Increase font size of ax ticks
-            plt.tick_params(axis='y', which='major', labelsize=11)
-            plt.locator_params(axis='x', nbins=nbins) 
-            print(f'Added {gene} plot to comparison {comparison}!')
-
-    plt.tight_layout(h_pad = 2, w_pad = 2) # Adjust space between genes
+        
+        df_aln.index += 1 # Make the index start with 1, not 0
+        df_aln_dict[gene] = df_aln # Save dataframe to dictionary
+        # Assign colors to the values in the dataframe
+        cmap = []
+        if 0 in df_aln_dict[gene].values:
+            cmap.append('white')
+        if 1 in df_aln_dict[gene].values:
+            cmap.append('#67e3ff')
+        if 2 in df_aln_dict[gene].values:
+            cmap.append('#0079d8')
+        if 3 in df_aln_dict[gene].values:
+            cmap.append('#9a9a9a')
+        
+        # Create a plot for the gene and comparison
+        ax = fig.add_subplot(spec[count, gene_no-1])
+        h3 = sns.heatmap(df_aln_dict[gene].T, cmap = cmap, cbar=False, ax=ax)
+        ax.patch.set(lw=5, ec='black')
+        ax.set_ylabel('Comparison', fontsize = 24)
+        ax.set_xlabel('Codon position', fontsize = 24)
+        ax.set_title(gene, fontsize = 30)
+        nbins = ax.get_xlim()[1]//25
+        if count == 0:
+            plt.yticks(rotation=90)
+        plt.tick_params(axis='x', which='major', labelsize=20) # Increase font size of ax ticks
+        plt.tick_params(axis='y', which='major', labelsize=11)
+        plt.locator_params(axis='x', nbins=nbins) 
+        print(f'Added {gene} plot to comparison {comparison}!')
+    
+    count += 1
+    print(f'Plot for {comparison} saved to {outdir}/matrix_dNdSplot.png!')
     # Save plot
-    plt.savefig(f'{outdir}/{comparison}_dNdSplot.png')
-    print(f'Plot for {comparison} saved to {outdir}/{comparison}_dNdSplot.png!')
+plt.savefig(f'{outdir}/matrix_dNdSplot.png', bbox_inches='tight')
