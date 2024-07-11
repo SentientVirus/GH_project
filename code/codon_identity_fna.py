@@ -336,7 +336,7 @@ for comparison in group_names.values():
         if 2 in df_aln_dict[gene].values:
             cmap.append('#0079d8')
         if 3 in df_aln_dict[gene].values:
-            cmap.append('#9a9a9a')
+            cmap.append('#e6e6e6')
         
         # Create a plot for the gene and comparison
         ax = fig.add_subplot(spec[count, gene_no-1])
@@ -345,7 +345,7 @@ for comparison in group_names.values():
         ax.set_ylabel('Comparison', fontsize = 24)
         ax.set_xlabel('Codon position', fontsize = 24)
         ax.set_title(gene, fontsize = 30)
-        nbins = ax.get_xlim()[1]//30
+        nbins = ax.get_xlim()[1]//40
         if count == 0:
             plt.yticks(rotation=90)
         plt.tick_params(axis='x', which='major', labelsize=20) # Increase font size of ax ticks
