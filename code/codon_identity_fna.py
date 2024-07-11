@@ -10,8 +10,7 @@ each pairwise comparison are also specified.
 
 @author: Marina Mota Merlo
 """
-
-# OBS! Add the grey to the absent comparisons of mhpD too!
+# Try to add the partial GS2 in H3B2-09X
 import os, subprocess
 import logging, traceback, sys
 import pandas as pd
@@ -22,14 +21,15 @@ import matplotlib.gridspec as gridspec
 # =============================================================================
 # 0. Logging
 # =============================================================================
-log = os.path.expanduser('~') + '/GH_project/logs/dS_matrix.log'
+log = os.path.expanduser('~') + '/GH_project/logs/dS_matrix.log' # Log file
 
-if os.path.exists(log):
+if os.path.exists(log): # Remove årevious log file if it exists
     os.remove(log)
 
-if not os.path.exists(os.path.dirname(log)):
+if not os.path.exists(os.path.dirname(log)): # Create log directory if it does not exist
     os.makedirs(os.path.dirname(log))
 
+# Create a logger
 logger = logging.getLogger()
 
 logging.basicConfig(filename = log, level = logging.INFO,
@@ -45,6 +45,7 @@ def handle_exception(exc_type, exc_value, exc_traceback):
                           *traceback.format_exception(exc_type, exc_value, exc_traceback)
                           ]))
 
+# Redirect errors and stout to log file
 sys.excepthook = handle_exception
 
 sys.stdout = open(log, 'a')
@@ -52,6 +53,7 @@ sys.stdout = open(log, 'a')
 # =============================================================================
 # 0. Input and function definition
 # =============================================================================
+# Paths
 aa_path = os.path.expanduser('~') + '/GH_project/data/fasta'
 gene_types = ['GH70', 'GH32', 'other_genes']
 neighbor = 'other_genes'
@@ -59,9 +61,12 @@ seq_outdir = f'{aa_path}/{neighbor}/subset'
 aln_path = f'{seq_outdir}/alignments'
 codon_path = os.path.expanduser('~') + '/GH_project/data/codons/other_genes/subset'
 outdir = os.path.expanduser('~') + '/GH_project/plots/substitution_subsets'
-thr = -1
 pal2nal_path = os.path.expanduser('~') + '/GH_project/pal2nal.v14/pal2nal.pl'
 
+# Threads for mafft (set to automatic)
+thr = -1
+
+# Dictionaries with info about the data to be used
 strain_groups = {'H3B2-03M': 0, 'H4B4-02J': 0, 'H4B5-03X': 0, 'H1B3-02M': 1,
                  'H3B2-09X': 1, 'H4B5-05J': 1, 'MP2': 2, 'H3B2-02X': 2,
                  'H3B2-03J': 2}
@@ -89,15 +94,18 @@ transtable = {'TTT': 'F', 'TTC': 'F', 'TTA': 'L', 'TTG': 'L', 'CTT': 'L',
               'CGG': 'R', 'AGT': 'S', 'AGC': 'S', 'AGA': 'R', 'AGG': 'R',
               'GGT': 'G', 'GGC': 'G', 'GGA': 'G', 'GGG': 'G'}
 
+# List of glycosyl hydrolase genes, using the names that I gave them
 GH_genes = ['GS1', 'GS2', 'BRS', 'S2a', 'S3']
 
+# Paths to be created if they don't exist
 paths2make = [aln_path, codon_path, outdir]
-
 
 # =============================================================================
 # 2. Function definitions
 # =============================================================================
 def make_paths(my_path):
+    '''This function creates a path if it doesn't exist already
+    Input: Path to be created'''
     if not os.path.exists(my_path):
         os.makedirs(my_path)
         print(f'Created directory {my_path}')
@@ -113,6 +121,17 @@ def get_codons(sequence):
     return codons
 
 def retrieve_gene_seqs(input_dir):
+    '''This function retrieves the GH genes and neighboring genes for the
+    strains of interest (in strain_groups).
+    Input: Path were the files are
+    Output: Files with the desired sequences
+    
+    Note that the files have to follow a specific naming scheme:
+        neighboring genes: other_genes/a_kunkeei_<gene>.<extension>, where the 
+        extension can be faa or fna
+        GH genes: <GH family>/<GH type>_repset.<extension>, where GH type has 
+        to be one of the types in GH genes (or S1) and the extension has to be
+        faa or fna'''
     for nbr in os.listdir(input_dir):
         check = False
         if 'other_genes' in input_dir and nbr.startswith('a_kunkeei') and 'mafft' not in nbr:
@@ -144,11 +163,13 @@ def retrieve_gene_seqs(input_dir):
                             SeqIO.write(seq, seqfile, 'fasta')
                             
 def get_unique_values(tuple_list):
+    '''This function loops through a tuple with pairs of locus tags and returns 
+    a string with the names of the two strains in a pair'''
     strains = []
     for n1, n2 in tuple_list:
         strain = n1.split('_')[0]
         strain2 = n2.split('_')[0]
-        strains.append(f'{strain}_{strain2}')
+        strains.append(f'{strain}-{strain2}')
     return strains
 
 # =============================================================================
@@ -198,6 +219,8 @@ for comparison in group_names.values():
                     break
         else: length_dict[comparison].append(0)
         
+# Get the lengths of the genes that are absent in some of the comparisons
+# To do this, check other comparisons
 absent_genes = {}
 for comparison in group_names.values():
     for gene in ['S2a', 'GS2', 'BRS', 'S3']:
@@ -205,6 +228,7 @@ for comparison in group_names.values():
         if length_dict[comparison][gene_number-1] != 0:
             absent_genes[gene] = (gene_number, length_dict[comparison][gene_number-1])
             
+# Assign the lengths retrieved from other comparisons
 for comparison in group_names.values():
     for gene in ['S2a', 'GS2', 'BRS', 'S3']:
         gene_number = absent_genes[gene][0]
@@ -215,14 +239,15 @@ for comparison in group_names.values():
 # Create a dataframe assigning different values to identical codons (0),
 # synonymous substitutions (1), non-synonymous substitutions (2) and gaps (3)
 df_aln_dict = {}
-pos_dict_2 = {}
+# pos_dict_2 = {}
+fstrains = []
+
+# Create the figure to save the plots
 fig = plt.figure(constrained_layout=False, figsize=(160, 30))
 spec = gridspec.GridSpec(nrows=3, ncols=26, figure=fig, width_ratios=length_dict[comparison])
-count = 0
+count = 0 # Number of the row
 for comparison in group_names.values():
     plt.tight_layout(h_pad = 2, w_pad = 2) # Adjust space between genes
-    # fig = plt.figure(constrained_layout=False, figsize=(160, 10))
-    # spec = gridspec.GridSpec(nrows=1, ncols=26, figure=fig, width_ratios=length_dict[comparison])
     for gene_no in range(1, len(gene_order)+1):
         gene = gene_order[gene_no]
         file = f'{comparison}_{gene}.pal2nal.fna' # Input alignment
@@ -252,11 +277,19 @@ for comparison in group_names.values():
                         else: pair_dict[(locus_tags[i], locus_tags[j])].append(2) # 2 for non-synonymous codons
                         
             df_aln = pd.DataFrame.from_dict(pair_dict) # Convert dictionary to dataframe
+            
+            if gene == 'mhpD' and group_names[0] == comparison:
+                tuple1 = tuple(fstrains[1].split('_'))
+                tuple2 = tuple(fstrains[2].split('_'))
+                df_add = pd.DataFrame({tuple1:[3]*aln_length, tuple2:[3]*aln_length})
+                df_aln = pd.concat([df_aln, df_add], axis=1)
+                print(df_aln.columns)
+                
             fstrains = get_unique_values(list(df_aln.columns))
 
-            pos_dict_2[gene] = pos_dict
+            # pos_dict_2[gene] = pos_dict
             
-        else:
+        else: # Create a dataframe only with gaps for the genes that are absent
             if gene == 'S2a' or gene == 'S3':
                 gene_group = 0
             elif gene == 'BRS':
