@@ -10,7 +10,7 @@ each pairwise comparison are also specified.
 
 @author: Marina Mota Merlo
 """
-# Try to add the partial GS2 in H3B2-09X
+# Make the y axis ticks appear only on the ohrR plot, with higher fontsize
 import os, subprocess
 import logging, traceback, sys
 import pandas as pd
@@ -135,7 +135,7 @@ def retrieve_gene_seqs(input_dir):
         to be one of the types in GH genes (or S1) and the extension has to be
         faa or fna'''
     for nbr in os.listdir(input_dir):
-        check2 = False
+        # check2 = False
         check = False
         add_gene = True
         if 'other_genes' in input_dir and nbr.startswith('a_kunkeei') and 'mafft' not in nbr:
@@ -149,6 +149,7 @@ def retrieve_gene_seqs(input_dir):
             check = True
         if check:
             suffix = nbr.split('.')[-1]
+            print(f'Suffix is {suffix}')
             # if nbr.endswith('.faa'):
             #     suffix = 'faa'
             # elif nbr.endswith('.fna'):
@@ -175,15 +176,14 @@ def retrieve_gene_seqs(input_dir):
                             #         SeqIO.write(record, seqfile, 'fasta')
                             #     check2 = True
                             if seq.id == 'H3B209X_13360':
-                                # seq_add = str(seq.seq)
+                            #     seq_add = str(seq.seq)
                                 add_gene = False
-                            else: add_gene = True
                             # elif seq.id == 'H3B209X_13370':
                             #     seq.id = seq.id.replace('70', '60-70')
                             #     seq.seq = Seq(str(seq.seq) + seq_add)
                             #     seq.description = seq.description.replace('70', '60-70')
                             #     add_gene = True
-                            # else: add_gene = True
+                            else: add_gene = True
                             if add_gene:
                                 SeqIO.write(seq, seqfile, 'fasta')
                             
@@ -330,27 +330,42 @@ for comparison in group_names.values():
         # Assign colors to the values in the dataframe
         cmap = []
         if 0 in df_aln_dict[gene].values:
-            cmap.append('white')
+            cmap.append('#FEFDED')
         if 1 in df_aln_dict[gene].values:
-            cmap.append('#67e3ff')
+            cmap.append('#80C4E9')
         if 2 in df_aln_dict[gene].values:
-            cmap.append('#0079d8')
+            cmap.append('#FF7F3E')
         if 3 in df_aln_dict[gene].values:
-            cmap.append('#e6e6e6')
+            cmap.append('#F8F9F9')
         
         # Create a plot for the gene and comparison
-        ax = fig.add_subplot(spec[count, gene_no-1])
-        h3 = sns.heatmap(df_aln_dict[gene].T, cmap = cmap, cbar=False, ax=ax)
+        ax = fig.add_subplot(spec[count, gene_no-1]) # Set the right row and column
+        h3 = sns.heatmap(df_aln_dict[gene].T, cmap = cmap, cbar=False, ax=ax) # Plot
         ax.patch.set(lw=5, ec='black')
-        ax.set_ylabel('Comparison', fontsize = 24)
-        ax.set_xlabel('Codon position', fontsize = 24)
-        ax.set_title(gene, fontsize = 30)
-        nbins = ax.get_xlim()[1]//40
+        gn = gene.replace('rfbX', '?wzx').replace('wzyC', '?waaL')
+        
+        if comparison == group_names[min(group_names.keys())]:
+            ax.set_title(gn, fontsize = 48, style = 'italic')
+            
         if count == 0:
             plt.yticks(rotation=90)
+            
+        nbins = ax.get_xlim()[1]//50
         plt.tick_params(axis='x', which='major', labelsize=20) # Increase font size of ax ticks
-        plt.tick_params(axis='y', which='major', labelsize=11)
+        # plt.tick_params(axis='y', which='major', labelsize=11)
         plt.locator_params(axis='x', nbins=nbins) 
+        if gene != 'ohrR':
+            plt.tick_params(left = False, labelleft = False)
+            ax.set(ylabel=None)
+        else:
+            y_ticks = get_unique_values(list(df_aln.columns))
+            ax.set_yticklabels(y_ticks, fontsize = 24, rotation = 'horizontal')
+            ax.set_ylabel('Comparison', fontsize = 36)
+            
+        if comparison == group_names[max(group_names.keys())]:
+            ax.set_xlabel('Codon position', fontsize = 36)
+        else: ax.set(xlabel=None)
+        
         print(f'Added {gene} plot to comparison {comparison}!')
     
     count += 1
