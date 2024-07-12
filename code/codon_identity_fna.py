@@ -355,10 +355,10 @@ for comparison in group_names.values():
         # plt.tick_params(axis='y', which='major', labelsize=11)
         plt.locator_params(axis='x', nbins=nbins)
         ax.set(xlabel=None)
+        ax.set(ylabel=None)
         
         if gene != 'ohrR':
             plt.tick_params(left = False, labelleft = False)
-            ax.set(ylabel=None)
         else:
             y_ticks = get_unique_values(list(df_aln.columns))
             ax.set_yticklabels(y_ticks, fontsize = 36, rotation = 'horizontal')
