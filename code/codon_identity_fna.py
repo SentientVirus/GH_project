@@ -353,23 +353,28 @@ for comparison in group_names.values():
         nbins = ax.get_xlim()[1]//50
         plt.tick_params(axis='x', which='major', labelsize=20) # Increase font size of ax ticks
         # plt.tick_params(axis='y', which='major', labelsize=11)
-        plt.locator_params(axis='x', nbins=nbins) 
+        plt.locator_params(axis='x', nbins=nbins)
+        ax.set(xlabel=None)
+        
         if gene != 'ohrR':
             plt.tick_params(left = False, labelleft = False)
             ax.set(ylabel=None)
         else:
             y_ticks = get_unique_values(list(df_aln.columns))
-            ax.set_yticklabels(y_ticks, fontsize = 24, rotation = 'horizontal')
-            ax.set_ylabel('Comparison', fontsize = 36)
+            ax.set_yticklabels(y_ticks, fontsize = 36, rotation = 'horizontal')
+            if comparison == group_names[max(group_names.keys())//2]:
+                ax.set_ylabel('Comparison', fontsize = 48)
             
-        if comparison == group_names[max(group_names.keys())]:
-            ax.set_xlabel('Codon position', fontsize = 36)
-        else: ax.set(xlabel=None)
+        # if comparison == group_names[max(group_names.keys())]:
+        #     ax.set_xlabel('Codon position', fontsize = 48)
+        # else: ax.set(xlabel=None)
         
         print(f'Added {gene} plot to comparison {comparison}!')
     
     count += 1
     print(f'Plot for {comparison} saved to {outplot}!')
-    # Save plot
+    
+# Save plot
+fig.text(0.5, -0.05, 'Codon position', ha='center', fontsize = 48)
 plt.savefig(outplot, bbox_inches='tight')
 plt.savefig(outplot.replace('.png', '.tiff'), bbox_inches='tight')
