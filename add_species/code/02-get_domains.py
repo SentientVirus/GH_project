@@ -35,12 +35,12 @@ with open(fasta_file) as prots:
     for prot in SeqIO.parse(prots, 'fasta'):
         new_prot = seqr(prot.seq, id = prot.id, name = prot.name, description = prot.description)
         pos = domain_dict[prot.id]
-        new_prot.seq = prot.seq[pos[0]:pos[1]]
+        new_prot.seq = prot.seq[pos[0]:pos[1]+1]
         my_prots.append(new_prot)
         if prot.id + '_2' in domain_dict.keys():
             new_prot2 = seqr(prot.seq, id = prot.id + '_2', name = prot.name, description = prot.description + '_2')
             pos2 =  domain_dict[new_prot2.id]
-            new_prot2.seq = prot.seq[pos2[0]:pos2[1]]
+            new_prot2.seq = prot.seq[pos2[0]:pos2[1]+1]
             my_prots.append(new_prot2)
             
 SeqIO.write(my_prots, outfile, 'fasta')

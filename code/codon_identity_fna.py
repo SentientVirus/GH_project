@@ -75,11 +75,11 @@ strain_groups = {'H3B2-03M': 0, 'H4B4-02J': 0, 'H4B5-03X': 0, 'H1B3-02M': 1,
 
 group_names = {0: 'GS1_S2-3_subset', 1: 'GS1-2_BRS', 2: 'only_GS1+GS2'}
 
-gene_order = {1: 'ohrR', 2: 'yifK', 3: 'yifK2', 4: 'yhdG', 5: 'GH39', 6: 'nox',
-              7: 'ydiL', 8: 'S2a', 9: 'GS1', 10: 'BRS', 11: 'GS2', 12: 'mhpD',
-              13: 'oppA', 14: 'S3', 15: 'rfbX', 16: 'sbnD', 17: 'wzyC', 
-              18: 'branch', 19: 'branch2', 20: 'epsE', 21: 'GTB', 22: 'epsL',
-              23: 'ywqE', 24: 'ywqD', 25: 'ywqC', 26: 'tagU'}
+gene_order = {26: 'ohrR', 25: 'yifK', 24: 'yifK2', 23: 'yhdG', 22: 'GH39', 
+              21: 'nox', 20: 'ydiL', 19: 'S2a', 18: 'GS1', 17: 'BRS', 
+              16: 'GS2', 15: 'mhpD', 14: 'oppA', 13: 'S3', 12: 'rfbX', 
+              11: 'sbnD', 10: 'wzyC', 9: 'branch', 8: 'branch2', 7: 'epsE', 
+              6: 'GTB', 5: 'epsL', 4: 'ywqE', 3: 'ywqD', 2: 'ywqC', 1: 'tagU'}
 
 # Translation table for bacterial codons, assumes standard codon translations
 transtable = {'TTT': 'F', 'TTC': 'F', 'TTA': 'L', 'TTG': 'L', 'CTT': 'L',
@@ -320,11 +320,19 @@ for comparison in group_names.values():
                 gene_group = 0
             elif gene == 'BRS':
                 gene_group = 1
+            elif gene == 'GS2' and 'only' in file:
+                gene_group = 2
+            elif gene == 'GS2' and 'only' not in file:
+                gene_group = 1 
+                
             g_no = list(filter(lambda x: gene_order[x] == gene, gene_order))[0]
             gene_len = length_dict[group_names[gene_group]][g_no-1]
             df_aln = pd.DataFrame({fstrains[0]:[3]*gene_len, fstrains[1]:[3]*gene_len, fstrains[2]:[3]*gene_len})
             
         
+        # Reverse index of genes in the forward strand
+        if gene_no >= 23:
+            df_aln = df_aln.iloc[::-1] #.reset_index(drop = True)
         df_aln.index += 1 # Make the index start with 1, not 0
         df_aln_dict[gene] = df_aln # Save dataframe to dictionary
         # Assign colors to the values in the dataframe
@@ -357,7 +365,7 @@ for comparison in group_names.values():
         ax.set(xlabel=None)
         ax.set(ylabel=None)
         
-        if gene != 'ohrR':
+        if gene != 'tagU':
             plt.tick_params(left = False, labelleft = False)
         else:
             y_ticks = get_unique_values(list(df_aln.columns))
