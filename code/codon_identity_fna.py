@@ -276,6 +276,7 @@ for comparison in group_names.values():
     plt.tight_layout(h_pad = 2, w_pad = 2) # Adjust space between genes
     for gene_no in range(1, len(gene_order)+1):
         gene = gene_order[gene_no]
+            
         file = f'{comparison}_{gene}.pal2nal.fna' # Input alignment
         
         if file in os.listdir(aln_path) and not ('only' in file and 'BRS' in file):
@@ -354,6 +355,28 @@ for comparison in group_names.values():
         
         if comparison == group_names[min(group_names.keys())]:
             ax.set_title(gn, fontsize = 48, style = 'italic')
+            color = '#e5e5e5'
+            if gene == 'GS1':
+                color = '#ffd9d9'
+            elif gene == 'GS2':
+                color = '#ffd6e9'
+            elif gene == 'BRS':
+                color = '#f8d8ff'
+            elif gene == 'S2a':
+                color = '#fff3d7'
+            elif gene == 'S3':
+                color = '#fffcdc'
+                
+            if gene_no >= 23:
+                startx = max(df_aln.index)
+                dx = -max(df_aln.index)
+            else:
+                startx = 0
+                dx = max(df_aln.index)
+            ax.arrow(startx, -0.5, dx, 0, width = 0.2, head_width = 0.2, 
+                     head_length = 30, length_includes_head = True, 
+                     clip_on = False, linewidth = 2,
+                     edgecolor = 'black', facecolor = color)
             
         if count == 0:
             plt.yticks(rotation=90)
