@@ -16,6 +16,7 @@ import logging, traceback, sys
 import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
+import matplotlib.patches as mpatches
 from Bio import SeqIO
 from Bio.Seq import Seq
 import matplotlib.gridspec as gridspec
@@ -349,23 +350,23 @@ for comparison in group_names.values():
         
         # Create a plot for the gene and comparison
         ax = fig.add_subplot(spec[count, gene_no-1]) # Set the right row and column
-        h3 = sns.heatmap(df_aln_dict[gene].T, cmap = cmap, cbar=False, ax=ax) # Plot
-        ax.patch.set(lw=5, ec='black')
-        gn = gene.replace('rfbX', '?wzx').replace('wzyC', '?waaL')
+        h3 = sns.heatmap(df_aln_dict[gene].T, cmap = cmap, cbar = False, ax = ax) # Plot
+        ax.patch.set(lw = 5, ec = 'black') # Border of the subplots
+        gn = gene.replace('rfbX', '?wzx').replace('wzyC', '?waaL') # Change some of the gene annotations
         
         if comparison == group_names[min(group_names.keys())]:
             ax.set_title(gn, fontsize = 48, style = 'italic')
-            color = '#e5e5e5'
-            if gene == 'GS1':
-                color = '#ffd9d9'
-            elif gene == 'GS2':
-                color = '#ffd6e9'
-            elif gene == 'BRS':
-                color = '#f8d8ff'
-            elif gene == 'S2a':
-                color = '#fff3d7'
-            elif gene == 'S3':
-                color = '#fffcdc'
+            color = 'white' #'#e5e5e5'
+            # if gene == 'GS1':
+            #     color = '#ffd9d9'
+            # elif gene == 'GS2':
+            #     color = '#ffd6e9'
+            # elif gene == 'BRS':
+            #     color = '#f8d8ff'
+            # elif gene == 'S2a':
+            #     color = '#fff3d7'
+            # elif gene == 'S3':
+            #     color = '#fffcdc'
                 
             if gene_no >= 23:
                 startx = max(df_aln.index)
@@ -375,7 +376,7 @@ for comparison in group_names.values():
                 dx = max(df_aln.index)
             ax.arrow(startx, -0.5, dx, 0, width = 0.2, head_width = 0.2, 
                      head_length = 30, length_includes_head = True, 
-                     clip_on = False, linewidth = 2,
+                     clip_on = False, linewidth = 5,
                      edgecolor = 'black', facecolor = color)
             
         if count == 0:
@@ -387,6 +388,7 @@ for comparison in group_names.values():
         plt.locator_params(axis='x', nbins=nbins)
         ax.set(xlabel=None)
         ax.set(ylabel=None)
+
         
         if gene != 'tagU':
             plt.tick_params(left = False, labelleft = False)
@@ -405,7 +407,28 @@ for comparison in group_names.values():
     count += 1
     print(f'Plot for {comparison} saved to {outplot}!')
     
+# Add global legend
+gap_patch = mpatches.Rectangle((0, 0), width = 0.1, height = 1, angle = 90, 
+                               color = '#F8F9F9', label = 'Gaps', 
+                               ec = 'black', lw = 2)
+# gap_patch = mpatches.Patch(color = '#F8F9F9', label = 'Gaps', ec = 'black', 
+#                            lw = 2)
+identity_patch = mpatches.Rectangle((0, 0), width = 0.1, height = 1, angle = 90,
+                                    color = '#FEFDED', label = 'Identical sites', 
+                                    ec = 'black', lw = 2)
+S_patch = mpatches.Rectangle((0, 0), width = 0.1, height = 1, angle = 90,
+                         color = '#80C4E9', label = 'Synonymous sites', 
+                         ec = 'black', lw = 2)
+NS_patch = mpatches.Rectangle((0, 0), width = 0.1, height = 1, angle = 90,
+                          color = '#FF7F3E', label = 'Non-synonymous sites', 
+                          ec = 'black', lw = 2)
+patches = [gap_patch, identity_patch, S_patch, NS_patch]
+
+plt.legend(handles=patches, loc='upper right', framealpha = 0, frameon = False,
+           fontsize = 'xx-large', bbox_to_anchor = (9, 3.2), 
+           prop = {'size': 36}, handlelength=0.1)
+
 # Save plot
-fig.text(0.5, -0.05, 'Codon position', ha='center', fontsize = 48)
+fig.text(0.5, -0.05, 'Codon position', ha='center', fontsize = 36, handlewidth = 0.1)
 plt.savefig(outplot, bbox_inches='tight')
 plt.savefig(outplot.replace('.png', '.tiff'), bbox_inches='tight')
