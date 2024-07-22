@@ -151,10 +151,6 @@ def retrieve_gene_seqs(input_dir):
         if check:
             suffix = nbr.split('.')[-1]
             print(f'Suffix is {suffix}')
-            # if nbr.endswith('.faa'):
-            #     suffix = 'faa'
-            # elif nbr.endswith('.fna'):
-            #     suffix = 'fna'
             print(f'Retrieving gene {gene_name}')
             with open(f'{input_dir}/{nbr}') as nbr_file:
                 seqs = SeqIO.parse(nbr_file, 'fasta')
@@ -384,7 +380,6 @@ for comparison in group_names.values():
             
         nbins = ax.get_xlim()[1]//50
         plt.tick_params(axis='x', which='major', labelsize=20) # Increase font size of ax ticks
-        # plt.tick_params(axis='y', which='major', labelsize=11)
         plt.locator_params(axis='x', nbins=nbins)
         ax.set(xlabel=None)
         ax.set(ylabel=None)
@@ -397,10 +392,6 @@ for comparison in group_names.values():
             ax.set_yticklabels(y_ticks, fontsize = 36, rotation = 'horizontal')
             if comparison == group_names[max(group_names.keys())//2]:
                 ax.set_ylabel('Comparison', fontsize = 48)
-            
-        # if comparison == group_names[max(group_names.keys())]:
-        #     ax.set_xlabel('Codon position', fontsize = 48)
-        # else: ax.set(xlabel=None)
         
         print(f'Added {gene} plot to comparison {comparison}!')
     
@@ -408,27 +399,28 @@ for comparison in group_names.values():
     print(f'Plot for {comparison} saved to {outplot}!')
     
 # Add global legend
-gap_patch = mpatches.Rectangle((0, 0), width = 0.1, height = 1, angle = 90, 
-                               color = '#F8F9F9', label = 'Gaps', 
-                               ec = 'black', lw = 2)
-# gap_patch = mpatches.Patch(color = '#F8F9F9', label = 'Gaps', ec = 'black', 
-#                            lw = 2)
-identity_patch = mpatches.Rectangle((0, 0), width = 0.1, height = 1, angle = 90,
-                                    color = '#FEFDED', label = 'Identical sites', 
-                                    ec = 'black', lw = 2)
-S_patch = mpatches.Rectangle((0, 0), width = 0.1, height = 1, angle = 90,
-                         color = '#80C4E9', label = 'Synonymous sites', 
+gap_patch = mpatches.Patch(color = '#F8F9F9', label = 'Gaps', ec = 'black', 
+                           lw = 2)
+
+identity_patch = mpatches.Patch(color = '#FEFDED', label = 'Identical sites', 
+                                ec = 'black', lw = 2)
+
+S_patch = mpatches.Patch(color = '#80C4E9', label = 'Synonymous sites', 
                          ec = 'black', lw = 2)
-NS_patch = mpatches.Rectangle((0, 0), width = 0.1, height = 1, angle = 90,
-                          color = '#FF7F3E', label = 'Non-synonymous sites', 
+
+NS_patch = mpatches.Patch(color = '#FF7F3E', label = 'Non-synonymous sites', 
                           ec = 'black', lw = 2)
+
 patches = [gap_patch, identity_patch, S_patch, NS_patch]
 
-plt.legend(handles=patches, loc='upper right', framealpha = 0, frameon = False,
-           fontsize = 'xx-large', bbox_to_anchor = (9, 3.2), 
-           prop = {'size': 36}, handlelength=0.1)
+legend = plt.legend(handles = patches,  handlelength = 1, handleheight = 3, 
+                    title = 'Site color', loc = 'upper right', framealpha = 0, 
+                    frameon = False, fontsize = 36, bbox_to_anchor = (6.8, 3.38))
+           
+plt.setp(legend.get_title(),fontsize = 48)
+legend._legend_box.align = 'left'
 
 # Save plot
-fig.text(0.5, -0.05, 'Codon position', ha='center', fontsize = 36, handlewidth = 0.1)
+fig.text(0.5, -0.05, 'Codon position', ha='center', fontsize = 36)
 plt.savefig(outplot, bbox_inches='tight')
 plt.savefig(outplot.replace('.png', '.tiff'), bbox_inches='tight')
