@@ -62,45 +62,81 @@ strain_groups = {'H3B2-03M': 0, 'H4B4-02J': 0, 'H4B5-03X': 0, 'H4B4-12M': 0,
 
 group_names = {0: 'root_GS1_S2-3_subset', 1: 'GS1-2_BRS', 2: 'only_GS1+GS2'}
 
-ohrR_loctag = {'A0901': 'AKUA0901_13200', 
+ohrR_loctag = {'A0901': 'AKUA0901_13200', 'A1003': 'AKUA1003_12460',
+               'A1202': 'AKUA1202_13440', 'A1401': 'AKUA1401_12680', #'A1404': 'AKUA1404_13340',
+               'A1805': 'AKUA1805_12700', 'DSMZ12361': 'K2W83_RS06135',
+               'Fhon2': 'AKUFHON2_13460', 'G0101': 'AKUG0101_12700',
                'G0403': 'AKUG0403_13030', 'H1B1-04J': 'AKUH1B104J_12920',
-               'H1B3-02M': 'AKUH1B302M_12770', 'H3B1-04X': 'AKUH3B104X_13130',
-               'H3B2-02X': 'AKUH3B202X_12780', 'H3B2-03J': 'AKUH3B203J_13300',
-               'H3B2-03M': 'AKUH3B203M_12380', 'H3B2-09X': 'AKUH3B209X_13260',
-               'H4B4-02J': 'AKUH4B402J_12520', 'H4B4-06M': 'AKUH4B406M_13380',
-               'H4B4-12M': 'AKUH4B412M_13150', 'H4B5-03X': 'AKUH4B503X_12590', 
+               'H1B1-05A': 'AKUH1B105A_12210', 'H1B3-02M': 'AKUH1B302M_12770', 
+               'H3B1-01A': 'AKUH3B101A_13170', 'H3B1-04J': 'AKUH3B104J_12910', 
+               'H3B1-04X': 'AKUH3B104X_13130', 'H3B2-02X': 'AKUH3B202X_12780', 
+               'H3B2-03J': 'AKUH3B203J_13300', 'H3B2-03M': 'AKUH3B203M_12380', 
+               'H3B2-06M': 'AKUH3B206M_12760', 'H3B2-09X': 'AKUH3B209X_13260',
+               'H4B1-11J': 'AKUH4B111J_13490', 'H4B2-02J': 'AKUH4B202J_12810',
+               'H4B2-04J': 'AKUH4B204J_13260', 'H4B2-05J': 'AKUH4B205J_12900',
+               'H4B2-06J': 'AKUH4B206J_13330', 'H4B2-11M': 'AKUH4B211M_12910', 
+               'H4B4-02J': 'AKUH4B402J_12520', 'H4B4-05J': 'AKUH4B405J_13280',
+               'H4B4-06M': 'AKUH4B406M_13380', 'H4B4-12M': 'AKUH4B412M_13150', 
+               'H4B5-01J': 'AKUH4B501J_12800', 'H4B5-03X': 'AKUH4B503X_12590', 
                'H4B5-04J': 'AKUH4B504J_13390', 'H4B5-05J': 'AKUH4B505J_12800',
-               'MP2': 'APS55_RS03895'}
+               'IBH001': 'LDX55_06290', 'MP2': 'APS55_RS03895'}
 
-ydiL_loctag = {'A0901': 'AKUA0901_13260', 
+ydiL_loctag = {'A0901': 'AKUA0901_13260', 'A1003': 'AKUA1003_12530', 
+               'A1202': 'AKUA1202_13510', 'A1401': 'AKUA1401_12740', #'A1404': 'AKUA1404_13400',
+               'A1805': 'AKUA1805_12760', 'DSMZ12361': 'K2W83_RS06170',
+               'Fhon2': 'AKUFHON2_13520', 'G0101': 'AKUG0101_12770',
                'G0403': 'AKUG0403_13090', 'H1B1-04J': 'AKUH1B104J_12980',
-               'H1B3-02M': 'AKUH1B302M_12870', 'H3B1-04X': 'AKUH3B104X_13190',
-               'H3B2-02X': 'AKUH3B202X_12840', 'H3B2-03J': 'AKUH3B203J_13360',
-               'H3B2-03M': 'AKUH3B203M_12460', 'H3B2-09X': 'AKUH3B209X_13320',
-               'H4B4-02J': 'AKUH4B402J_12580', 'H4B4-06M': 'AKUH4B406M_13440',
-               'H4B4-12M': 'AKUH4B412M_13210', 'H4B5-03X': 'AKUH4B503X_12650', 
+               'H1B1-05A': 'AKUH1B105A_12290', 'H1B3-02M': 'AKUH1B302M_12870', 
+               'H3B1-01A': 'AKUH3B101A_13230', 'H3B1-04J': 'AKUH3B104J_12980',
+               'H3B1-04X': 'AKUH3B104X_13190', 'H3B2-02X': 'AKUH3B202X_12840', 
+               'H3B2-03J': 'AKUH3B203J_13360', 'H3B2-03M': 'AKUH3B203M_12460', 
+               'H3B2-06M': 'AKUH3B206M_12820', 'H3B2-09X': 'AKUH3B209X_13320',
+               'H4B1-11J': 'AKUH4B111J_13550', 'H4B2-02J': 'AKUH4B202J_12870',
+               'H4B2-04J': 'AKUH4B204J_13320', 'H4B2-05J': 'AKUH4B205J_12960',
+               'H4B2-06J': 'AKUH4B206J_13390', 'H4B2-11M': 'AKUH4B211M_12970',
+               'H4B4-02J': 'AKUH4B402J_12580', 'H4B4-05J': 'AKUH4B405J_13340',
+               'H4B4-06M': 'AKUH4B406M_13440', 'H4B4-12M': 'AKUH4B412M_13210', 
+               'H4B5-01J': 'AKUH4B501J_12860', 'H4B5-03X': 'AKUH4B503X_12650', 
                'H4B5-04J': 'AKUH4B504J_13450', 'H4B5-05J': 'AKUH4B505J_12860',
-               'MP2': 'APS55_RS03855'}
+               'IBH001': 'LDX55_06320', 'MP2': 'APS55_RS03855'}
 
-wzx_loctag =  {'A0901': 'AKUA0901_13400', 
+wzx_loctag =  {'A0901': 'AKUA0901_13400', 'A1003': 'AKUA1003_12580',
+               'A1202': 'AKUA1202_13560', 'A1401': 'AKUA1401_12810',
+               'A1805': 'AKUA1805_12860', 'DSMZ12361': 'K2W83_RS06205',
+               'Fhon2': 'AKUFHON2_13630', 'G0101': 'AKUG0101_12870',
                'G0403': 'AKUG0403_13160', 'H1B1-04J': 'AKUH1B104J_13100',
-               'H1B3-02M': 'AKUH1B302M_12940', 'H3B1-04X': 'AKUH3B104X_13290',
-               'H3B2-02X': 'AKUH3B202X_12900', 'H3B2-03J': 'AKUH3B203J_13430',
-               'H3B2-03M': 'AKUH3B203M_12530', 'H3B2-09X': 'AKUH3B209X_13430',
-               'H4B4-02J': 'AKUH4B402J_12670', 'H4B4-06M': 'AKUH4B406M_13500',
-               'H4B4-12M': 'AKUH4B412M_13340', 'H4B5-03X': 'AKUH4B503X_12770', 
+               'H1B1-05A': 'AKUH1B105A_12340', 'H1B3-02M': 'AKUH1B302M_12940', 
+               'H3B1-01A': 'AKUH3B101A_13300', 'H3B1-04J': 'AKUH3B104J_13060',
+               'H3B1-04X': 'AKUH3B104X_13290', 'H3B2-02X': 'AKUH3B202X_12900', 
+               'H3B2-03J': 'AKUH3B203J_13430', 'H3B2-03M': 'AKUH3B203M_12530', 
+               'H3B2-06M': 'AKUH3B206M_12880', 'H3B2-09X': 'AKUH3B209X_13430',
+               'H4B1-11J': 'AKUH4B111J_13610', 'H4B2-02J': 'AKUH4B202J_12930',
+               'H4B2-04J': 'AKUH4B204J_13410', 'H4B2-05J': 'AKUH4B205J_13060',
+               'H4B2-06J': 'AKUH4B206J_13530', 'H4B2-11M': 'AKUH4B211M_13070',
+               'H4B4-02J': 'AKUH4B402J_12670', 'H4B4-05J': 'AKUH4B405J_13400', 
+               'H4B4-06M': 'AKUH4B406M_13500', 'H4B4-12M': 'AKUH4B412M_13340', 
+               'H4B5-01J': 'AKUH4B501J_12960', 'H4B5-03X': 'AKUH4B503X_12770', 
                'H4B5-04J': 'AKUH4B504J_13520', 'H4B5-05J': 'AKUH4B505J_12980',
-               'MP2': 'APS55_RS03825'}
+               'IBH001': 'LDX55_06355', 'MP2': 'APS55_RS03825'}
 
-tagU_loctag = {'A0901': 'AKUA0901_13510', 
+tagU_loctag = {'A0901': 'AKUA0901_13510', 'A1003': 'AKUA1003_12690',
+               'A1202': 'AKUA1202_13670', 'A1401': 'AKUA1401_12920',
+               'A1805': 'AKUA1805_12970', 'DSMZ12361': 'K2W83_RS06260',
+               'Fhon2': 'AKUFHON2_13740', 'G0101': 'AKUG0101_12980',
                'G0403': 'AKUG0403_13270', 'H1B1-04J': 'AKUH1B104J_13210',
-               'H1B3-02M': 'AKUH1B302M_13050', 'H3B1-04X': 'AKUH3B104X_13400',
-               'H3B2-02X': 'AKUH3B202X_13010', 'H3B2-03J': 'AKUH3B203J_13540',
-               'H3B2-03M': 'AKUH3B203M_12660', 'H3B2-09X': 'AKUH3B209X_13540',
-               'H4B4-02J': 'AKUH4B402J_12780', 'H4B4-06M': 'AKUH4B406M_13610',
-               'H4B4-12M': 'AKUH4B412M_13450', 'H4B5-03X': 'AKUH4B503X_12880', 
+               'H1B1-05A': 'AKUH1B105A_12450', 'H1B3-02M': 'AKUH1B302M_13050', 
+               'H3B1-01A': 'AKUH3B101A_13410', 'H3B1-04J': 'AKUH3B104J_13170',
+               'H3B1-04X': 'AKUH3B104X_13400', 'H3B2-02X': 'AKUH3B202X_13010', 
+               'H3B2-03J': 'AKUH3B203J_13540', 'H3B2-03M': 'AKUH3B203M_12660', 
+               'H3B2-06M': 'AKUH3B206M_12990', 'H3B2-09X': 'AKUH3B209X_13540',
+               'H4B1-11J': 'AKUH4B111J_13720', 'H4B2-02J': 'AKUH4B202J_13040',
+               'H4B2-04J': 'AKUH4B204J_13520', 'H4B2-05J': 'AKUH4B205J_13170',
+               'H4B2-06J': 'AKUH4B206J_13640', 'H4B2-11M': 'AKUH4B211M_13180',
+               'H4B4-02J': 'AKUH4B402J_12780', 'H4B4-05J': 'AKUH4B405J_13510',
+               'H4B4-06M': 'AKUH4B406M_13610', 'H4B4-12M': 'AKUH4B412M_13450', 
+               'H4B5-01J': 'AKUH4B501J_13070', 'H4B5-03X': 'AKUH4B503X_12880', 
                'H4B5-04J': 'AKUH4B504J_13630', 'H4B5-05J': 'AKUH4B505J_13090',
-               'MP2': 'APS55_RS03770'}
+               'IBH001': 'LDX55_06410', 'MP2': 'APS55_RS03770'}
 
 # =============================================================================
 # 0. Create a gene object class
@@ -129,6 +165,9 @@ if not os.path.exists(pos_dir):
 if not os.path.exists(out_dir):
     os.makedirs(out_dir)
     
+with open(f'{pos_dir}/all_subsets_positions.tab', 'w+') as gpos:
+    gpos.write('locus_tag\tstrain\tgene_name\tstart\tend\tstrand\n')
+    
 for group in group_names.values():
     with open(f'{pos_dir}/{group}_positions.tab', 'w+') as pos_file:
         pos_file.write('locus_tag\tstrain\tgene_name\tstart\tend\tstrand\n')
@@ -139,15 +178,20 @@ for group in group_names.values():
     for i in [1,2]:
         with open(f'{out_dir}/{group}_seqs{i}.fasta', 'w+') as out_file:
             out_file.write('')
+        
+        with open(f'{out_dir}/all_subsets_seqs{i}.fasta', 'w+') as global_out:
+            global_out.write('')
 
 full_record = {}
 dict_pos = {}
 all_genes = {}
 genes_in_segment = {}
-for strain in strain_groups.keys():
+for strain in ohrR_loctag.keys():
     segment1 = [0, 0]
     segment2 = [0, 0]
-    outfile = f'{group_names[strain_groups[strain]]}_seqs.fasta'
+    if strain in strain_groups.keys():
+        outfile = f'{group_names[strain_groups[strain]]}_seqs.fasta'
+    else: outfile = ''
     with open(f'{gbk_dir}/{strain}_{infile_suffix}') as gbk_file:
         gbk = SeqIO.parse(gbk_file, 'genbank')
         genes_in_segment[strain] = []
@@ -220,12 +264,15 @@ for strain in strain_groups.keys():
             genes_in_segment[strain].append(gene)
             check2 = True
             
-        if check1 or check2:
+        if (check1 or check2) and outfile != '':
             with open(f'{pos_dir}/{group_names[strain_groups[strain]]}_positions.tab', 'a+') as pos_file:
                 pos_file.write(f'{gene.locus_tag}\t{strain}\t{gene.name}\t{gene.start}\t{gene.end}\t{gene.strand}\n')
             if strain == 'H1B3-02M' or strain == 'H3B1-04X':
                 with open(f'{pos_dir}/{group_names[strain_groups[strain]+1]}_positions.tab', 'a+') as pos_file:
                     pos_file.write(f'{gene.locus_tag}\t{strain}\t{gene.name}\t{gene.start}\t{gene.end}\t{gene.strand}\n')
+        if check1 or check2:
+            with open(f'{pos_dir}/all_subsets_positions.tab', 'a+') as pos_file:
+                pos_file.write(f'{gene.locus_tag}\t{strain}\t{gene.name}\t{gene.start}\t{gene.end}\t{gene.strand}\n')
                     
                     
     with open(f'{fna_dir}/{strain}_{infile_suffix2}') as fna:
@@ -247,27 +294,37 @@ for strain in strain_groups.keys():
             record.description = ''
             record.seq = segment
             full_record[strain] = record.seq.split('!')
-            ind = 1
+            ind = 0
             for seq in full_record[strain]:
-                new_outfile = outfile.replace('seqs', f'seqs{ind}')
-                if strain == 'H1B3-02M' or strain == 'H3B1-04X':
-                    outfile2 = f'{group_names[strain_groups[strain]+1]}_seqs{ind}.fasta'
-                else: outfile2 = ''
-                with open(f'{out_dir}/{new_outfile}', 'a+') as out_file:
-                    record.seq = seq
-                    record.id = f'{strain}_{ind}'
-                    ind += 1
-                    SeqIO.write(record, out_file, 'fasta')
-                if outfile2 != '':
-                    with open(f'{out_dir}/{outfile2}', 'a+') as out_file2:
-                        SeqIO.write(record, out_file2, 'fasta')
+                ind += 1
+                record.seq = seq
+                record.id = f'{strain}_{ind}'
+                with open(f'{out_dir}/all_subsets_seqs{ind}.fasta', 'a+') as global_out:
+                    print(f'Saving record {record.id} to file {out_dir}/all_subsets_seqs{ind}.fasta')
+                    SeqIO.write(record, global_out, 'fasta')
+                    
+                if outfile != '':
+                    new_outfile = outfile.replace('seqs', f'seqs{ind}')
+                    
+                    if strain == 'H1B3-02M' or strain == 'H3B1-04X':
+                        outfile2 = f'{group_names[strain_groups[strain]+1]}_seqs{ind}.fasta'
+                    else: outfile2 = ''
+                    
+                    with open(f'{out_dir}/{new_outfile}', 'a+') as out_file:
+                        print(f'Saving record {record.id} to file {out_dir}/{new_outfile}')
+                        SeqIO.write(record, out_file, 'fasta')
+                        
+                    if outfile2 != '':
+                        with open(f'{out_dir}/{outfile2}', 'a+') as out_file2:
+                            print(f'Saving record {record.id} to file {out_dir}/{outfile2}')
+                            SeqIO.write(record, out_file2, 'fasta')
             break
-            
-for group in group_names.values():
+       
+for group in list(group_names.values()) + ['all_subsets']:
     for ind in [1, 2]:
         raw_data = f'{out_dir}/{group}_seqs{ind}.fasta'
         alignment = raw_data.replace('fasta', 'mafft.fasta')
-        subprocess.run(f'mafft --auto --thread {threads} {raw_data} > {alignment} 2> {log}', shell = True)  
+        subprocess.run(f'mafft --auto --thread {threads} {raw_data} > {alignment} 2>> {log}', shell = True)  
     with open(f'{out_dir}/{group}_seqs1.mafft.fasta') as seq1, open(f'{out_dir}/{group}_seqs2.mafft.fasta') as seq2:
         records1 = list(SeqIO.parse(seq1, 'fasta'))
         records2 = list(SeqIO.parse(seq2, 'fasta'))
