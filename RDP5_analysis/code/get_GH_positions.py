@@ -52,7 +52,7 @@ infile_suffix2 = 'genomic.fna'
 pos_dir = os.path.expanduser('~') + '/GH_project/RDP5_analysis/files/tab'
 out_dir = os.path.expanduser('~') + '/GH_project/RDP5_analysis/files/fna'
 threads = 48 #Threads to run mafft
-padding = 5000
+padding = 0 #5000
 
 # Strains and comparisons of interest
 strain_groups = {'H3B2-03M': 0, 'H4B4-02J': 0, 'H4B5-03X': 0, 'H4B4-12M': 0, 
@@ -62,24 +62,24 @@ strain_groups = {'H3B2-03M': 0, 'H4B4-02J': 0, 'H4B5-03X': 0, 'H4B4-12M': 0,
 
 group_names = {0: 'root_GS1_S2-3_subset', 1: 'GS1-2_BRS', 2: 'only_GS1+GS2'}
 
-ohrR_loctag = {'A0901': 'AKUA0901_13200', 'A1003': 'AKUA1003_12460',
-               'A1202': 'AKUA1202_13440', 'A1401': 'AKUA1401_12680', #'A1404': 'AKUA1404_13340',
-               'A1805': 'AKUA1805_12700', 'DSMZ12361': 'K2W83_RS06135',
-               'Fhon2': 'AKUFHON2_13460', 'G0101': 'AKUG0101_12700',
-               'G0403': 'AKUG0403_13030', 'H1B1-04J': 'AKUH1B104J_12920',
-               'H1B1-05A': 'AKUH1B105A_12210', 'H1B3-02M': 'AKUH1B302M_12770', 
-               'H3B1-01A': 'AKUH3B101A_13170', 'H3B1-04J': 'AKUH3B104J_12910', 
-               'H3B1-04X': 'AKUH3B104X_13130', 'H3B2-02X': 'AKUH3B202X_12780', 
-               'H3B2-03J': 'AKUH3B203J_13300', 'H3B2-03M': 'AKUH3B203M_12380', 
-               'H3B2-06M': 'AKUH3B206M_12760', 'H3B2-09X': 'AKUH3B209X_13260',
-               'H4B1-11J': 'AKUH4B111J_13490', 'H4B2-02J': 'AKUH4B202J_12810',
-               'H4B2-04J': 'AKUH4B204J_13260', 'H4B2-05J': 'AKUH4B205J_12900',
-               'H4B2-06J': 'AKUH4B206J_13330', 'H4B2-11M': 'AKUH4B211M_12910', 
-               'H4B4-02J': 'AKUH4B402J_12520', 'H4B4-05J': 'AKUH4B405J_13280',
-               'H4B4-06M': 'AKUH4B406M_13380', 'H4B4-12M': 'AKUH4B412M_13150', 
-               'H4B5-01J': 'AKUH4B501J_12800', 'H4B5-03X': 'AKUH4B503X_12590', 
-               'H4B5-04J': 'AKUH4B504J_13390', 'H4B5-05J': 'AKUH4B505J_12800',
-               'IBH001': 'LDX55_06290', 'MP2': 'APS55_RS03895'}
+bcrA_loctag = {'A0901': 'AKUA0901_13170', 'A1003': 'AKUA1003_12430',
+               'A1202': 'AKUA1202_13410', 'A1401': 'AKUA1401_12650', #'A1404': 'AKUA1404_13340',
+               'A1805': 'AKUA1805_12670', 'DSMZ12361': 'K2W83_RS06120',
+               'Fhon2': 'AKUFHON2_13430', 'G0101': 'AKUG0101_12670',
+               'G0403': 'AKUG0403_13000', 'H1B1-04J': 'AKUH1B104J_12890',
+               'H1B1-05A': 'AKUH1B105A_12180', 'H1B3-02M': 'AKUH1B302M_12740', 
+               'H3B1-01A': 'AKUH3B101A_13140', 'H3B1-04J': 'AKUH3B104J_12880', 
+               'H3B1-04X': 'AKUH3B104X_13100', 'H3B2-02X': 'AKUH3B202X_12750', 
+               'H3B2-03J': 'AKUH3B203J_13270', 'H3B2-03M': 'AKUH3B203M_12350', 
+               'H3B2-06M': 'AKUH3B206M_12730', 'H3B2-09X': 'AKUH3B209X_13230',
+               'H4B1-11J': 'AKUH4B111J_13460', 'H4B2-02J': 'AKUH4B202J_12780',
+               'H4B2-04J': 'AKUH4B204J_13230', 'H4B2-05J': 'AKUH4B205J_12870',
+               'H4B2-06J': 'AKUH4B206J_13300', 'H4B2-11M': 'AKUH4B211M_12880', 
+               'H4B4-02J': 'AKUH4B402J_12490', 'H4B4-05J': 'AKUH4B405J_13250',
+               'H4B4-06M': 'AKUH4B406M_13350', 'H4B4-12M': 'AKUH4B412M_13120', 
+               'H4B5-01J': 'AKUH4B501J_12770', 'H4B5-03X': 'AKUH4B503X_12560', 
+               'H4B5-04J': 'AKUH4B504J_13360', 'H4B5-05J': 'AKUH4B505J_12770',
+               'IBH001': 'LDX55_06275', 'MP2': 'APS55_RS03910'}
 
 ydiL_loctag = {'A0901': 'AKUA0901_13260', 'A1003': 'AKUA1003_12530', 
                'A1202': 'AKUA1202_13510', 'A1401': 'AKUA1401_12740', #'A1404': 'AKUA1404_13400',
@@ -119,24 +119,24 @@ wzx_loctag =  {'A0901': 'AKUA0901_13400', 'A1003': 'AKUA1003_12580',
                'H4B5-04J': 'AKUH4B504J_13520', 'H4B5-05J': 'AKUH4B505J_12980',
                'IBH001': 'LDX55_06355', 'MP2': 'APS55_RS03825'}
 
-tagU_loctag = {'A0901': 'AKUA0901_13510', 'A1003': 'AKUA1003_12690',
-               'A1202': 'AKUA1202_13670', 'A1401': 'AKUA1401_12920',
-               'A1805': 'AKUA1805_12970', 'DSMZ12361': 'K2W83_RS06260',
-               'Fhon2': 'AKUFHON2_13740', 'G0101': 'AKUG0101_12980',
-               'G0403': 'AKUG0403_13270', 'H1B1-04J': 'AKUH1B104J_13210',
-               'H1B1-05A': 'AKUH1B105A_12450', 'H1B3-02M': 'AKUH1B302M_13050', 
-               'H3B1-01A': 'AKUH3B101A_13410', 'H3B1-04J': 'AKUH3B104J_13170',
-               'H3B1-04X': 'AKUH3B104X_13400', 'H3B2-02X': 'AKUH3B202X_13010', 
-               'H3B2-03J': 'AKUH3B203J_13540', 'H3B2-03M': 'AKUH3B203M_12660', 
-               'H3B2-06M': 'AKUH3B206M_12990', 'H3B2-09X': 'AKUH3B209X_13540',
-               'H4B1-11J': 'AKUH4B111J_13720', 'H4B2-02J': 'AKUH4B202J_13040',
-               'H4B2-04J': 'AKUH4B204J_13520', 'H4B2-05J': 'AKUH4B205J_13170',
-               'H4B2-06J': 'AKUH4B206J_13640', 'H4B2-11M': 'AKUH4B211M_13180',
-               'H4B4-02J': 'AKUH4B402J_12780', 'H4B4-05J': 'AKUH4B405J_13510',
-               'H4B4-06M': 'AKUH4B406M_13610', 'H4B4-12M': 'AKUH4B412M_13450', 
-               'H4B5-01J': 'AKUH4B501J_13070', 'H4B5-03X': 'AKUH4B503X_12880', 
-               'H4B5-04J': 'AKUH4B504J_13630', 'H4B5-05J': 'AKUH4B505J_13090',
-               'IBH001': 'LDX55_06410', 'MP2': 'APS55_RS03770'}
+tagU_plus2_loctags = {'A0901': 'AKUA0901_13530', 'A1003': 'AKUA1003_12720',
+               'A1202': 'AKUA1202_13690', 'A1401': 'AKUA1401_12940',
+               'A1805': 'AKUA1805_12990', 'DSMZ12361': 'K2W83_RS06270',
+               'Fhon2': 'AKUFHON2_13760', 'G0101': 'AKUG0101_13000',
+               'G0403': 'AKUG0403_13290', 'H1B1-04J': 'AKUH1B104J_13230',
+               'H1B1-05A': 'AKUH1B105A_12470', 'H1B3-02M': 'AKUH1B302M_13070', 
+               'H3B1-01A': 'AKUH3B101A_13430', 'H3B1-04J': 'AKUH3B104J_13190',
+               'H3B1-04X': 'AKUH3B104X_13420', 'H3B2-02X': 'AKUH3B202X_13030', 
+               'H3B2-03J': 'AKUH3B203J_13560', 'H3B2-03M': 'AKUH3B203M_12690', 
+               'H3B2-06M': 'AKUH3B206M_13010', 'H3B2-09X': 'AKUH3B209X_13560',
+               'H4B1-11J': 'AKUH4B111J_13740', 'H4B2-02J': 'AKUH4B202J_13060',
+               'H4B2-04J': 'AKUH4B204J_13540', 'H4B2-05J': 'AKUH4B205J_13190',
+               'H4B2-06J': 'AKUH4B206J_13660', 'H4B2-11M': 'AKUH4B211M_13200',
+               'H4B4-02J': 'AKUH4B402J_12800', 'H4B4-05J': 'AKUH4B405J_13530',
+               'H4B4-06M': 'AKUH4B406M_13630', 'H4B4-12M': 'AKUH4B412M_13470', 
+               'H4B5-01J': 'AKUH4B501J_13090', 'H4B5-03X': 'AKUH4B503X_12900', 
+               'H4B5-04J': 'AKUH4B504J_13650', 'H4B5-05J': 'AKUH4B505J_13110',
+               'IBH001': 'LDX55_06420', 'MP2': 'APS55_RS03760'}
 
 # =============================================================================
 # 0. Create a gene object class
@@ -186,7 +186,7 @@ full_record = {}
 dict_pos = {}
 all_genes = {}
 genes_in_segment = {}
-for strain in ohrR_loctag.keys():
+for strain in bcrA_loctag.keys():
     segment1 = [0, 0]
     segment2 = [0, 0]
     if strain in strain_groups.keys():
@@ -214,7 +214,7 @@ for strain in ohrR_loctag.keys():
                     
                     all_genes[strain].append(gene_obj)
                     
-                    if gene_obj.locus_tag == ohrR_loctag[strain]:
+                    if gene_obj.locus_tag == bcrA_loctag[strain]:
                         if strain != 'MP2':
                             segment1[0] = gene_obj.start - padding
                         else:
@@ -229,7 +229,7 @@ for strain in ohrR_loctag.keys():
                             segment2[0] = gene_obj.start
                         else:
                             segment1[1] = gene_obj.end
-                    elif gene_obj.locus_tag == tagU_loctag[strain]:
+                    elif gene_obj.locus_tag == tagU_plus2_loctags[strain]:
                         if strain != 'MP2':
                             segment2[1] = gene_obj.end + padding
                         else:
