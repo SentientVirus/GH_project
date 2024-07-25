@@ -72,7 +72,7 @@ thr = -1
 # Dictionaries with info about the data to be used
 strain_groups = {'H3B2-03M': 0, 'H4B4-02J': 0, 'H4B5-03X': 0, 'H1B3-02M': 1,
                  'H3B2-09X': 1, 'H4B5-05J': 1, 'MP2': 2, 'H3B2-02X': 2,
-                 'H3B2-03J': 2}
+                 'H1B1-05A': 2}
 
 group_names = {0: 'GS1_S2-3_subset', 1: 'GS1-2_BRS', 2: 'only_GS1+GS2'}
 
@@ -276,7 +276,7 @@ for comparison in group_names.values():
             
         file = f'{comparison}_{gene}.pal2nal.fna' # Input alignment
         
-        if file in os.listdir(aln_path) and not ('only' in file and 'BRS' in file):
+        if file in os.listdir(aln_path) and not ('only' in file and gene == 'BRS'):
             print(f'Retrieving codons from {aln_path}/{file}')
         
             pos_dict = {}
@@ -309,6 +309,13 @@ for comparison in group_names.values():
                 df_aln = pd.concat([df_aln, df_add], axis=1)
                 print(df_aln.columns)
                 
+            elif gene == 'GS2' and group_names[2] == comparison:
+                tuple1 = ('H1B1-05A', fstrains[0].split('_')[0])
+                tuple2 = ('H1B1-05A', fstrains[0].split('_')[1])
+                df_add = pd.DataFrame({tuple1:[3]*aln_length, tuple2:[3]*aln_length})
+                df_aln = pd.concat([df_add, df_aln], axis=1)
+                print(df_aln.columns)
+            
             fstrains = get_unique_values(list(df_aln.columns))
 
             # pos_dict_2[gene] = pos_dict
@@ -318,6 +325,10 @@ for comparison in group_names.values():
                 gene_group = 0
             elif gene == 'BRS':
                 gene_group = 1
+                if 'only' in file:
+                    strain1 = fstrains[0].split('_')[0]
+                    strain2 = fstrains[0].split('_')[1]
+                    fstrains = [f'H1B105A_{strain1}', f'H1B105A_{strain2}'] + fstrains
             elif gene == 'GS2' and 'only' in file:
                 gene_group = 2
             elif gene == 'GS2' and 'only' not in file:
@@ -389,6 +400,7 @@ for comparison in group_names.values():
             plt.tick_params(left = False, labelleft = False)
         else:
             y_ticks = get_unique_values(list(df_aln.columns))
+            y_ticks = [ytick.replace('_', ' vs ') for ytick in y_ticks]
             ax.set_yticklabels(y_ticks, fontsize = 36, rotation = 'horizontal')
             if comparison == group_names[max(group_names.keys())//2]:
                 ax.set_ylabel('Comparison', fontsize = 48)
