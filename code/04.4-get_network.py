@@ -172,4 +172,5 @@ for GH_type in GH_types:
     # =============================================================================
     
     fig.savefig(outfile, format='svg', dpi=800, pad_inches = 0)
+    fig.savefig(outfile.replace('.svg', '.png'), format='png', dpi=800, pad_inches = 0)
     fig.savefig(outfile.replace('.svg', '.tiff'), format='tiff', dpi=800, pad_inches = 0)

@@ -106,11 +106,11 @@ alt_colors = {'GS1': '#FFC0C0', 'GS2': '#FFC0DE', 'BRS': '#F4C0FF'}
 segment_length = 25000
 gapscale = 1000
 padding = 500
-config_file = '../config.yml'
-indir = '../plots/tabfiles'
-outdir = '../plots/trees'
+config_file = os.path.expanduser('~') + '/GH_project/config.yml'
+indir =  os.path.expanduser('~') + '/GH_project/plots/tabfiles'
+outdir =  os.path.expanduser('~') + '/GH_project/plots/trees'
 GH_types = ['GS1', 'GS2', 'BRS']
-domain_path = '../../interproscan'
+domain_path =  os.path.expanduser('~') + '/interproscan'
 doub_GS1_strains = ['H3B2-06M', 'H4B1-11J', 'H4B5-05J', 'H4B4-06M']
 
 def replace_strain_name(locus_tag):
@@ -196,7 +196,7 @@ with open(config_file) as conf:
 domain_dict = {}
 for GH in GH_types:
     print(f'\n\nGH70 {GH} genes...', end = '\n')
-    treefile = f'../data/fasta/GH70/trees/{GH}_repset.mafft.faa.treefile'
+    treefile =  os.path.expanduser('~') + '/GH_project/data/fasta/GH70/trees/{GH}_repset.mafft.faa.treefile'
     # count_file = snakemake.input.counts
     if not os.path.exists(outdir):
         os.makedirs(outdir)
@@ -522,4 +522,6 @@ for GH in GH_types:
 # Print tree
 # =============================================================================
     #t.convert_to_ultrametric() #For nicer visualization
-    t.render(f'{outdir}/{outplot}', tree_style = ts) 
+    t.render(f'{outdir}/{outplot}', tree_style = ts)
+    t.render(f'{outdir}/{outplot.replace(".png", ".tiff")}', tree_style = ts)
+    t.render(f'{outdir}/{outplot.replace(".png", ".svg")}', tree_style = ts) 

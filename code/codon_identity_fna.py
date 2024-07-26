@@ -436,3 +436,4 @@ legend._legend_box.align = 'left'
 fig.text(0.5, -0.05, 'Codon position', ha='center', fontsize = 36)
 plt.savefig(outplot, bbox_inches='tight')
 plt.savefig(outplot.replace('.png', '.tiff'), bbox_inches='tight')
+plt.savefig(outplot.replace('.png', '.svg'), bbox_inches='tight')

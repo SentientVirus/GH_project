@@ -55,12 +55,12 @@ def search_motif(seq_str, num):
     '''Function to search for any motifs by using string patterns
     Input: Amino acid sequence
     Output: Motifs'''
-    motif_list = ['', r'[MNAVT]D(.{1,1})V(.{1,1})[ND][QL]', r'(.{1,1})R(.{1,1})DA(.{2,2})[NFS][MVI][DHNS]',
-                  r'H[VLI][QSHNAT][LI][LV]E(.*?)(([WGPS](.{3,3})[DGTS])|(SLEAAT))',
-                  r'[FIY][VIL][RHN][AV]HD(.{1,2})[AVIS]Q(.{2,2})[IVL]',
-                  r'[EDA][FLM]LL[AG][NSD][DQ][IVE]DN[SQ]N[PV]', 
-                  r'[LW]G[IVF](.{3,3})[EQ][FLM][AP][PG][HQ]Y',
-                  r'[VTS][VTI]PR[VMIT][YF]YGD']
+    motif_list = ['', r'[MNAVTE]D(.{1,1})V(.{1,1})[ND][QL]', r'(.{1,1})R(.{1,1})DA(.{2,2})[DNFS][MVI][DHNS]',
+                  r'H[VLI][QSHNATV][LIY][LVN]E(.*?)(([WGPS](.{3,3})[DGTS])|(SLEAAT))',
+                  r'[FIY][VIL][TRHN][NAV]HD(.{1,2})[RAVIS][NKQ](.{2,2})[IVL]',
+                  r'[EDA][FLM][LV][LV][AG][NSD][DQ][IVE]DN[SQ]N[PV]', 
+                  r'[LW]G[IVF](.{3,3})[EQW][FLM][AP][PG][HQAS]Y',
+                  r'[VTS][VTI][PT][RQ][VMITL][YF]YGD']
     motifs = []
 
     motif_info = re.finditer(motif_list[num], seq_str)
@@ -80,7 +80,8 @@ def search_motif(seq_str, num):
 # 0. Input definitions
 # =============================================================================
 # infolder = '../data/codons'
-infile = os.path.expanduser('~') + '/GH_project/add_species/files/ingroups.fasta' #'/GH_project/add_species/results/domains/ingroup_domains.fasta'
+infile1 = os.path.expanduser('~') + '/GH_project/add_species/files/ingroups.faa' #'/GH_project/add_species/results/domains/ingroup_domains.fasta'
+infile2 = os.path.expanduser('~') + '/GH_project/add_species/files/other_outgroups.faa'
 outdir = os.path.expanduser('~') + '/GH_project/add_species/results/motifs'
 output_file = 'other_species_GH70_motif_presence.tsv' #'GH70_motif_presence.tsv' #'motif_presence.tsv'
 output_file2 = 'other_species_GH70_motifs.tsv' #'GH70_motifs.tsv' #'gtf_motifs.tsv'
@@ -101,55 +102,60 @@ with open(f'{outdir}/{output_file}', 'w') as out_file, open(f'{outdir}/{output_f
 # =============================================================================
 # OBS! Modify tag assignment for a single input file
 tag_type = {}
-with open(infile) as handle:
-    aa_seqs = SeqIO.parse(handle, 'fasta')
-    for fasta in aa_seqs:
-        print(fasta.id)
-        if ('Dsr' in fasta.id or 'falk' in fasta.id) and not fasta.id.endswith('_2'):
-            tag_type[fasta.id] = 'GS2'
-        elif fasta.id.endswith('_2') or 'Brs' in fasta.id:
-            tag_type[fasta.id] = 'BRS'
-            to_add = re.search(fasta.id, r'a1,[0-9]')
-            if to_add != None:
-                tag_type[fasta.id] += to_add
-        elif 'Asr' in fasta.id:
-            tag_type[fasta.id] = 'AS'
-        elif 'Rsr' in fasta.id:
-            tag_type[fasta.id] = 'RS'
-        elif 'Msr' in fasta.id:
-            tag_type[fasta.id] = 'MS'
-        else: tag_type[fasta.id] = '???'
-
-# for GH_type in GH_types:
-#     with open(f'{infolder}/{GH_type}_codon.fna') as handle:
-#         aa_seqs = SeqIO.parse(handle, 'fasta')
-#         for fasta in aa_seqs:
-#             tag_type[fasta.id] = GH_type
-#         tag_type['A1003_12540'] = 'GS'
-
-# Loop through the sequences and retrieve the motifs
-with open(infile) as handle:
-    aa_seqs = SeqIO.parse(handle, 'fasta')
-    for fasta in aa_seqs:
-        name, sequence = fasta.id, str(fasta.seq) #str(fasta.seq.translate())
-        category = tag_type[fasta.id]
-        motif_list = ['']
-        for i in range(1, 8):
-            motif_matches = search_motif(sequence, i)
-            motif_list.append(motif_matches)
-            for mot in motif_matches:
-                mot = motif(*mot)
-                if len(mot.seq) > 0:
-                    if len(motif_list[1]) > 1:
-                        category = 'GS2_BRS'
-                    with open(f'{outdir}/{output_file2}', 'a') as out_file2:
-                        out_file2.write(f'{name}\t{category}\t{mot.num}\t{mot.seq}\t{mot.start}\t{mot.end}\t{len(sequence)}\n')
-        prot = prot_sequence(name, motif_list[1], motif_list[2], motif_list[3], motif_list[4], motif_list[5], motif_list[6], motif_list[7])
-        prot.calculate_n_motifs()
-        prot_list.append(prot)
-        bool_list = list(map(int, prot.bool_list))
-        with open(f'{outdir}/{output_file}', 'a') as out_file:
-            out_file.write(f'{prot.locus}\t{category}\t{bool_list[1]}\t{bool_list[2]}\t'+
-                           f'{bool_list[3]}\t{bool_list[4]}\t{bool_list[5]}\t'+
-                           f'{bool_list[6]}\t{bool_list[7]}\n')
-        
+for infile in [infile1, infile2]:
+    with open(infile) as handle:
+        aa_seqs = SeqIO.parse(handle, 'fasta')
+        for fasta in aa_seqs:
+            print(fasta.id)
+            if ('Dsr' in fasta.id or 'falk' in fasta.id) and not fasta.id.endswith('_2'):
+                tag_type[fasta.id] = 'DSR'
+            elif fasta.id.endswith('_2') or 'Brs' in fasta.id:
+                tag_type[fasta.id] = 'BRS'
+                to_add = re.search(fasta.id, r'a1,[0-9]')
+                if to_add != None:
+                    tag_type[fasta.id] += to_add
+            elif 'Asr' in fasta.id:
+                tag_type[fasta.id] = 'ASR'
+            elif 'Rsr' in fasta.id:
+                tag_type[fasta.id] = 'RSR'
+            elif 'Msr' in fasta.id:
+                tag_type[fasta.id] = 'MSR'
+            elif '4,6_gtf' in fasta.id:
+                tag_type[fasta.id] = 'GTC_4,6'
+            elif '4,3_gtf' in fasta.id:
+                tag_type[fasta.id] = 'GTC_4,3'
+            else: tag_type[fasta.id] = 'ND'
+    
+    # for GH_type in GH_types:
+    #     with open(f'{infolder}/{GH_type}_codon.fna') as handle:
+    #         aa_seqs = SeqIO.parse(handle, 'fasta')
+    #         for fasta in aa_seqs:
+    #             tag_type[fasta.id] = GH_type
+    #         tag_type['A1003_12540'] = 'GS'
+    
+    # Loop through the sequences and retrieve the motifs
+    with open(infile) as handle:
+        aa_seqs = SeqIO.parse(handle, 'fasta')
+        for fasta in aa_seqs:
+            name, sequence = fasta.id, str(fasta.seq) #str(fasta.seq.translate())
+            category = tag_type[fasta.id]
+            motif_list = ['']
+            for i in range(1, 8):
+                motif_matches = search_motif(sequence, i)
+                motif_list.append(motif_matches)
+                for mot in motif_matches:
+                    mot = motif(*mot)
+                    if len(mot.seq) > 0:
+                        if len(motif_list[1]) > 1:
+                            category = 'DSR_BRS'
+                        with open(f'{outdir}/{output_file2}', 'a') as out_file2:
+                            out_file2.write(f'{name}\t{category}\t{mot.num}\t{mot.seq}\t{mot.start}\t{mot.end}\t{len(sequence)}\n')
+            prot = prot_sequence(name, motif_list[1], motif_list[2], motif_list[3], motif_list[4], motif_list[5], motif_list[6], motif_list[7])
+            prot.calculate_n_motifs()
+            prot_list.append(prot)
+            bool_list = list(map(int, prot.bool_list))
+            with open(f'{outdir}/{output_file}', 'a') as out_file:
+                out_file.write(f'{prot.locus}\t{category}\t{bool_list[1]}\t{bool_list[2]}\t'+
+                               f'{bool_list[3]}\t{bool_list[4]}\t{bool_list[5]}\t'+
+                               f'{bool_list[6]}\t{bool_list[7]}\n')
+            
