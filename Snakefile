@@ -37,7 +37,7 @@ rule retrieve_sequences:
     input:
         expand("gbks/{strain}_1.gbk", strain = config["strains"] + config["extra_strains"])
     log: "logs/python/GHs.log"
-    conda: "biopython_env.yml"
+    conda: "envs/biopython_env.yml"
     script:
         "code/02-retrieve_GH70_domains.py" #"retrieve_GH70s.py"
 
@@ -47,7 +47,7 @@ rule retrieve_full_GH70s:
     input:
         expand("gbks/{strain}_1.gbk", strain = config["strains"] + config["extra_strains"])
     log: "logs/python/GH70s.log"
-    conda: "biopython_env.yml"
+    conda: "envs/biopython_env.yml"
     script:
         "code/03-retrieve_full_GH70s.py"
 
@@ -75,7 +75,7 @@ rule separate_GHs:
         GH70s = ["GS1", "GS2", "BRS", "short", "NGB"],
         GH32s = ["S1", "S2a", "S2b", "S3"]
     log: "logs/python/subtypes.log"
-    conda: "biopython_env.yml"
+    conda: "envs/biopython_env.yml"
     script:
         "code/04-separate_genes.py"
 
@@ -84,7 +84,7 @@ rule get_neighboring_genes:
         expand("data/fasta/other_genes/a_kunkeei_{gname}.{ext}", gname = config["neighbors"], ext = ["faa", "fna"])
     input:
         expand("/home/marina/Akunkeei_files/gbff/modified_gbff/{strain}_genomic.gbff", strain = config["extended_repset"])
-    conda: "biopython_env.yml"
+    conda: "envs/biopython_env.yml"
     log: "logs/python/neighbors.log"
     params: gene_names = config["neighbors"]
     script:
@@ -143,7 +143,7 @@ rule msa_gtf:
         GH32_all = expand("data/fasta/GH32/GH32_all.{ext}", ext = ["faa", "fna"]),
         GH70_out = "data/fasta/GH70/GH70_functional_outgroup_repset.faa"
     threads: 2
-    conda: "environment.yml"
+    conda: "envs/environment.yml"
     log: "logs/mafft/repset_aln.log"
     shell:
         """
@@ -176,7 +176,7 @@ rule msa_other:
     input:
         expand("data/fasta/other_genes/a_kunkeei_{gene}.{ext}", gene = config["neighbors"], ext = ["faa", "fna"])
     threads: 2
-    conda: "environment.yml"
+    conda: "envs/environment.yml"
     log: "logs/mafft/neighbors_aln.log"
     shell:
         """
@@ -201,7 +201,7 @@ rule iqtree_gtf:
         gene_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.fna", type = ["GH32", "S1", "S2a", "S3"]),
         out_GH70 = "data/fasta/GH70/GH70_functional_outgroup_repset.mafft.faa"
     threads: 12
-    conda: "environment.yml"
+    conda: "envs/environment.yml"
     log: "logs/iqtree/repset_trees.log"
     shell:
 #		'iqtree -s {input.prot} -st AA -m LG+C10+F -bb 1000 -alrt 1000 -v > {output.prot} && iqtree -s {input.gene} -st DNA -m GTR+G4+F -bb 1000 -alrt 1000 -v > {output.gene}'
@@ -235,7 +235,7 @@ rule iqtree_other:
         prot = expand("data/fasta/other_genes/a_kunkeei_{gene}.mafft.faa", gene = config["neighbors"]),
         gene = expand("data/fasta/other_genes/a_kunkeei_{gene}.mafft.fna", gene = config["neighbors"])
     threads: 4
-    conda: "environment.yml"
+    conda: "envs/environment.yml"
     log: "logs/iqtree/neighbors_tree.log"
     shell:
         """
@@ -344,7 +344,7 @@ rule codeml_exe:
     params:
         outdir = "/home/marina/GH_project/results"
     log: "logs/python/repset_codeml.log"
-    conda: "environment.yml"
+    conda: "envs/environment.yml"
     script:
         "code/11-codeml_biopython.py"
 
@@ -359,7 +359,7 @@ rule codeml_other:
     params:
         outdir = "/home/marina/GH_project/results"
     log: "logs/python/neighbors_codeml.log"
-    conda: "environment.yml"
+    conda: "envs/environment.yml"
     script:
         "code/11.1-codeml_neighbors.py"
 		
@@ -425,7 +425,7 @@ rule presence_absence_tab:
         S2a = config["S2a"],
         S2b = config["S2b"],
         S3 = config["S3"]
-    conda: "biopython_env.yml"
+    conda: "envs/biopython_env.yml"
     log: "logs/python/presence_absence.log"
     script:
         "code/14-gtf_CB_per_strain.py"
@@ -446,7 +446,7 @@ rule plot_delregion:
         S2a = config["S2a"],
         S2b = config["S2b"],
         S3 = config["S3"]
-    conda: "biopython_env.yml"
+    conda: "envs/biopython_env.yml"
     log: "logs/python/plot_delregion.log"
     script: "code/15-ete3_delregion_plot.py"
 
@@ -465,8 +465,17 @@ rule suppl_tab:
         S2b = config["S2b"],
         S3 = config["S3"],
         representatives = config["representatives"]
-    conda: "biopython_env.yml"
+    conda: "envs/biopython_env.yml"
     log: "logs/python/suppl_tab.log"
     script: "code/16-get_suppl_tabs.py"
 
 ##Add the remaining scripts
+rule retrieve_interpro:
+    output:
+        expand("data/interpro/{GH}_interpro.tsv", GH = config["GHs"])
+    input:
+        expand("gbks/{strain}_1.gbk", strain = config["strains"] + config["extra_strains"])
+    log: "logs/python/interpro_GHs.log"
+    conda: "envs/biopython_env.yml"
+    script:
+        "code/02.9-retrieve_GH_interpro.py"
