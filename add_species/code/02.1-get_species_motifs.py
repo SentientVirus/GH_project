@@ -55,12 +55,12 @@ def search_motif(seq_str, num):
     '''Function to search for any motifs by using string patterns
     Input: Amino acid sequence
     Output: Motifs'''
-    motif_list = ['', r'[MNAVTE]D(.{1,1})V(.{1,1})[ND][QL]', r'(.{1,1})R(.{1,1})DA(.{2,2})[DNFS][MVI][DHNS]',
-                  r'H[VLI][QSHNATV][LIY][LVN]E(.*?)(([WGPS](.{3,3})[DGTS])|(SLEAAT))',
-                  r'[FIY][VIL][TRHN][NAV]HD(.{1,2})[RAVIS][NKQ](.{2,2})[IVL]',
-                  r'[EDA][FLM][LV][LV][AG][NSD][DQ][IVE]DN[SQ]N[PV]', 
+    motif_list = ['', r'[MNAVTE]D(.{1,1})V(.{1,1})[ND][QL]', r'(.{1,1})R(.{1,1})DA(.{2,2})[DNFSH][MVIY][DHNS]',
+                  r'[HY][VLI][QSHNATV][LIY][LVNI]E(.*?)(([WGPS](.{3,3})[DGTSEV])|(SLEAAT))',
+                  r'[FIY][VIL][TRHN][NAV]HD(.{1,2})[RAVISE][NKQ](.{2,2})[IVL]',
+                  r'[EDA][FLM][LV][LVI][AG][VNMSD][DQ][LIVE][AD]N[SQ]N[PVT]', 
                   r'[LW]G[IVF](.{3,3})[EQW][FLM][AP][PG][HQAS]Y',
-                  r'[VTS][VTI][PT][RQ][VMITL][YF]YGD']
+                  r'[VTS][VTI][PT][TRQ][VMITL][YF]YGD']
     motifs = []
 
     motif_info = re.finditer(motif_list[num], seq_str)
@@ -121,9 +121,11 @@ for infile in [infile1, infile2]:
             elif 'Msr' in fasta.id:
                 tag_type[fasta.id] = 'MSR'
             elif '4,6_gtf' in fasta.id:
-                tag_type[fasta.id] = 'GTC_4,6'
+                tag_type[fasta.id] = 'GTB_4,6'
             elif '4,3_gtf' in fasta.id:
-                tag_type[fasta.id] = 'GTC_4,3'
+                tag_type[fasta.id] = 'GTB_4,3'
+            elif '_E' in fasta.id or '_P' in fasta.id:
+                tag_type[fasta.id] = 'GTC'
             else: tag_type[fasta.id] = 'ND'
     
     # for GH_type in GH_types:

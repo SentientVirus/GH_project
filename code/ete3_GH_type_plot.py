@@ -4,7 +4,7 @@
 Created on Mon Dec 20 11:06:54 2021
 
 This script creates a plot of the phylogeny of A. kunkeei strains, with
-a representation of the Gh70 and GH32 genes that are present in a particular
+a representation of the GH70 and GH32 genes that are present in a particular
 region of the genome. The phylogenies used include representative strains only, 
 and only the GS1, GS2 and BRS phylogenies were included.
 

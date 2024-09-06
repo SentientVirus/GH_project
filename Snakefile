@@ -142,7 +142,7 @@ rule msa_gtf:
         GH70_all = expand("data/fasta/GH70/GH70_functional_all.{ext}", ext = ["faa", "fna"]),
         GH32_all = expand("data/fasta/GH32/GH32_all.{ext}", ext = ["faa", "fna"]),
         GH70_out = "data/fasta/GH70/GH70_functional_outgroup_repset.faa"
-    threads: 2
+    threads: 8
     conda: "envs/environment.yml"
     log: "logs/mafft/repset_aln.log"
     shell:
@@ -203,27 +203,28 @@ rule iqtree_gtf:
     threads: 12
     conda: "envs/environment.yml"
     log: "logs/iqtree/repset_trees.log"
+# Former models: LG+G4+F and GTR+G4+F 
     shell:
 #		'iqtree -s {input.prot} -st AA -m LG+C10+F -bb 1000 -alrt 1000 -v > {output.prot} && iqtree -s {input.gene} -st DNA -m GTR+G4+F -bb 1000 -alrt 1000 -v > {output.gene}'
         """
         mkdir -p data/fasta/GH70/trees && mkdir -p data/fasta/GH32/trees
         for i in {input.prot_GH70};
         do
-        iqtree -nt {threads} -s $i -st AA -m LG+G4+F -bb 1000 -bnni >> {log}
+        iqtree -nt {threads} -s $i -st AA -m MFP -bb 1000 -bnni >> {log}
         done
         for j in {input.prot_GH32};
         do
-        iqtree -nt {threads} -s $j -st AA -m LG+G4+F -bb 1000 -bnni >> {log}
+        iqtree -nt 8 -s $j -st AA -m MFP -bb 1000 -bnni >> {log}
         done
         for k in {input.gene_GH70};
         do
-        iqtree -nt {threads} -s $k -st DNA -m GTR+G4+F -bb 1000 -bnni >> {log}
+        iqtree -nt {threads} -s $k -st DNA -m MFP -bb 1000 -bnni >> {log}
         done
         for l in {input.gene_GH32};
         do
-        iqtree -nt {threads} -s $l -st DNA -m GTR+G4+F -bb 1000 -bnni >> {log}
+        iqtree -nt 8 -s $l -st DNA -m MFP -bb 1000 -bnni >> {log}
         done
-        iqtree -nt {threads} -s {input.out_GH70} -st AA -m LG+G4+F -bb 1000 -bnni >> {log}
+        iqtree -nt {threads} -s {input.out_GH70} -st AA -m MFP -bb 1000 -bnni >> {log}
         mv data/fasta/GH70/*.f*a.* data/fasta/GH70/trees
         mv data/fasta/GH32/*.f*a.* data/fasta/GH32/trees
         """ 

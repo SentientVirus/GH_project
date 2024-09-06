@@ -2,7 +2,11 @@
 """
 Created on Fri Nov 26 16:04:16 2021
 
-@author: usuario
+Script to retrieve the plotting information for the CDS of the genes
+in a region of interest so that they can be later plotted next to
+the tree in ete3.
+
+@author: Marina Mota-Merlo
 """
 import os
 import csv
