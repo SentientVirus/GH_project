@@ -244,8 +244,8 @@ for strain in bcrA_loctag.keys():
             if strain == 'MP2':
                 segment_length = dict_pos[strain][1][1] - dict_pos[strain][1][0]
                 gene_start = gene.start
-                gene.start = dict_pos[strain][0][1] - gene.end + segment_length + 1
-                gene.end = dict_pos[strain][0][1] - gene_start + segment_length + 1
+                gene.start = dict_pos[strain][0][1] - gene.end + segment_length + 2
+                gene.end = dict_pos[strain][0][1] - gene_start + segment_length + 2
             else:
                 gene.start = gene.start - dict_pos[strain][0][0] + 1
                 gene.end = gene.end - dict_pos[strain][0][0] + 1
@@ -259,8 +259,8 @@ for strain in bcrA_loctag.keys():
                 gene.start = dict_pos[strain][1][1] - gene.end + 1
                 gene.end = dict_pos[strain][1][1] - gene_start + 1
             else:
-                gene.start = gene.start - dict_pos[strain][1][0] + segment_length + 1
-                gene.end = gene.end - dict_pos[strain][1][0] + segment_length + 1
+                gene.start = gene.start - dict_pos[strain][1][0] + segment_length + 2
+                gene.end = gene.end - dict_pos[strain][1][0] + segment_length + 2
             genes_in_segment[strain].append(gene)
             check2 = True
             
@@ -328,6 +328,8 @@ for group in list(group_names.values()) + ['all_subsets']:
     with open(f'{out_dir}/{group}_seqs1.mafft.fasta') as seq1, open(f'{out_dir}/{group}_seqs2.mafft.fasta') as seq2:
         records1 = list(SeqIO.parse(seq1, 'fasta'))
         records2 = list(SeqIO.parse(seq2, 'fasta'))
+        with open(f'{out_dir}/{group}_seqs.mafft.fasta', 'w+') as last_outfile:
+            last_outfile.write('')
         for j in range(0, len(records1)):
             if records1[j].id.split('_')[0] == records2[j].id.split('_')[0] and records1[j].seq != '' and records2[j].seq != '':
                 new_record = records1[j] + '!'
@@ -336,4 +338,4 @@ for group in list(group_names.values()) + ['all_subsets']:
                 new_record.description = ''
                 with open(f'{out_dir}/{group}_seqs.mafft.fasta', 'a+') as last_outfile:
                     SeqIO.write(new_record, last_outfile, 'fasta')
-
+                    
