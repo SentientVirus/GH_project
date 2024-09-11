@@ -47,6 +47,8 @@ sys.stdout = open(snakemake.log[0], 'a')
 
 GS1 = snakemake.params.GS1
 GS2 = snakemake.params.GS2
+GS3 = snakemake.params.GS3
+GS4 = snakemake.params.GS4
 BRS = snakemake.params.BRS
 short = snakemake.params.short
 NGB = snakemake.params.NGB
@@ -80,6 +82,17 @@ def create_write(path, prefix, filename):
 # =============================================================================
 # Loop through inputs and save the information to outputs
 # =============================================================================
+prefixes = ['complete_', '']
+gtypes = ['GH70', 'GH32']
+exts = ['faa', 'fna']
+basenames = [f'{add}{GH_type}_all.{ext}' for add in prefixes for GH_type in gtypes for ext in exts]
+for basename in basenames:
+    GH_cat = basename.split('_')[-2]
+    full_path = f'{path}/{GH_cat}/{basename}'
+    if os.path.exists(full_path):
+        os.remove(full_path)
+
+
 
 for file in input_files: #Loop through Snakemake inputs
     if 'GH70' in file: #If GH70 is in the file
@@ -91,6 +104,7 @@ for file in input_files: #Loop through Snakemake inputs
     if 'complete' in file:
         add = 'complete_'
     else: add = ''
+        
     with open(file) as seq_file: #Open input file
         for record in SeqIO.parse(seq_file, 'fasta'): #Read it as fasta
             check = False #To check if the strain is in the subset
@@ -108,13 +122,13 @@ for file in input_files: #Loop through Snakemake inputs
                 sname = 'Fhon2'
                 
             filename = f'{add}{prefix}_all.{file[-3:]}' #Define output file name
-            with open(f'{path}/{prefix}/{filename}', 'a+') as outfile: #Create the file if it does not exist, otherwise append to file
+            with open(f'{path}/{prefix}/{filename}', 'a') as outfile: #Append to file
                 outfile.write(as_fasta(record))
             print(f'{record.id} added to {path}/{prefix}/{filename}')
             
             for gene_type in gene_list: #Loop through gene types
                 if record.id in myVars[gene_type]: #Retrieve locus tags per type
-                    if gene_type not in ['GS1', 'GS2', 'BRS', 'NGB'] or (file.endswith('.faa') and len(record.seq) > 700) or (file.endswith('.fna') and len(record.seq) > 2100):
+                    if gene_type not in GH70s[:-1] or (file.endswith('.faa') and len(record.seq) > 700) or (file.endswith('.fna') and len(record.seq) > 2100):
                         filename = f'{add}{gene_type}_all.{file[-3:]}' #File for a particular GH type
                         create_write(path, prefix, filename)
                         print(f'{record.id} added to {path}/{prefix}/{filename}')
@@ -139,7 +153,7 @@ for file in input_files: #Loop through Snakemake inputs
                     
                 for gene_type in gene_list: #Loop through gene types
                     if record.id in myVars[gene_type]: #Retrieve locus tags per type
-                        if gene_type not in ['GS1', 'GS2', 'BRS', 'NGB'] or (file.endswith('.faa') and len(record.seq) > 700) or (file.endswith('.fna') and len(record.seq) > 2100):
+                        if gene_type not in GH70s[:-1] or (file.endswith('.faa') and len(record.seq) > 700) or (file.endswith('.fna') and len(record.seq) > 2100):
                             filename = f'{add}{gene_type}_repset.{file[-3:]}' #File for a particular GH type
                             create_write(path, prefix, filename)
                             print(f'{record.id} added to {path}/{prefix}/{filename}')

@@ -82,12 +82,29 @@ def get_GH70(directory, strains, domain_annot):
                             loctag = 'APS55_RS03400'
                     gene_names.append(loctag)
     return gene_names
+
+def get_GH32(directory, strains, domain_annot):
+    gene_names = []
+    for filename in sorted(strains, key=lambda v: v.upper()):
+        with open(f'{directory}/{filename}.tsv') as annot:
+            file = csv.reader(annot)
+            for line in file:
+                line = line[0].split('\t')
+                val = line[0].split('_')[1]
+                if val.startswith('RS'):
+                    val = val[2:]
+                if domain_annot in line and (('RS' in line[0] and int(val) > 10**3) or ('RS' not in line[0] and int(line[0].split('_')[1]) > 10**4)): #Take only locus tags > 10000
+                    loctag = line[0].replace('-', '') 
+                    if 'K2W83_RS' in loctag:
+                        loctag.replace('K2W83_RS', 'DSM_')
+                    gene_names.append(loctag)
+    return gene_names
  
 # =============================================================================
 # Function to parse nucleotide and amino acid sequences from GenBank files:
 # =============================================================================
                                            
-def parse_GH70(indir, outdir, gene_domains, out_prefix):
+def parse_GH(indir, outdir, gene_domains, out_prefix):
     locus_tags = gene_domains                   #locus_tags of interest
     
     
@@ -134,5 +151,9 @@ for gene_type in gene_types: #Loop through output filenames
     if gtype == 'GH70':
         domannot = 'Glycosyl hydrolase family 70'
         GH70_prot = get_GH70(direct, strains, domannot)
-        parse_GH70(indir, outdir, GH70_prot, gtype)
+        parse_GH(indir, outdir, GH70_prot, gtype)
+    elif gtype == 'GH32':
+        domannot = 'SSF75005'
+        GH32_prot = get_GH32(direct, strains, domannot)
+        parse_GH(indir, outdir, GH32_prot, gtype)
         

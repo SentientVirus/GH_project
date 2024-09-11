@@ -1,12 +1,13 @@
 configfile: "config.yml"
-rule all:
-    input:
-#        expand("data/genbanks/{strain}.gbk", strain = config["strains"]),
-#        expand("gbks/{strain}_1.gbk", strain = config["strains"]),
-#        expand("data/fasta/{GH}/{GH}.{ext}", GH = config["GHs"], ext = ["faa", "fna"]),
-#        "plots/tabfiles/87_A0901_gpr.tab"
 HOME = "/home/marina"
 
+rule all:
+    input:
+        "plots/trees/phylogeny.png",
+        expand("data/interpro/{GH}_interpro.tsv", GH = config["GHs"]),
+        expand("results/a_kunkeei_{CDS}/stats.tsv", CDS = config["neighbors"]),        
+        expand("results/{type}/stats.tsv", type = ["GH70", "GS1", "GS2", "BRS", "NGB", "GH32", "S1", "S2a", "S3"])     
+   
 #rule download_data:
 #    output:
 #        expand("data/genbanks/{strain}.gbk", strain = config["strains"])
@@ -41,9 +42,9 @@ rule retrieve_sequences:
     script:
         "code/02-retrieve_GH70_domains.py" #"retrieve_GH70s.py"
 
-rule retrieve_full_GH70s:
+rule retrieve_full_sequences:
     output:
-        expand("data/fasta/GH70/complete_GH70.{ext}", ext = ["faa", "fna"])
+        expand("data/fasta/{GH}/complete_{GH}.{ext}", ext = ["faa", "fna"], GH = config["GHs"])
     input:
         expand("gbks/{strain}_1.gbk", strain = config["strains"] + config["extra_strains"])
     log: "logs/python/GH70s.log"
@@ -53,16 +54,18 @@ rule retrieve_full_GH70s:
 
 rule separate_GHs:
     output:
-        expand("data/fasta/{GH}/{GH}_{sufix}.{ext}", GH = config["GHs"], ext = ["faa", "fna"], sufix = ["repset", "subset", "all"]),
-        expand("data/fasta/GH70/{add}{type}_{sufix}.{ext}", add = ["", "complete_"], type = ["GS1", "GS2", "BRS", "short", "NGB"], sufix = ["repset", "subset", "all"], ext = ["faa", "fna"]),
-        expand("data/fasta/GH32/{type}_repset.{ext}", type = ["S1", "S2a", "S2b", "S3"], ext = ["faa", "fna"]),
-        expand("data/fasta/GH32/{type}_subset.{ext}", type = ["S1", "S2a", "S2b", "S3"], ext = ["faa", "fna"])
+        expand("data/fasta/{GH}/{add}{GH}_{sufix}.{ext}", add = ["", "complete_"], GH = config["GHs"], ext = ["faa", "fna"], sufix = ["repset", "subset", "all"]),
+        expand("data/fasta/GH70/{add}{type}_{sufix}.{ext}", add = ["", "complete_"], type = ["GS1", "GS2", "GS3", "GS4", "BRS", "short", "NGB"], sufix = ["repset", "all"], ext = ["faa", "fna"]),
+        expand("data/fasta/GH70/{add}{type}_subset.{ext}", add = ["", "complete_"], type = ["GS1", "GS2", "BRS", "short", "NGB"], ext = ["faa", "fna"]),
+        expand("data/fasta/GH32/{add}{type}_{suffix}.{ext}", add = ["", "complete_"], type = ["S1", "S2a", "S2b", "S3"], suffix = ["repset", "subset", "all"], ext = ["faa", "fna"])
     input:
         expand("data/fasta/{GH}/{GH}.{ext}", GH = config["GHs"], ext = ["faa", "fna"]),
-        expand("data/fasta/GH70/complete_GH70.{ext}", ext = ["faa", "fna"])
+        expand("data/fasta/{GH}/complete_{GH}.{ext}", GH = config["GHs"], ext = ["faa", "fna"])
     params:
         GS1 = config["GS1"],
         GS2 = config["GS2"],
+        GS3 = config["GS3"],
+        GS4 = config["GS4"],
         BRS = config["BRS"],
         short = config["short"],
         NGB = config["NGB"],
@@ -72,7 +75,7 @@ rule separate_GHs:
         S3 = config["S3"],
         repr = config["representatives"],
         subset = config["subset"],
-        GH70s = ["GS1", "GS2", "BRS", "short", "NGB"],
+        GH70s = ["GS1", "GS2", "GS3", "GS4", "BRS", "NGB", "short"],
         GH32s = ["S1", "S2a", "S2b", "S3"]
     log: "logs/python/subtypes.log"
     conda: "envs/biopython_env.yml"
@@ -97,8 +100,8 @@ rule create_GH70_functional:
         faa_outgroup = "data/fasta/GH70/GH70_functional_outgroup_repset.faa"#,
         #fna_outgroup = "data/fasta/GH70_functional_repset_outgroup.fna"
     input:
-        faa = expand("data/fasta/GH70/{type}_repset.faa", type = ["GS1", "BRS", "GS2", "NGB"]),
-        fna = expand("data/fasta/GH70/{type}_repset.fna", type = ["GS1", "BRS", "GS2", "NGB"]),
+        faa = expand("data/fasta/GH70/{type}_repset.faa", type = ["GS1", "BRS", "GS2", "GS3", "GS4", "NGB"]),
+        fna = expand("data/fasta/GH70/{type}_repset.fna", type = ["GS1", "BRS", "GS2", "GS3", "GS4", "NGB"]),
         outgroup = "outgroups.fasta" #Replace this to create outgroup gene tree as well
     shell:
         """
@@ -116,8 +119,8 @@ rule create_GH70_functional_all:
         faa = "data/fasta/GH70/GH70_functional_all.faa",
         fna = "data/fasta/GH70/GH70_functional_all.fna"
     input:
-        faa = expand("data/fasta/GH70/{type}_all.faa", type = ["GS1", "BRS", "GS2", "NGB"]),
-        fna = expand("data/fasta/GH70/{type}_all.fna", type = ["GS1", "BRS", "GS2", "NGB"])
+        faa = expand("data/fasta/GH70/{type}_all.faa", type = ["GS1", "BRS", "GS2", "GS3", "GS4", "NGB"]),
+        fna = expand("data/fasta/GH70/{type}_all.fna", type = ["GS1", "BRS", "GS2", "GS3", "GS4", "NGB"])
     shell:
         """
         > {output.faa}
@@ -210,21 +213,21 @@ rule iqtree_gtf:
         mkdir -p data/fasta/GH70/trees && mkdir -p data/fasta/GH32/trees
         for i in {input.prot_GH70};
         do
-        iqtree -nt {threads} -s $i -st AA -m MFP -bb 1000 -bnni >> {log}
+        iqtree -nt {threads} -s $i -st AA -m LG+F+I+G4 -bb 1000 -bnni >> {log}
         done
         for j in {input.prot_GH32};
         do
-        iqtree -nt 8 -s $j -st AA -m MFP -bb 1000 -bnni >> {log}
+        iqtree -nt 8 -s $j -st AA -m LG+F+I+G4 -bb 1000 -bnni >> {log}
         done
         for k in {input.gene_GH70};
         do
-        iqtree -nt {threads} -s $k -st DNA -m MFP -bb 1000 -bnni >> {log}
+        iqtree -nt {threads} -s $k -st DNA -m TIM2+F+I+G4 -bb 1000 -bnni >> {log}
         done
         for l in {input.gene_GH32};
         do
-        iqtree -nt 8 -s $l -st DNA -m MFP -bb 1000 -bnni >> {log}
+        iqtree -nt 8 -s $l -st DNA -m TIM2+F+I+G4 -bb 1000 -bnni >> {log}
         done
-        iqtree -nt {threads} -s {input.out_GH70} -st AA -m MFP -bb 1000 -bnni >> {log}
+        iqtree -nt {threads} -s {input.out_GH70} -st AA -m WAG+F+I+G4 -bb 1000 -bnni >> {log}
         mv data/fasta/GH70/*.f*a.* data/fasta/GH70/trees
         mv data/fasta/GH32/*.f*a.* data/fasta/GH32/trees
         """ 
@@ -243,11 +246,11 @@ rule iqtree_other:
         mkdir -p data/fasta/other_genes/trees
         for i in {input.prot};
         do
-        iqtree -nt {threads} -s $i -st AA -m LG+G4+F -bb 1000 -bnni >> {log}
+        iqtree -nt {threads} -s $i -st AA -m MFP -bb 1000 -bnni >> {log}
         done
         for j in {input.gene};
         do
-        iqtree -nt {threads} -s $j -st DNA -m GTR+G4+F -bb 1000 -bnni >> {log}
+        iqtree -nt {threads} -s $j -st DNA -m MFP -bb 1000 -bnni >> {log}
         done
         mv data/fasta/other_genes/*.f*a.* data/fasta/other_genes/trees
         """    
@@ -410,6 +413,7 @@ rule get_CDS_tabs:
     script:
          "code/05.2-get_CDS_tabs.py"
 
+# Consider adding GS3-4 to this plot in the future
 rule presence_absence_tab:
     output: 
         file = "plots/counts/GH70_32_counts.tab"
@@ -454,7 +458,7 @@ rule plot_delregion:
 ##Supplementary table
 rule suppl_tab:
     output:
-        expand("tables/{GH_type}_suppl.tab", GH_type = ["GS1", "GS2", "BRS", "S1", "S2a", "S3", "NGB", "short"])
+        expand("tables/{GH_type}_suppl.tab", GH_type = ["GS1", "GS2", "GS3", "GS4", "BRS", "S1", "S2a", "S3", "NGB", "short"])
     params:
         GS1 = config["GS1"],
         GS2 = config["GS2"],
