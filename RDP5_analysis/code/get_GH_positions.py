@@ -294,10 +294,10 @@ for strain in bcrA_loctag.keys():
             record.description = ''
             record.seq = segment
             full_record[strain] = record.seq.split('!')
-            ind = 0
+            ind = 3
             for seq in full_record[strain]:
-                ind += 1
-                record.seq = seq
+                ind -= 1
+                record.seq = seq.reverse_complement()
                 record.id = f'{strain}_{ind}'
                 with open(f'{out_dir}/all_subsets_seqs{ind}.fasta', 'a+') as global_out:
                     print(f'Saving record {record.id} to file {out_dir}/all_subsets_seqs{ind}.fasta')
