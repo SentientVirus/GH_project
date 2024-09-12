@@ -242,25 +242,26 @@ for strain in bcrA_loctag.keys():
         check2 = False
         if dict_pos[strain][0][0] <= gene.start < dict_pos[strain][0][1]:
             if strain == 'MP2':
+                gene.start = gene.start - dict_pos[strain][0][0] + 1
+                gene.end = gene.end - dict_pos[strain][0][0] + 1
+            else:
                 segment_length = dict_pos[strain][1][1] - dict_pos[strain][1][0]
                 gene_start = gene.start
                 gene.start = dict_pos[strain][0][1] - gene.end + segment_length + 2
                 gene.end = dict_pos[strain][0][1] - gene_start + segment_length + 2
-            else:
-                gene.start = gene.start - dict_pos[strain][0][0] + 1
-                gene.end = gene.end - dict_pos[strain][0][0] + 1
+            
             genes_in_segment[strain].append(gene)
             check1 = True
     
         elif dict_pos[strain][1][0] <= gene.start < dict_pos[strain][1][1]:
             segment_length = dict_pos[strain][0][1] - dict_pos[strain][0][0]
             if strain == 'MP2':
+                gene.start = gene.start - dict_pos[strain][1][0] + segment_length + 2
+                gene.end = gene.end - dict_pos[strain][1][0] + segment_length + 2
+            else:
                 gene_start = gene.start
                 gene.start = dict_pos[strain][1][1] - gene.end + 1
                 gene.end = dict_pos[strain][1][1] - gene_start + 1
-            else:
-                gene.start = gene.start - dict_pos[strain][1][0] + segment_length + 2
-                gene.end = gene.end - dict_pos[strain][1][0] + segment_length + 2
             genes_in_segment[strain].append(gene)
             check2 = True
             
@@ -280,6 +281,7 @@ for strain in bcrA_loctag.keys():
         for record in fna_read:
             if strain != 'MP2':
                 segment = record.seq[dict_pos[strain][0][0]:dict_pos[strain][0][1]+1] + '!'
+                middle_point = len(segment)-1
                 segment += record.seq[dict_pos[strain][1][0]:dict_pos[strain][1][1]+1]
             else: # Almost fixed, there is now a single 1 kb gap in MP2, possibly transposons?
                 genome_len = len(record.seq)
@@ -288,6 +290,7 @@ for strain in bcrA_loctag.keys():
                 start_s2 = genome_len - dict_pos[strain][0][1]
                 end_s2 = genome_len - dict_pos[strain][0][0] + 1
                 segment = record.seq[start_s1:end_s1] + '!'
+                middle_point = len(segment)-1
                 segment += record.seq[start_s2:end_s2]
                 
             record.id = strain

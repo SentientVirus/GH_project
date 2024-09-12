@@ -140,7 +140,7 @@ start = 1 #Chosen so that reference gene is included and distance is 40000
 end = start + aln_len
 treefile = os.path.expanduser('~') + '/GH_project/trees/own_representatives.tree'
 outplot = os.path.expanduser('~') + '/GH_project/plots/trees/RDP5_tree.png'
-recomb = os.path.expanduser('~') + '/GH_project/RDP5_analysis/RDP_output/recomb_toplot.csv'
+recomb = os.path.expanduser('~') + '/GH_project/RDP5_analysis/RDP_output/all_subsets_3methods_1+_filtered.csv'
 in_tab = os.path.expanduser('~') + '/GH_project/RDP5_analysis/files/tab/all_subsets_positions_aln.tab'
 t = Tree(treefile, format = 9)
 
@@ -228,9 +228,9 @@ with open(in_tab) as tabfile:
     tab_df = pd.read_csv(tabfile, sep = '\t')
     for index, row in tab_df.iterrows():
         if row['strain'] == 'A0901':
-            locus = [row['start'], row['end'], '[]', 0, 20, 'slategrey', 'white', f'Arial|12|black|{row["gene_name"]}']
-            if locus[0] == 915:
-                locus[0] += 2
+            locus = [row['start']-1, row['end']-1, '[]', 0, 20, 'slategrey', 'white', f'Arial|12|black|{row["gene_name"]}']
+            if row['gene_name'] == 'bcrA':
+                locus[0] += 1
             loci.append(locus)
     
                 
@@ -377,12 +377,12 @@ for leaf in leaves:
         to_add = []
         for i in range(len(motifs)):
             if motifs[i][1] - motifs[i][0] > 1000 or motifs[i][0] == 15453 or motifs[i][1] == 15452:
-                if leaf.name == 'H4B2-06J':
+                if leaf.name == 'H4B4-02J':
                     seqFace = SeqMotifFace(seq, motifs = [motifs[i]], height = 20, seq_format = '[]', gap_format = 'blank', scale_factor = 0.05) #Add presence/absence info to node
                     (t & f'{leaf.name}').add_face(seqFace, 1, 'aligned') #The number represents the column
                 else: to_add.append(motifs[i])
             
-        if leaf.name != 'H4B2-06J' and to_add != []:
+        if leaf.name != 'H4B4-02J' and to_add != []:
             seqFace = SeqMotifFace(seq, motifs = to_add, height = 20, seq_format = '[]', gap_format = 'blank', scale_factor = 0.05) #Add presence/absence info to node
             (t & f'{leaf.name}').add_face(seqFace, 1, 'aligned') #The number represents the column
         elif leaf.name == 'A1001':
