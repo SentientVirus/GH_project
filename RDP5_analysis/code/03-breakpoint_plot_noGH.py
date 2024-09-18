@@ -20,6 +20,11 @@ infile = f'{infolder}/RDP_output/{prefix2}.csv'
 breakfile = f'{infolder}/RDP_output/{prefix2}.csvBreakpointPositions.csv'
 outfolder = f'{infolder}/results'
 gene_pos = f'{infolder}/files/tab/{prefix}.tab'
+outfile = f'{infolder}/plots/{prefix2}.png'
+
+if not os.path.exists(os.path.dirname(outfile)):
+    os.makedirs(os.path.dirname(outfile))
+
 
 df = pd.read_csv(infile)
 
@@ -108,6 +113,17 @@ ax.plot(x, y, color = 'black', zorder = 20)
 
 ax.axvline(x=15969, color = 'r', linestyle = '--', linewidth = 3, zorder = 25)
 
+ax.tick_params(
+    axis='x',          # changes apply to the x-axis
+    which='both',      # both major and minor ticks are affected
+    bottom=False,      # ticks along the bottom edge are off
+    top=False,         # ticks along the top edge are off
+    labelbottom=False) # labels along the bottom edge are off
+
+# ax.set_xticklabels([])
+# ax.set_xticks([])
+ax.spines['left'].set_zorder(100)
+
 # ax.plot(x[x < GS1[0]], conf95[x < GS1[0]], color = 'grey')
 # ax.plot(x[(x >= GS1[0]) & (x <= GS1[1])], conf95[(x >= GS1[0]) & (x <= GS1[1])], color = '#FF0000')
 # ax.plot(x[(x > GS1[1]) & (x < BRS[0])], conf95[(x > GS1[1]) & (x < BRS[0])], color = 'grey')
@@ -153,6 +169,8 @@ ax2.margins(y = 0)
 ax2.set_xticks(range(1, max(x), 2000))
 ax2.plot(breaks, [1]*len(breaks), '|', color = 'black')
 ax2.set_axis_off()
+ax2.set_zorder(100)
+ax2.set_yticks([])
 f.subplots_adjust(wspace=0, hspace=0)
 
 # ax2.axvline(x=15969, color='r', linestyle='--', linewidth=2)
@@ -180,6 +198,7 @@ for index, gene in genes.iterrows():
     headwidth = 1000
     linewidth = 2
     alpha = 1
+    lc = 'black'
     
     basewidth = 500
     headwidth = 500
@@ -193,14 +212,14 @@ for index, gene in genes.iterrows():
         ax3.arrow(gene['end'], 0, dx = gene['start'] - gene['end'], dy = 0, 
               facecolor = basecolor, length_includes_head = True, 
               width = basewidth, shape = 'full', head_width = headwidth, 
-              edgecolor = 'black', linewidth = linewidth, alpha = alpha,
-              zorder = gene_zorder)
+              edgecolor = lc, linewidth = linewidth,
+              alpha = alpha, zorder = gene_zorder)
     else:
         ax3.arrow(gene['start'], 0, dx = gene['end'] - gene['start'], dy = 0, 
               facecolor = basecolor, length_includes_head = True, 
               width = basewidth, shape = 'full', head_width = headwidth, 
-              edgecolor = 'black', linewidth = linewidth, alpha = alpha,
-              zorder = gene_zorder)
+              edgecolor = lc, linewidth = linewidth,
+              alpha = alpha, zorder = gene_zorder)
         
 # brs_start =  min(genes[genes['name'] == 'brsu']['start'])
 # brs_end = max(genes[genes['name'] == 'brsu']['end'])
@@ -244,3 +263,8 @@ left_side3.set_visible(False)
 
 ax.set_ylabel('Breakpoints per 200nt window', fontsize = 16)
 plt.xlabel('Position in the alignment', fontsize = 16)
+
+# plt.tight_layout()
+plt.savefig(outfile)
+plt.savefig(outfile.replace('png', 'svg'))
+plt.savefig(outfile.replace('png', 'pdf'))

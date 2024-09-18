@@ -56,8 +56,8 @@ padding = 0 #5000
 
 # Strains and comparisons of interest
 strain_groups = {'H3B2-03M': 0, 'H4B4-02J': 0, 'H4B5-03X': 0, 'H4B4-12M': 0, 
-                 'H4B4-06M': 0, 'H1B1-04J': 0, 'A0901': 0,
-                 'H1B3-02M': 0, 'H3B2-09X': 1, 'H4B5-05J': 1, 'H3B1-04X': 1, 'H4B5-04J': 1,
+                 'H4B4-06M': 0, 'H1B1-04J': 0, 'A0901': 0, 'H1B3-02M': 0,
+                 'H3B2-09X': 1, 'H4B5-05J': 1, 'H3B1-04X': 1, 'H4B5-04J': 1,
                  'MP2': 2, 'H3B2-02X': 2, 'H3B2-03J': 2, 'G0403': 2}
 
 group_names = {0: 'root_GS1_S2-3_subset', 1: 'GS1-2_BRS', 2: 'only_GS1+GS2'}
@@ -186,7 +186,9 @@ full_record = {}
 dict_pos = {}
 all_genes = {}
 genes_in_segment = {}
-for strain in bcrA_loctag.keys():
+loop =  list(bcrA_loctag.keys())
+# loop.remove('H1B3-02M')
+for strain in loop:
     segment1 = [0, 0]
     segment2 = [0, 0]
     if strain in strain_groups.keys():
