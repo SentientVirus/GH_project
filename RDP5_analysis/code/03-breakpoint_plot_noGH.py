@@ -178,7 +178,7 @@ for index, gene in genes.iterrows():
     basecolor = colors[index%5] #'#AFAFAF'
     basewidth = 1000
     headwidth = 1000
-    linewidth = 5
+    linewidth = 2
     alpha = 1
     
     basewidth = 500
@@ -217,7 +217,7 @@ for gap in gaps:
     basewidth = 500
     headwidth = 0
     linewidth = 0
-    alpha = 1
+    alpha = 0.75
     ax3.arrow(gap[0], 0, dx = gap[1] - gap[0], dy = 0, 
           facecolor = basecolor, length_includes_head = False, 
           width = basewidth, shape = 'full', head_width = headwidth, 
@@ -227,7 +227,7 @@ for gap in gaps:
     ax.arrow(gap[0], 0, dx = gap[1] - gap[0], dy = 0, 
           facecolor = basecolor, length_includes_head = False, 
           width = basewidth, shape = 'full', head_width = headwidth, 
-          edgecolor = 'black', linewidth = linewidth, alpha = 0.75,
+          edgecolor = 'black', linewidth = linewidth, alpha = alpha,
           zorder = 35)
     
     ax2.arrow(gap[0], 0, dx = gap[1] - gap[0], dy = 0, 
