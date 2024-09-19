@@ -12,6 +12,9 @@ from statistics import mean
 from math import inf
 import os
 
+# =============================================================================
+# 0. Define inputs, outputs and paths
+# =============================================================================
 prefix = 'all_subsets_positions_aln'
 prefix2 = 'all_subsets_7methods_5+_filtered_assort'
 
@@ -25,6 +28,9 @@ outfile = f'{infolder}/plots/{prefix2}.png'
 if not os.path.exists(os.path.dirname(outfile)):
     os.makedirs(os.path.dirname(outfile))
 
+# =============================================================================
+# 1. Read RDP5 output
+# =============================================================================
 
 df = pd.read_csv(infile)
 
@@ -34,41 +40,28 @@ breaks = breakpoints['Breakpoint position']
 gene_positions = pd.read_csv(gene_pos, sep = '\t')
 genes = gene_positions[gene_positions['strain'] == 'A0901']
 
-
-#Gaps
+# =============================================================================
+# 2. Set gap positions and CDS colors
+# =============================================================================
 gap1 = (3863, 5299)
 gap2 = (16804, 18101)
 gap3 = (21286, 23073)
 
 gaps = [gap1, gap2, gap3]
-# #subset
-# GS1 = (6873, 11240)
-# BRS = (11510, 16759)
-# GS2 = (16943, 26071)
 
-# name_dict = {'gtf2a': 'S2a', 'gtf2b': 'S2b', 'gtf3': 'S3', 'glu1': 'GS1',
-#              'glu2': 'GS2', 'brsu': 'BRS'}
-    
-# GS1_list = [inf, 0]
-# BRS_list = [inf, 0]
-# GS2_list = [inf, 0]
-# for index, row in dom.iterrows():
-#     if row['start'] < 9000:
-#         GS1_list[0] = min(GS1_list[0], row['start'])
-#         GS1_list[1] = max(GS1_list[1], row['end'])
-#     elif row['start'] < 15000:
-#         BRS_list[0] = min(BRS_list[0], row['start'])
-#         BRS_list[1] = max(BRS_list[1], row['end'])
-#     else:
-#         GS2_list[0] = min(GS2_list[0], row['start'])
-#         GS2_list[1] = max(GS2_list[1], row['end'])
+colors = ['#9DAAB7', '#6586A3', '#647D88', '#626D75', '#B1BFD4']
 
-
+# =============================================================================
+# 4. Create variables to be plotted
+# =============================================================================
 x = df['Position in alignment']
 y = df[' Recombination breakpoint number (200nt win)']
 conf95 = df[' Upper 95% CI']
 conf99 = df[' Upper 99% CI']
 
+# =============================================================================
+# Old section to use average values
+# =============================================================================
 # num = 10
 
 # x200 = [x[i] for i in range(len(x)-1) if (i % num == 0) or i == x[len(x)-1]]
@@ -98,112 +91,79 @@ conf99 = df[' Upper 99% CI']
 # x200 = pd.Series(x200)
 # y200 = pd.Series(y200)
 
-f, (ax2, ax, ax3) = plt.subplots(3, 1, figsize = (26, 8), gridspec_kw={'height_ratios': [1, 8, 2]})
-ax.margins(x=0.01)
-ax.set_xlim(0, max(x))
+# =============================================================================
+# 5. Create a plot with 3 subplots
+# =============================================================================
+f, (ax2, ax, ax3) = plt.subplots(3, 1, figsize = (26, 8), 
+                                 gridspec_kw={'height_ratios': [1, 8.5, 1.5]})
 
-ax.plot(x, conf99, color = '#FAD4C0', alpha = 0.6, zorder = 5)
-ax.fill_between(x, conf99, 0, color = '#FEE9E1', alpha = 0.5, zorder = 0)
+f.subplots_adjust(wspace=0, hspace=0) # Remove space between subplots´
 
-ax.plot(x, conf95, color = '#D58870', zorder = 15)
-ax.fill_between(x, conf95, 0, color = '#E0937A', alpha = 0.6, zorder = 10)
-ax.set_ylim(bottom=0, top = max(conf99) + 0.5)
+# =============================================================================
+# 6. Plot confidence intervals and putative breakpoints
+# =============================================================================
+ax.margins(x=0.01) # Decrease ax margins
+ax.set_xlim(0, max(x)) # Set x axis limits
 
-ax.plot(x, y, color = 'black', zorder = 20)
+ax.plot(x, conf99, color = '#FAD4C0', alpha = 0.6, zorder = 5) # Plot 99% CI
+ax.fill_between(x, conf99, 0, color = '#FEE9E1', alpha = 0.5, zorder = 0) # Fill the CI
 
-ax.axvline(x=15969, color = 'r', linestyle = '--', linewidth = 3, zorder = 25)
+ax.plot(x, conf95, color = '#D58870', zorder = 15) # Plot the 95% CI
+ax.fill_between(x, conf95, 0, color = '#E0937A', alpha = 0.6, zorder = 10) # Fill the CI
+ax.set_ylim(bottom = 0, top = max(conf99) + 0.5) # Set y axis limits
 
-ax.tick_params(
-    axis='x',          # changes apply to the x-axis
-    which='both',      # both major and minor ticks are affected
-    bottom=False,      # ticks along the bottom edge are off
-    top=False,         # ticks along the top edge are off
-    labelbottom=False) # labels along the bottom edge are off
+ax.plot(x, y, color = 'black', zorder = 20) # Plot breakpoint curve
 
-# ax.set_xticklabels([])
-# ax.set_xticks([])
-ax.spines['left'].set_zorder(100)
+ax.axvline(x=15969, color = 'r', linestyle = '--', linewidth = 3, zorder = 25) # Add horizontal line between segments
 
-# ax.plot(x[x < GS1[0]], conf95[x < GS1[0]], color = 'grey')
-# ax.plot(x[(x >= GS1[0]) & (x <= GS1[1])], conf95[(x >= GS1[0]) & (x <= GS1[1])], color = '#FF0000')
-# ax.plot(x[(x > GS1[1]) & (x < BRS[0])], conf95[(x > GS1[1]) & (x < BRS[0])], color = 'grey')
-# ax.plot(x[(x >= BRS[0]) & (x <= BRS[1])], conf95[(x >= BRS[0]) & (x <= BRS[1])], color = '#D930BD')
-# ax.plot(x[(x > BRS[1]) & (x < GS2[0])], conf95[(x > BRS[1]) & (x < GS2[0])], color = 'grey')
-# ax.plot(x[(x >= GS2[0]) & (x <= GS2[1])], conf95[(x >= GS2[0]) & (x <= GS2[1])], color = '#FF009B')
-# ax.plot(x[x > GS2[1]], conf95[x > GS2[1]], color = 'grey')
+ax.tick_params(          # Remove bottom ticks from x axis
+    axis = 'x',          # Axis to be modified
+    which = 'both',      # Ticks to be modified (both = major + minor)
+    bottom = False,      # Remove ticks along the bottom edge
+    labelbottom = False) # Remove labels along the bottom edge
 
-# ax.plot(x[x < GS1[0]], conf99[x < GS1[0]], color = 'grey', alpha = 0.3, zorder = -1)
-# ax.plot(x[(x >= GS1[0]) & (x <= GS1[1])], conf99[(x >= GS1[0]) & (x <= GS1[1])], color = '#FF0000', alpha = 0.3)
-# ax.plot(x[(x > GS1[1]) & (x < BRS[0])], conf99[(x > GS1[1]) & (x < BRS[0])], color = 'grey', alpha = 0.3)
-# ax.plot(x[(x >= BRS[0]) & (x <= BRS[1])], conf99[(x >= BRS[0]) & (x <= BRS[1])], color = '#D930BD', alpha = 0.3)
-# ax.plot(x[(x > BRS[1]) & (x < GS2[0])], conf99[(x > BRS[1]) & (x < GS2[0])], color = 'grey', alpha = 0.3)
-# ax.plot(x[(x >= GS2[0]) & (x <= GS2[1])], conf99[(x >= GS2[0]) & (x <= GS2[1])], color = '#FF009B', alpha = 0.3)
-# ax.plot(x[x > GS2[1]], conf99[x > GS2[1]], color = 'grey', alpha = 0.3)
-
-# ax.fill_between(x[x < GS1[0]], conf95[x < GS1[0]], color = '#AFAFAF')
-# ax.fill_between(x[(x >= GS1[0]) & (x <= GS1[1])], conf95[(x >= GS1[0]) & (x <= GS1[1])], color = '#FF6060')
-# ax.fill_between(x[(x > GS1[1]) & (x < BRS[0])], conf95[(x > GS1[1]) & (x < BRS[0])], color = 'grey')
-# ax.fill_between(x[(x >= BRS[0]) & (x <= BRS[1])], conf95[(x >= BRS[0]) & (x <= BRS[1])], color = '#DC6FCA')
-# ax.fill_between(x[(x > BRS[1]) & (x < GS2[0])], conf95[(x > BRS[1]) & (x < GS2[0])], color = 'grey')
-# ax.fill_between(x[(x >= GS2[0]) & (x <= GS2[1])], conf95[(x >= GS2[0]) & (x <= GS2[1])], color = '#FF60C1')
-# ax.fill_between(x[x > GS2[1]], conf95[x > GS2[1]], color = '#AFAFAF')
-
-# ax.fill_between(x[x < GS1[0]], conf99[x < GS1[0]], color = '#AFAFAF', alpha = 0.3)
-# ax.fill_between(x[(x >= GS1[0]) & (x <= GS1[1])], conf99[(x >= GS1[0]) & (x <= GS1[1])], color = '#FF6060', alpha = 0.3)
-# ax.fill_between(x[(x > GS1[1]) & (x < BRS[0])], conf99[(x > GS1[1]) & (x < BRS[0])], color = 'grey', alpha = 0.3)
-# ax.fill_between(x[(x >= BRS[0]) & (x <= BRS[1])], conf99[(x >= BRS[0]) & (x <= BRS[1])], color = '#DC6FCA', alpha = 0.3)
-# ax.fill_between(x[(x > BRS[1]) & (x < GS2[0])], conf99[(x > BRS[1]) & (x < GS2[0])], color = 'grey', alpha = 0.3)
-# ax.fill_between(x[(x >= GS2[0]) & (x <= GS2[1])], conf99[(x >= GS2[0]) & (x <= GS2[1])], color = '#FF60C1', alpha = 0.3)
-# ax.fill_between(x[x > GS2[1]], conf99[x > GS2[1]], color = '#AFAFAF', alpha = 0.3)
-
-# ax.fill_between(x[(x >= GS1_list[0]) & (x <= GS1_list[1])], conf95[(x >= GS1_list[0]) & (x <= GS1_list[1])], color = '#FF0000')
-# ax.fill_between(x[(x >= BRS_list[0]) & (x <= BRS_list[1])], conf95[(x >= BRS_list[0]) & (x <= BRS_list[1])], color = '#D930BD')
-# ax.fill_between(x[(x >= GS2_list[0]) & (x <= GS2_list[1])], conf95[(x >= GS2_list[0]) & (x <= GS2_list[1])], color = '#FF009B')
-
-# stemobj = ax.stem(x, y, markerfmt = ' ')
-# plt.setp(stemobj, 'color', 'black')
-# plt.setp(stemobj, 'zorder', 30)
-ax2.set_xlim(0, max(x))
-ax.set_xticks(range(1, max(x), 2000))
-ax2.margins(y = 0)
-ax2.set_xticks(range(1, max(x), 2000))
-ax2.plot(breaks, [1]*len(breaks), '|', color = 'black')
-ax2.set_axis_off()
-ax2.set_zorder(100)
-ax2.set_yticks([])
-f.subplots_adjust(wspace=0, hspace=0)
-
-# ax2.axvline(x=15969, color='r', linestyle='--', linewidth=2)
-
+ax.spines['left'].set_zorder(100) # Move the ax main spines to the front
 right_side = ax.spines['right']
-right_side.set_visible(False)
+right_side.set_visible(False) # Remove right spine
 top_side = ax.spines['top']
-top_side.set_visible(False)
+top_side.set_visible(False) # Remove top spine
 
-ax3.set_xlim(0, max(x))
-ax3.margins(x = 0.01)
-ax3.plot(x, x/1000, alpha = 0)
-ax3.set_xticks(range(min(x), max(x), 2000))
-ax3.get_yaxis().set_visible(False)
+# =============================================================================
+# 7. Plot breakpoint positions
+# =============================================================================
+ax2.set_xlim(0, max(x)) # Set x axis limits
+ax.set_xticks(range(1, max(x), 2000)) # Set x axis ticks
+ax2.margins(y = 0) # Set y axis margins
+ax2.set_xticks(range(1, max(x), 2000)) # Ser x axis ticks
+ax2.plot(breaks, [1]*len(breaks), '|', color = 'black') # Plot breakpoints
+ax2.set_axis_off() # Remove axis display
+ax2.set_zorder(100) # Move ax forward
+ax2.set_yticks([]) # Remove ticks from y axis
 
+# =============================================================================
+# 8. Plot genes in region
+# =============================================================================
+ax3.set_xlim(0, max(x)) # Set ax scale
+ax3.set_ylim(-200, 200)
+ax3.margins(x = 0.01, y = 0) # Set ax margins
+ax3.set_xticks(range(min(x), max(x), 2000)) # Set ticks
+ax3.get_yaxis().set_visible(False) # Remove y axis
+
+#Add horizontal line between genomic segments
 ax3.axvline(x=15969, color='r', linestyle='--', linewidth=3)
 
-colors = ['#9DAAB7', '#6586A3', '#647D88', '#626D75', '#B1BFD4']
-
-
-for index, gene in genes.iterrows():
-    gene_zorder = 2
-    basecolor = colors[index%5] #'#AFAFAF'
-    basewidth = 1000
-    headwidth = 1000
-    linewidth = 2
-    alpha = 1
-    lc = 'black'
+# Plot CDS
+for index, gene in genes.iterrows(): # Loop through CFD
+    gene_zorder = 2 # Plot them at the back
+    basecolor = colors[index%5] # Get a color from a list of alternating colors
+    basewidth = 300 # CDS arrow width
+    headwidth = 300 # Width of the arrow head
+    linewidth = 2 # Edge width
+    alpha = 1 # Transparency (none)
+    lc = 'black' # Edge color
     
-    basewidth = 500
-    headwidth = 500
-    if gene['end'] - gene['start'] < 800: # or gene['gene_name'] == 'unk.':
-        headwidth = 0 #(gene['end'] - gene['start'])/1.6
+    if gene['end'] - gene['start'] < 400:
+        headwidth = 0
         linewidth = 0
         alpha = 0.8
         gene_zorder = 1
@@ -220,20 +180,11 @@ for index, gene in genes.iterrows():
               width = basewidth, shape = 'full', head_width = headwidth, 
               edgecolor = lc, linewidth = linewidth,
               alpha = alpha, zorder = gene_zorder)
-        
-# brs_start =  min(genes[genes['name'] == 'brsu']['start'])
-# brs_end = max(genes[genes['name'] == 'brsu']['end'])
-# ax3.arrow(brs_end, 0, dx = brs_start - brs_end, dy = 0, 
-#       facecolor = '#DC6FCA', length_includes_head = True, 
-#       width = 1000, shape = 'full', head_width = 1000, 
-#       edgecolor = 'black', linewidth = 5, alpha = 1)  
-# leg = ax3.text(brs_end-(brs_end-brs_start)/(1+2/3), -60, 
-#                'BRS', fontsize = 18)
 
 for gap in gaps:
     gene_zorder = 0
     basecolor = '#F2F2F2'
-    basewidth = 500
+    basewidth = 600
     headwidth = 0
     linewidth = 0
     alpha = 0.75
@@ -264,7 +215,6 @@ left_side3.set_visible(False)
 ax.set_ylabel('Breakpoints per 200nt window', fontsize = 16)
 plt.xlabel('Position in the alignment', fontsize = 16)
 
-# plt.tight_layout()
 plt.savefig(outfile)
 plt.savefig(outfile.replace('png', 'svg'))
 plt.savefig(outfile.replace('png', 'pdf'))
