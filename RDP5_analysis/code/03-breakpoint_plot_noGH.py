@@ -11,6 +11,8 @@ import pandas as pd
 from statistics import mean
 from math import inf
 import os
+import numpy as np
+from scipy.signal import find_peaks
 
 # =============================================================================
 # 0. Define inputs, outputs and paths
@@ -112,7 +114,23 @@ ax.plot(x, conf95, color = '#D58870', zorder = 15) # Plot the 95% CI
 ax.fill_between(x, conf95, 0, color = '#E0937A', alpha = 0.6, zorder = 10) # Fill the CI
 ax.set_ylim(bottom = 0, top = max(conf99) + 0.5) # Set y axis limits
 
-ax.plot(x, y, color = 'black', zorder = 20) # Plot breakpoint curve
+ax.plot(x, y, color = 'black', zorder = 25) # Plot breakpoint curve
+
+# triangle_dict = {}
+y_maxima = find_peaks(y, distance = 50)[0]
+for yval in y_maxima:
+    if y[yval] > conf99[yval]:
+        ax.plot(yval*2, y[yval] + 0.4, marker=(3, 0, 180), markersize=20, 
+                mew = 2, color = '#D7FA05', markeredgecolor = 'black',
+                zorder = 55)
+        # triangle_dict[(yval, y[yval])] = 'red'
+    elif y[yval] > conf95[yval]:
+        ax.plot(yval*2, y[yval] + 0.4, marker=(3, 0, 180), markersize=20, 
+                mew = 2, color = '#F4FEB8', markeredgecolor = 'grey', 
+                zorder = 55)
+        # triangle_dict[(yval, y[yval])] = 'yellow'
+        
+        
 
 ax.axvline(x=15969, color = 'r', linestyle = '--', linewidth = 3, zorder = 25) # Add horizontal line between segments
 
@@ -150,7 +168,7 @@ ax3.set_xticks(range(min(x), max(x), 2000)) # Set ticks
 ax3.get_yaxis().set_visible(False) # Remove y axis
 
 #Add horizontal line between genomic segments
-ax3.axvline(x=15969, color='r', linestyle='--', linewidth=3)
+ax3.axvline(x=15969, color='r', linestyle='--', linewidth=3, zorder = 20)
 
 # Plot CDS
 for index, gene in genes.iterrows(): # Loop through CFD
