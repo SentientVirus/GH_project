@@ -168,6 +168,9 @@ if not os.path.exists(out_dir):
 with open(f'{pos_dir}/all_subsets_positions.tab', 'w+') as gpos:
     gpos.write('locus_tag\tstrain\tgene_name\tstart\tend\tstrand\n')
     
+with open(f'{pos_dir}/all_subsets_0gap/all_subsets_positions.tab', 'w+') as gpos:
+    gpos.write('locus_tag\tstrain\tgene_name\tstart\tend\tstrand\n')
+    
 for group in group_names.values():
     with open(f'{pos_dir}/{group}_positions.tab', 'w+') as pos_file:
         pos_file.write('locus_tag\tstrain\tgene_name\tstart\tend\tstrand\n')
@@ -307,6 +310,10 @@ for strain in loop:
                 with open(f'{out_dir}/all_subsets_seqs{ind}.fasta', 'a+') as global_out:
                     print(f'Saving record {record.id} to file {out_dir}/all_subsets_seqs{ind}.fasta')
                     SeqIO.write(record, global_out, 'fasta')
+                    if strain not in ['H1B1-05A', 'H1B3-02M', 'H3B2-03M', 'MP2']:
+                        with open(f'{out_dir}/all_subsets_0gap/all_subsets_seqs{ind}.fasta', 'a+') as nogap:
+                            print(f'Saving record {record.id} to file {out_dir}/all_subsets_0gap/all_subsets_seqs{ind}.fasta')
+                            SeqIO.write(record, nogap, 'fasta')
                     
                 if outfile != '':
                     new_outfile = outfile.replace('seqs', f'seqs{ind}')
@@ -328,8 +335,11 @@ for strain in loop:
 for group in list(group_names.values()) + ['all_subsets']:
     for ind in [1, 2]:
         raw_data = f'{out_dir}/{group}_seqs{ind}.fasta'
+        nogap_data = raw_data.replace(f'{out_dir}', f'{out_dir}/all_subsets_0gap')
         alignment = raw_data.replace('fasta', 'mafft.fasta')
-        subprocess.run(f'mafft --auto --thread {threads} {raw_data} > {alignment} 2>> {log}', shell = True)  
+        nogap_alignment = nogap_data.replace('fasta', 'mafft.fasta')
+        subprocess.run(f'mafft --auto --thread {threads} {raw_data} > {alignment} 2>> {log}', shell = True)
+        subprocess.run(f'mafft --auto --thread {threads} {nogap_data} > {nogap_alignment} 2>> {log}', shell = True)
     with open(f'{out_dir}/{group}_seqs1.mafft.fasta') as seq1, open(f'{out_dir}/{group}_seqs2.mafft.fasta') as seq2:
         records1 = list(SeqIO.parse(seq1, 'fasta'))
         records2 = list(SeqIO.parse(seq2, 'fasta'))

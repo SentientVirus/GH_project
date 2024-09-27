@@ -6,16 +6,19 @@ Created on Mon Dec 20 11:06:54 2021
 @author: marmo435
 """
 
-from ete3 import Tree, TreeStyle, NodeStyle, SeqMotifFace, TextFace
-import colorsys
-import random
-#Use PhyloTree
-from Bio import SeqIO
-import re, csv, os
-from matplotlib.colors import to_hex
-from math import sqrt
+from ete3 import Tree, TreeStyle, NodeStyle, SeqMotifFace, TextFace, RectFace
+# from TreeStyle import RectFace
+# import colorsys
+# import random
+# from Bio import SeqIO
+import os
+# import re, csv
+# from matplotlib.colors import to_hex
+# from math import sqrt
 import pandas as pd
+from matplotlib import pyplot as plt
 
+#Update to show also major parent and fix support values
 class recomb_obj:
     def __init__(self, recombinant, minor, major, start, end, RDPvalue):
         self.recombinant = recombinant
@@ -140,7 +143,7 @@ start = 1 #Chosen so that reference gene is included and distance is 40000
 end = start + aln_len
 treefile = os.path.expanduser('~') + '/GH_project/trees/own_representatives.tree'
 outplot = os.path.expanduser('~') + '/GH_project/plots/trees/RDP5_tree.png'
-recomb = os.path.expanduser('~') + '/GH_project/RDP5_analysis/RDP_output/all_subsets_3methods_1+_filtered.csv'
+recomb = os.path.expanduser('~') + '/GH_project/RDP5_analysis/RDP_output/all_subsets_7methods_5+_filtered.csv'
 in_tab = os.path.expanduser('~') + '/GH_project/RDP5_analysis/files/tab/all_subsets_positions_aln.tab'
 t = Tree(treefile, format = 9)
 
@@ -175,7 +178,9 @@ ns = NodeStyle()
 ns['size'] = 0 #Nodes are not visible
 #ns['hz_line_type'] = 1
 ns['hz_line_color'] = 'lightgrey'
-ns['vt_line_color'] = 'black'
+ns['hz_line_width'] = 4
+ns['vt_line_color'] = 'slategrey'
+ns['vt_line_width'] = 4
 
 ns2 = NodeStyle()
 ns2['size'] = 0
@@ -217,18 +222,35 @@ with open(recomb) as rectracts:
                 recomb = l[8].strip('^')
                 start = ''.join(c for c in l[2] if c.isdigit())
                 end = ''.join(c for c in l[3] if c.isdigit())
+                support = [l[11], l[12], l[13], l[14], l[15], l[16], l[17]]
+                while 'NS' in support:
+                    support.remove('NS')
+                support = [float(sup) for sup in support]
+                if support != []:
+                    support = sorted(support, reverse = False)[:3]
+                    support = sum(support)/len(support)
+                else: support = 1
                 print(start, end, int(start), int(end))
-                new_tract = [l[8], l[9], l[10], start, end, l[11]]
+                new_tract = [l[8], l[9], l[10], start, end, support]
                 recomb_tracts[recomb].append(new_tract)
                 
 gene_positions = []
 
 loci = []
+labels = {}
+countvar = 0
 with open(in_tab) as tabfile:
     tab_df = pd.read_csv(tabfile, sep = '\t')
+    tab_df = tab_df.reindex(index = tab_df.index[::-1])
     for index, row in tab_df.iterrows():
         if row['strain'] == 'A0901':
-            locus = [row['start']-1, row['end']-1, '[]', 0, 20, 'slategrey', 'white', f'Arial|12|black|{row["gene_name"]}']
+            if row['strand'] == -1:
+                shape = '>'
+            else:
+                shape = '<'
+            labels[countvar] = row['gene_name']
+            countvar += 1
+            locus = [row['start']-1, row['end']-1, shape, 0, 40, 'slategrey', '#9DAAB7', f'Arial|12|black|{row["gene_name"]}']
             if row['gene_name'] == 'bcrA':
                 locus[0] += 1
             loci.append(locus)
@@ -335,27 +357,30 @@ for leaf in leaves:
         for tract in recomb_tract:
             check = False
             if tract[5] != 'NS':
-                if float(tract[5]) < 1E-200:
-                    color = 'white'
-                    color2 = 'black'
-                    check = True
-                elif float(tract[5]) < 1E-150:
-                    color = 'yellow'
-                    color2 = 'black'
+                if float(tract[5]) < 1E-150:
+                    color = '#944654' #'#f08080'
+                    color2 = 'white'
                     check = True
                 elif float(tract[5]) < 1E-100:
-                    color = 'orange'
-                    color2 = 'black'
+                    color = '#C46877' #'#f4978e'
+                    color2 = 'white'
                     check = True
                 elif float(tract[5]) < 1E-50:
-                    color = 'red'
-                    color2 = 'white'
+                    color = '#DB8484' #'#f8ad9d'
+                    color2 = 'black'
                     check = True
                 elif float(tract[5]) < 1E-25:
-                    color = 'darkred'
-                    color2 = 'white'
-                    check = False
-                else: color, color2 = 'black', 'white'
+                    color = '#F7B9B0' #'#fbc4ab'
+                    color2 = 'black'
+                    check = True
+                elif float(tract[5]) < 1E-10:
+                    color = '#F7CFC1' #'#ffdab9'
+                    color2 = 'black'
+                    check = True
+                elif float(tract[5]) < 0.05:
+                    color, color2 = 'linen', 'black'
+                    check = True
+                else: check = False
             #Find the way to avoid superposition of tracts
             #tract[1] = tract[1].replace('Z12361', '').replace('-', '').replace('IBH001', 'IBH')
             if 'Unknown' in tract[1]:
@@ -367,8 +392,9 @@ for leaf in leaves:
             #         tract[1] = tract[1].replace(lname, str(lno[lname]))
                     
             if check:
-                info_list = [int(tract[3]), int(tract[4]), '[]', 0, 20, 'slategrey', color, f'Arial|12|{color2}|{tract[1]}']
+                info_list = [int(tract[3]), int(tract[4]), '[]', 0, 20, 'lightgrey', color, f'Arial|12|{color2}|{tract[1]}']
                 motifs.append(info_list)
+            # else: print(tract[5], [int(tract[3]), int(tract[4]), '[]', 0, 20, 'lightgrey', color, f'Arial|12|{color2}|{tract[1]}'])
             
         tract_list = recomb_tracts[leaf.name]
         
@@ -376,22 +402,37 @@ for leaf in leaves:
         
         to_add = []
         for i in range(len(motifs)):
-            if motifs[i][1] - motifs[i][0] > 1000 or motifs[i][0] == 15453 or motifs[i][1] == 15452:
-                if leaf.name == 'H4B4-02J':
-                    seqFace = SeqMotifFace(seq, motifs = [motifs[i]], height = 20, seq_format = '[]', gap_format = 'blank', scale_factor = 0.05) #Add presence/absence info to node
-                    (t & f'{leaf.name}').add_face(seqFace, 1, 'aligned') #The number represents the column
+            if motifs[i][1] - motifs[i][0] > 500: #or motifs[i][0] == 15453 or motifs[i][1] == 15452:
+                if len(to_add) > 0:
+                    check = []
+                    for motif in to_add:
+                        if (motifs[i][1] < motif[0]) or (motifs[i][0] > motif[1]):
+                            check.append(False)
+                        else: check.append(True)
+                    if sum(check) != 0:
+                        seqFace = SeqMotifFace(seq, motifs = to_add, height = 20, seq_format = '[]', gap_format = 'blank', scale_factor = 0.04, bgcolor = 'lightgrey', fgcolor = 'lightgrey')
+                        (t & f'{leaf.name}').add_face(seqFace, 1, 'aligned')
+                        to_add = [motifs[i]]
+                    else: to_add.append(motifs[i])     
+                    
+                # seqFace = SeqMotifFace(seq, motifs = [motifs[i]], height = 20, seq_format = '[]', gap_format = 'blank', scale_factor = 0.05) #Add presence/absence info to node
+                # (t & f'{leaf.name}').add_face(seqFace, 1, 'aligned') #The number represents the column
                 else: to_add.append(motifs[i])
             
-        if leaf.name != 'H4B4-02J' and to_add != []:
-            seqFace = SeqMotifFace(seq, motifs = to_add, height = 20, seq_format = '[]', gap_format = 'blank', scale_factor = 0.05) #Add presence/absence info to node
+        if to_add != []:
+            seqFace = SeqMotifFace(seq, motifs = to_add, height = 20, seq_format = '[]', gap_format = 'blank', scale_factor = 0.04, bgcolor = 'lightgrey', fgcolor = 'lightgrey') #Add presence/absence info to node
             (t & f'{leaf.name}').add_face(seqFace, 1, 'aligned') #The number represents the column
         elif leaf.name == 'A1001':
-            seqFace = SeqMotifFace(seq, motifs = loci, height = 20, seq_format = 'blank', gap_format = 'blank', scale_factor = 0.05)
+            seqFace = SeqMotifFace(seq, motifs = loci, height = 20, seq_format = 'blank', gap_format = 'blank', scale_factor = 0.04, bgcolor = 'lightgrey', fgcolor = 'lightgrey')
             (t & f'{leaf.name}').add_face(seqFace, 1, 'aligned') #The number represents the column
             
-        seqFace = SeqMotifFace(miniseq, height = 20, seq_format = 'blank', gap_format = 'blank') #Add presence/absence info to node
+        seqFace = SeqMotifFace(miniseq, height = 20, seq_format = 'blank', gap_format = 'blank') #Add strain number
         (t & f'{leaf.name}').add_face(seqFace, 0, 'aligned') #The number represents the column
     motif_dict[leaf.name] = motifs
+    
+# ts.legend.add_face(RectFace(50, 25, 'black', '#944654', label = 'p-value < 1E-150'), column=2)
+# for key in labels.keys():
+#     ts.legend.add_face(TextFace(f'{key} {labels[key]}'), column=-1)
     
 #Here I print the tree
 t.ladderize(1)

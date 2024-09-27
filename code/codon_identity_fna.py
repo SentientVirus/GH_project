@@ -167,6 +167,8 @@ def retrieve_gene_seqs(input_dir):
                         prefix = group_names[strain_groups[strain]]
                         with open(f'{seq_outdir}/{prefix}_{gene_name}.{suffix}', 'a+') as seqfile:
                             print(f'Writing gene {seq.id} to {seq_outdir}/{prefix}_{gene_name}.{suffix}')
+                            # Here (commented section) I was trying to add a gene that was split in two, but wasn't sucessful:
+                                
                             # if strain != 'H1B3-02M' and prefix == group_names[1] and gene_name == GH_genes[1] and check2 == False:
                             #     with open(f'{aa_path}/{gene_types[0]}/trunc_{GH_genes[1]}.{suffix}') as gs2_trunc:
                             #         record = SeqIO.read(gs2_trunc, 'fasta')
@@ -276,7 +278,7 @@ for comparison in group_names.values():
             
         file = f'{comparison}_{gene}.pal2nal.fna' # Input alignment
         
-        if file in os.listdir(aln_path) and not ('only' in file and gene == 'BRS'):
+        if file in os.listdir(aln_path) and not ('only' in file and gene == 'BRS'): # If the gene is present in at least two strains of a comparison
             print(f'Retrieving codons from {aln_path}/{file}')
         
             pos_dict = {}
@@ -302,6 +304,7 @@ for comparison in group_names.values():
                         
             df_aln = pd.DataFrame.from_dict(pair_dict) # Convert dictionary to dataframe
             
+            # Fill in with gaps individual comparisons where the gene is not present in both strains
             if gene == 'mhpD' and group_names[0] == comparison:
                 tuple1 = tuple(fstrains[1].split('_'))
                 tuple2 = tuple(fstrains[2].split('_'))
@@ -361,9 +364,10 @@ for comparison in group_names.values():
         ax.patch.set(lw = 5, ec = 'black') # Border of the subplots
         gn = gene.replace('rfbX', '?wzx').replace('wzyC', '?waaL') # Change some of the gene annotations
         
-        if comparison == group_names[min(group_names.keys())]:
-            ax.set_title(gn, fontsize = 48, style = 'italic')
-            color = 'white' #'#e5e5e5'
+        # Add arrows indicating gene direction
+        if comparison == group_names[min(group_names.keys())]: # Add this only on top of the first row
+            ax.set_title(gn, fontsize = 48, style = 'italic') # Add gene names at the top of the plot
+            color = 'white' #'#e5e5e5' # Add background color to arrows
             # if gene == 'GS1':
             #     color = '#ffd9d9'
             # elif gene == 'GS2':
@@ -375,10 +379,10 @@ for comparison in group_names.values():
             # elif gene == 'S3':
             #     color = '#fffcdc'
                 
-            if gene_no >= 23:
+            if gene_no >= 23: # Invert arrows for genes in the forward strand
                 startx = max(df_aln.index)
                 dx = -max(df_aln.index)
-            else:
+            else: # Otherwise, plot the arrows facing toward the right
                 startx = 0
                 dx = max(df_aln.index)
             ax.arrow(startx, -0.5, dx, 0, width = 0.2, head_width = 0.2, 
@@ -386,18 +390,21 @@ for comparison in group_names.values():
                      clip_on = False, linewidth = 5,
                      edgecolor = 'black', facecolor = color)
             
+        # Add ticks to the y axis if the gene is present in the comparison
         if count == 0:
             plt.yticks(rotation=90)
             
-        nbins = ax.get_xlim()[1]//50
+        nbins = ax.get_xlim()[1]//50 # Number of ticks for the x axis
         plt.tick_params(axis='x', which='major', labelsize=20) # Increase font size of ax ticks
-        plt.locator_params(axis='x', nbins=nbins)
-        ax.set(xlabel=None)
-        ax.set(ylabel=None)
+        plt.locator_params(axis='x', nbins=nbins) # Apply change in number of ticks
+        ax.set(xlabel=None) # Remove x ax label (label on the x axis of the subplot)
+        ax.set(ylabel=None) # Remove y ax label
 
-        
+        # If the gene is not the first one, then remove the y ax ticks and labels
         if gene != 'tagU':
             plt.tick_params(left = False, labelleft = False)
+            
+        # Otherwise, plot the comparisons as left labels (ytick labels)
         else:
             y_ticks = get_unique_values(list(df_aln.columns))
             y_ticks = [ytick.replace('_', ' vs ') for ytick in y_ticks]

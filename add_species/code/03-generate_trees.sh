@@ -1,6 +1,6 @@
 threads=16
 in_og="results/domains/ingroup_domains.faa"
-in_GH70="files/GH70_30kb_small_subset.faa"  #"../data/fasta/GH70/GH70_functional_repset.faa"
+in_GH70="../data/fasta/GH70/GH70_functional_repset.faa" #"files/GH70_30kb_small_subset.faa"  #"../data/fasta/GH70/GH70_functional_repset.faa"
 in_fasta="results/domains/GH70_species.faa"
 alignment="results/alignment/GH70_species.mafft.faa"
 aln_log="logs/03.1-alignment.log"
