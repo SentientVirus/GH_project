@@ -11,6 +11,7 @@ from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord as seqr
 import os
 
+# OBS! Modify this to retrieve only one domain from the GTFC proteins, merging the two domains that are predicted in Interproscan
 in_file = 'results/interproscan/GH70_species.tsv'
 GH70_text = 'Glycosyl hydrolase family 70'
 fasta_file = 'files/ingroups.faa'

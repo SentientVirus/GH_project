@@ -152,17 +152,39 @@ for index, gene in genes.iterrows(): # Loop through CFD
         gene_zorder = 1
         
     if gene['strand'] == 1:
-        ax3.arrow(gene['end'], 0, dx = gene['start'] - gene['end'], dy = 0, 
+        ax3.arrow(gene['end'], -30, dx = gene['start'] - gene['end'], dy = 0, 
               facecolor = basecolor, length_includes_head = True, 
               width = basewidth, shape = 'full', head_width = headwidth, 
               edgecolor = lc, linewidth = linewidth,
               alpha = alpha, zorder = gene_zorder)
     else:
-        ax3.arrow(gene['start'], 0, dx = gene['end'] - gene['start'], dy = 0, 
+        ax3.arrow(gene['start'], -30, dx = gene['end'] - gene['start'], dy = 0, 
               facecolor = basecolor, length_includes_head = True, 
               width = basewidth, shape = 'full', head_width = headwidth, 
               edgecolor = lc, linewidth = linewidth,
               alpha = alpha, zorder = gene_zorder)
+        
+    hpos = gene['start']
+    if gene['strand'] == 1 and gene['end']-gene['start'] > 500:
+        hpos +=  headwidth
+    if gene.name == 7:
+        gene_name = 'CDS8'
+    elif gene.name == 9:
+        gene_name = 'CDS7'
+    elif gene.name == 10:
+        gene_name = 'CDS5'
+    elif gene.name == 12:
+        gene_name = 'CDS4'
+    elif gene.name == 13:
+        gene_name = 'CDS3'
+    elif gene.name == 14:
+        gene_name = 'CDS2'
+    elif gene.name == 16:
+        gene_name = 'CDS1'
+    else: gene_name = gene['gene_name']
+    ax3.annotate(gene_name, style = 'italic', rotation = 0, 
+          xy = (hpos, 120), 
+          xycoords = 'data', fontweight = 'bold', color = 'black')
 
 
 right_side3 = ax3.spines['right']

@@ -76,11 +76,11 @@ strain_groups = {'H3B2-03M': 0, 'H4B4-02J': 0, 'H4B5-03X': 0, 'H1B3-02M': 1,
 
 group_names = {0: 'GS1_S2-3_subset', 1: 'GS1-2_BRS', 2: 'only_GS1+GS2'}
 
-gene_order = {26: 'ohrR', 25: 'yifK', 24: 'yifK2', 23: 'yhdG', 22: 'GH39', 
-              21: 'nox', 20: 'ydiL', 19: 'S2a', 18: 'GS1', 17: 'BRS', 
-              16: 'GS2', 15: 'mhpD', 14: 'oppA', 13: 'S3', 12: 'rfbX', 
-              11: 'sbnD', 10: 'wzyC', 9: 'branch', 8: 'branch2', 7: 'epsE', 
-              6: 'GTB', 5: 'epsL', 4: 'ywqE', 3: 'ywqD', 2: 'ywqC', 1: 'tagU'}
+gene_order = {27: 'ohrR', 26: 'yifK', 25: 'yifK2', 24: 'yhdG', 23: 'CDS8', 
+              22: 'nox', 21: 'CDS7', 20: 'S2a', 19: 'GS1', 18: 'BRS', 
+              17: 'GS2', 16: 'mhpD', 15: 'oppA', 14: 'S3', 13: 'CDS6', 12: 'CDS5', 
+              11: 'sbnD', 10: 'CDS4', 9: 'CDS3', 8: 'CDS2', 7: 'epsE', 
+              6: 'CDS1', 5: 'epsL', 4: 'ywqE', 3: 'ywqD', 2: 'ywqC', 1: 'tagU'}
 
 # Translation table for bacterial codons, assumes standard codon translations
 transtable = {'TTT': 'F', 'TTC': 'F', 'TTA': 'L', 'TTG': 'L', 'CTT': 'L',
@@ -269,7 +269,7 @@ fstrains = []
 
 # Create the figure to save the plots
 fig = plt.figure(constrained_layout=False, figsize=(160, 30))
-spec = gridspec.GridSpec(nrows=3, ncols=26, figure=fig, width_ratios=length_dict[comparison])
+spec = gridspec.GridSpec(nrows=3, ncols=27, figure=fig, width_ratios=length_dict[comparison])
 count = 0 # Number of the row
 for comparison in group_names.values():
     plt.tight_layout(h_pad = 2, w_pad = 2) # Adjust space between genes
@@ -343,7 +343,7 @@ for comparison in group_names.values():
             
         
         # Reverse index of genes in the forward strand
-        if gene_no >= 23:
+        if gene_no >= 24 or gene_no == 13:
             df_aln = df_aln.iloc[::-1] #.reset_index(drop = True)
         df_aln.index += 1 # Make the index start with 1, not 0
         df_aln_dict[gene] = df_aln # Save dataframe to dictionary
@@ -362,7 +362,7 @@ for comparison in group_names.values():
         ax = fig.add_subplot(spec[count, gene_no-1]) # Set the right row and column
         h3 = sns.heatmap(df_aln_dict[gene].T, cmap = cmap, cbar = False, ax = ax) # Plot
         ax.patch.set(lw = 5, ec = 'black') # Border of the subplots
-        gn = gene.replace('rfbX', '?wzx').replace('wzyC', '?waaL') # Change some of the gene annotations
+        gn = gene #.replace('rfbX', '?wzx').replace('wzyC', '?waaL').replace('GH39', '?GH39') # Change some of the gene annotations
         
         # Add arrows indicating gene direction
         if comparison == group_names[min(group_names.keys())]: # Add this only on top of the first row
@@ -379,7 +379,7 @@ for comparison in group_names.values():
             # elif gene == 'S3':
             #     color = '#fffcdc'
                 
-            if gene_no >= 23: # Invert arrows for genes in the forward strand
+            if gene_no >= 24 or gene_no == 13: # Invert arrows for genes in the forward strand
                 startx = max(df_aln.index)
                 dx = -max(df_aln.index)
             else: # Otherwise, plot the arrows facing toward the right
