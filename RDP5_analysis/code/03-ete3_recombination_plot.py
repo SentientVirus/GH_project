@@ -137,40 +137,85 @@ gene_colors = {'nox': '#7E9C07', 'GS1': '#FF0000', 'tes': '#BB9900', 'opp': '#2F
                'S2a': '#FFC800', 'S2b': '#FFC800', 'S3 ': '#FFEF00', 'skf': '#0082E8',
                'din': '#00D198'}
 
+to_include = ['A0901', 'A1001', 'A1003', 'A1202', 'A1401', 'A1805',
+              'DSMZ12361', 'fhon2', 'G0101', 'G0403', 'H1B1-04J', 'H1B1-05A', 
+              'H1B3-02M', 'H3B1-01A', 'H3B1-04J', 'H3B1-04X', 'H3B2-02X',
+              'H3B2-03J', 'H3B2-03M', 'H3B2-06M', 'H3B2-09X', 'H4B1-11J', 
+              'H4B2-02J', 'H4B2-04J', 'H4B2-05J', 'H4B2-06J', 'H4B2-11M', 
+              'H4B4-02J', 'H4B4-05J', 'H4B4-06M', 'H4B4-12M', 'H4B5-01J', 
+              'H4B5-03X', 'H4B5-04J', 'H4B5-05J', 'IBH001', 'MP2']
+
+# OBS! Prune the non-closed phylogeny with ete3!
 aln_len = 31420
 prefix = 'subset'
 start = 1 #Chosen so that reference gene is included and distance is 40000
 end = start + aln_len
-treefile = os.path.expanduser('~') + '/GH_project/trees/own_representatives.tree'
+treefile = os.path.expanduser('~') + '/GH_project/trees/kunkeei_nonclosed.tree'
 outplot = os.path.expanduser('~') + '/GH_project/plots/trees/RDP5_tree.png'
 recomb = os.path.expanduser('~') + '/GH_project/RDP5_analysis/RDP_output/all_subsets_7methods_5+_filtered.csv'
 in_tab = os.path.expanduser('~') + '/GH_project/RDP5_analysis/files/tab/all_subsets_positions_aln.tab'
-t = Tree(treefile, format = 9)
 
-ts = TreeStyle()
+
+t = Tree(treefile, format = 1)
 
 t.set_outgroup('A1001')
 
+for node in t.traverse():
+    if node.is_leaf() and node.name not in to_include:
+        node.delete()
+    elif node.name == 'A1001':
+        root_node = node
+    elif node.name == 'fhon2':
+        node.name = 'Fhon2'
+    elif node.name == 'H4B2-06J':
+        IBH_sis = node
+    elif node.name == 'H3B1-04J':
+        DSM_sis = node
+
+        
+# This works now, but I should also add sister nodes where DSM and IBH001 should be placed.
+root_node.add_sister(name = 'IBH001', dist = 0)
+root_node.add_sister(name = 'DSMZ12361', dist = 0)
+IBH_sis.add_child(name = '**', dist = 0)
+IBH_sis.add_child(name = IBH_sis.name, dist = 0)
+IBH_sis.name = ''
+DSM_sis.add_child(name = '*', dist = 0)
+DSM_sis.add_child(name = DSM_sis.name, dist = 0)
+DSM_sis.name = ''
+
+ts = TreeStyle()
+
 ts.show_branch_length = False
 #ts.show_branch_support = True
-ts.scale =  10 #General tree scale, original 4000
+ts.scale = 4000 #General tree scale, original 4000
 #ts.tree_width = 0.001
 #ts.force_topology = True
 ts.branch_vertical_margin = 10 #Space between branches
 ts.show_leaf_name = False #Hide unformatted leaf names
 ts.show_scale = False #Hide tree scale
 
-# ts.legend_position = 3 #Bottom left
-# ts.legend.add_face(TextFace(' '*96, fsize = 10), column = 0)
-# names = ['GH70', 'GS1', 'GS2', 'BRS', 'NCB', 'Short', ' ', 'GH32', 'S1', 'S2', 'S3']
-# for n in range(len(names)):
-#     if names[n] in names[8:11]:
-#         text_face = TextFace(f'{names[n]}  ', fsize=20, tight_text = True)
-#     else:
-#         text_face = TextFace(f'{names[n]}', fsize=20, tight_text = True)
-#     text_face.rotation = 290
-#     text_face.margin_bottom = -10 #Reduce space between labels
-#     ts.legend.add_face(text_face, column = n+1)
+ts.legend_position = 2 # Upper right
+ts.legend.margin_right = -100
+ts.legend.add_face(TextFace('p-value', fsize = 15), column = 0)
+ts.legend.add_face(TextFace(' ', fsize = 12), column = 1)
+ts.legend.add_face(TextFace('<1E-150', fsize = 12), column = 0)
+ts.legend.add_face(RectFace(45, 15, fgcolor = 'lightgrey', bgcolor = '#944654', 
+                            label = None), column = 1)
+ts.legend.add_face(TextFace('<1E-100', fsize = 12), column = 0)
+ts.legend.add_face(RectFace(45, 15, fgcolor = 'lightgrey', bgcolor = '#C46877', 
+                            label = None), column = 1)
+ts.legend.add_face(TextFace('<1E-50', fsize = 12), column = 0)
+ts.legend.add_face(RectFace(45, 15, fgcolor = 'lightgrey', bgcolor = '#DB8484', 
+                            label = None), column = 1)
+ts.legend.add_face(TextFace('<1E-25', fsize = 12), column = 0)
+ts.legend.add_face(RectFace(45, 15, fgcolor = 'lightgrey', bgcolor = '#F7B9B0', 
+                            label = None), column = 1)
+ts.legend.add_face(TextFace('<1E-10', fsize = 12), column = 0)
+ts.legend.add_face(RectFace(45, 15, fgcolor = 'lightgrey', bgcolor = '#F7CFC1', 
+                            label = None), column = 1)
+ts.legend.add_face(TextFace('<0.05', fsize = 12), column = 0)
+ts.legend.add_face(RectFace(45, 15, fgcolor = 'lightgrey', bgcolor = 'linen', 
+                            label = None), column = 1)
 
 
 #Formatting of nodes (and branch lines)
@@ -187,6 +232,14 @@ ns2['size'] = 0
 ns2['hz_line_color'] = 'white'
 ns2['vt_line_color'] = 'white'
 
+ns3 = NodeStyle()
+ns3['size'] = 0
+ns3['hz_line_color'] = 'lightgrey'
+ns3['hz_line_width'] = 2
+ns3['vt_line_color'] = 'slategrey'
+ns3['vt_line_width'] = 2
+ns3['hz_line_type'] = 2
+
 invisible_nodes = [t.get_common_ancestor('A1001'), 
                    t.get_common_ancestor('IBH001', 'DSMZ12361'), 
                    t.get_common_ancestor('IBH001', 'A1003'), 
@@ -195,8 +248,10 @@ invisible_nodes = [t.get_common_ancestor('A1001'),
                    t.search_nodes(name = 'A1001')[0]]
 
 for n in t.traverse():
-    if n not in invisible_nodes:
+    if n not in invisible_nodes and '*' not in n.name:
         n.set_style(ns)
+    elif '*' in n.name:
+        n.set_style(ns3)
     else: 
         n.set_style(ns2)
         n.img_style['hz_line_color'] = 'white'
@@ -230,7 +285,7 @@ with open(recomb) as rectracts:
                     support = sorted(support, reverse = False)[:3]
                     support = sum(support)/len(support)
                 else: support = 1
-                print(start, end, int(start), int(end))
+                # print(start, end, int(start), int(end))
                 new_tract = [l[8], l[9], l[10], start, end, support]
                 recomb_tracts[recomb].append(new_tract)
                 
@@ -254,91 +309,9 @@ with open(in_tab) as tabfile:
             if row['gene_name'] == 'bcrA':
                 locus[0] += 1
             loci.append(locus)
-    
-                
-# gene_dict = {}
-# seq_dict = {l: f'{"A"*int(end-start)}' for l in lnames} #Create a sequence of desired length
-
-#In this section, I add leaf names
-# for leaf in lnames:
-#     rectract = recomb_tracts[leaf]
-    # n = 0
-    # for filename in sorted(os.listdir(comp_dir)):
-    #     if leaf in filename and filename.endswith('gpr.tab'):
-    #         check = False
-    #         with open(comp_dir + filename, 'r') as gfile:
-    #             genes = csv.reader(gfile, delimiter='\t')
-    #             for gene in genes:
-    #                 if 'name' not in gene: #Skip first line
-    #                     if gene[0] == 'ohrR' and not check: #Gene used to center the plotted fragments in the right position
-    #                         start = int(gene[1])+5000
-    #                         if leaf == 'MP2' or leaf == 'H3B2-03M':
-    #                             start += 1400
-    #                         elif leaf == 'H1B1-05A':
-    #                             start += 1300
-    #                         elif leaf == 'H1B3-02M':
-    #                             start += 1450
-    #                         end = start + 30500 #Original 30500
-    #                         check = True
-    #                         #if leaf == 'G0407':
-    #                         #    print((start, end))
-    #                 if check and 'name' not in gene and end >= int(gene[1]) >= start and gene[3] == '-': #If the gene is in the right range and strand.
-    #                     if gene[0] == 'out':
-    #                         gene[0] = 'hpr'
-    #                     elif gene[0] == 'gtf2a':
-    #                         gene[0] = 'S2a'
-    #                     elif gene[0] == 'gtf2b':
-    #                         gene[0] = 'S2b'
-    #                     elif gene[0] == 'gtf3':
-    #                         gene[0] = 'S3 '
-    #                     elif gene[0] == 'tesE': #Wrongly annotated by Prokka, here I correct that.
-    #                         gene[0] = 'mhpD'
-    #                     elif gene[0] == 'cap8A':
-    #                         gene[0] = 'ywqC'
-    #                     elif gene[0][0:3] == 'glu': #I change the annotation to make it consistent
-    #                         gene[0] = gene[0].replace(gene[0][0:3], 'GS')
-    #                         if len(gene[0]) == 8:
-    #                             gene[0] = gene[0].replace(gene[0][4:8], 'BRS')
-    #                     elif gene[0][0:3] == 'brs':
-    #                         gene[0] = gene[0].replace(gene[0][0:4], 'BRS')
-    #                     elif gene[0][0:4] == 'gtf1':
-    #                         gene[0] = gene[0].replace('gtf', 'S')
-    #                         gene[0] = gene[0] + ' '
-    #                     format_str = f'Arial|14|white|{gene[0]}' #Text on the gene
-    #                     if gene[0][0] == 'S':
-    #                         format_str = f'Arial|14|black|{gene[0]}'
-    #                     if gene[0] != 'hpr' and gene[0][0:2] != 'S1':
-    #                         col = gene_colors[gene[0][0:3]]
-    #                         if gene[0] == 'GS2_BRS': #I use a gradient for multi-GH70 domain proteins.
-    #                             col = f'{"rgradient:" + gene_colors["BRS"] + "|" + gene_colors["GS2"]}'
-    #                     elif gene[0][0:2] == 'S1':
-    #                         col = gene_colors['S1 ']
-    #                     else:
-    #                         col = hpr_colors[n % 9] #Hypothetical proteins in greyish colors.
-    #                         n += 1
-    #                     info_list = [int(gene[1])-start, int(gene[2])-start, '[]', 0, 20, col[-7:], col, format_str]
-    #                     if leaf not in gene_dict.keys():
-    #                         gene_dict[leaf] = [info_list]
-    #                     else:
-    #                         gene_dict[leaf].append(info_list)
-
-#I add presence/absence info for each gene type            
-# comp_dir = '../../PhD/precipitation'
-
-# presence_dict = {}
-# val_list = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
-# #Here I get the count info for GH70 domains and save it into a dictionary
-# with open(f'{comp_dir}/strain_GH70_32.tab') as presence: #f'{comp_dir}/strain_gtfs_choline_weighted.tab') as presence:
-#     gtf_pres = csv.reader(presence, delimiter = '\t')
-#     for line in gtf_pres:
-#         if line[0] != 'strain':
-#             presence_dict[line[0]] = [line[6], line[1], line[2], line[3], 
-#                                       line[4], line[5], line[10], line[7], 
-#                                       line[8], line[9]]
-#             val_list = [max(val_list[i], int(presence_dict[line[0]][i])) for i in range(len(val_list))]
 
 #Here I add the count info + plot genome fragment
+segment_count = 0
 motif_dict = {}
 seq = 'A'*aln_len 
 miniseq = 'A'*10
@@ -381,24 +354,15 @@ for leaf in leaves:
                     color, color2 = 'linen', 'black'
                     check = True
                 else: check = False
-            #Find the way to avoid superposition of tracts
-            #tract[1] = tract[1].replace('Z12361', '').replace('-', '').replace('IBH001', 'IBH')
             if 'Unknown' in tract[1]:
                 tract[1] = tract[1].replace('Unknown (', '').replace(')', '?')
             tract[1] = tract[1].replace('Z12361', '')
-                
-            # for lname in lnames:
-            #     if lname in tract[1]:
-            #         tract[1] = tract[1].replace(lname, str(lno[lname]))
                     
             if check:
                 info_list = [int(tract[3]), int(tract[4]), '[]', 0, 20, 'lightgrey', color, f'Arial|12|{color2}|{tract[1]}']
                 motifs.append(info_list)
-            # else: print(tract[5], [int(tract[3]), int(tract[4]), '[]', 0, 20, 'lightgrey', color, f'Arial|12|{color2}|{tract[1]}'])
             
         tract_list = recomb_tracts[leaf.name]
-        
-        # leaf_annot = [[1, 100, '[]', 0, 20, 'white', 'white', f'Arial|14|black|{lno[leaf.name]}']]
         
         to_add = []
         for i in range(len(motifs)):
@@ -412,16 +376,23 @@ for leaf in leaves:
                     if sum(check) != 0:
                         seqFace = SeqMotifFace(seq, motifs = to_add, height = 20, seq_format = '[]', gap_format = 'blank', scale_factor = 0.04, bgcolor = 'lightgrey', fgcolor = 'lightgrey')
                         (t & f'{leaf.name}').add_face(seqFace, 1, 'aligned')
+                        text_face = TextFace('|', fsize = 15, fgcolor = 'yellow')
+                        text_face.margin_top = -25.6
+                        text_face.margin_left = 634
+                        (t & f'{leaf.name}').add_face(text_face, 1, 'aligned')
+                        segment_count += 1
                         to_add = [motifs[i]]
                     else: to_add.append(motifs[i])     
-                    
-                # seqFace = SeqMotifFace(seq, motifs = [motifs[i]], height = 20, seq_format = '[]', gap_format = 'blank', scale_factor = 0.05) #Add presence/absence info to node
-                # (t & f'{leaf.name}').add_face(seqFace, 1, 'aligned') #The number represents the column
                 else: to_add.append(motifs[i])
-            
+                
         if to_add != []:
             seqFace = SeqMotifFace(seq, motifs = to_add, height = 20, seq_format = '[]', gap_format = 'blank', scale_factor = 0.04, bgcolor = 'lightgrey', fgcolor = 'lightgrey') #Add presence/absence info to node
             (t & f'{leaf.name}').add_face(seqFace, 1, 'aligned') #The number represents the column
+            text_face = TextFace('|', fsize = 15, fgcolor = 'yellow')
+            text_face.margin_top = -25.6
+            text_face.margin_left = 634
+            (t & f'{leaf.name}').add_face(text_face, 1, 'aligned')
+            segment_count += 1
         elif leaf.name == 'A1001':
             seqFace = SeqMotifFace(seq, motifs = loci, height = 20, seq_format = 'blank', gap_format = 'blank', scale_factor = 0.04, bgcolor = 'lightgrey', fgcolor = 'lightgrey')
             (t & f'{leaf.name}').add_face(seqFace, 1, 'aligned') #The number represents the column
@@ -430,9 +401,6 @@ for leaf in leaves:
         (t & f'{leaf.name}').add_face(seqFace, 0, 'aligned') #The number represents the column
     motif_dict[leaf.name] = motifs
     
-# ts.legend.add_face(RectFace(50, 25, 'black', '#944654', label = 'p-value < 1E-150'), column=2)
-# for key in labels.keys():
-#     ts.legend.add_face(TextFace(f'{key} {labels[key]}'), column=-1)
     
 #Here I print the tree
 t.ladderize(1)
