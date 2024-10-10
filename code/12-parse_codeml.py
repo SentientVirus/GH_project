@@ -116,9 +116,9 @@ def parse_codeml_output(infile, outfile1, outfile2):
 #                if ds < 50 and ds > 0.01 and dnds < 99:
 
 #                    outfile.write(f'{first}\t{second}\t{dn}\t{ds}\t{dnds}\n')
-            if not any(basal in loctag.split('_')[0] for basal in basal_strains for loctag in [first, second]):
-                outfile.write(f'{second}\t{first}\t{dn}\t{ds}\t{dnds}\n')
-                print(f'Added dN, dS and w for pair {first} vs {second}.')
+                if not any(basal in loctag.split('_')[0] for basal in basal_strains for loctag in [first, second]):
+                    outfile.write(f'{second}\t{first}\t{dn}\t{ds}\t{dnds}\n')
+                    print(f'Added dN, dS and w for pair {first} vs {second}.')
     
     with open(outfile2, 'w') as outno2:
         filtered_ds = [ds for ds in ds_list if ds >= 0]

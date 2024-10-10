@@ -89,12 +89,12 @@ def get_domain_pos(directory, strains, domain_annot):
                         gene_names[loctag] = (int(line[6]), int(line[7]))
                     else: #Accounts for two domains in a gene
                         no = len([key for key in gene_names.keys() if loctag in key])+1
-                        # if 'DSM' not in filename:
-                        gene_names[f'{loctag}_{no}'] = gene_names[loctag] 
-                        gene_names[f'{loctag}_{no-1}'] = (int(line[6]), int(line[7]))
-                        # else:
-                        #     gene_names[f'{loctag}_{no-1}'] = gene_names[loctag] 
-                        #     gene_names[f'{loctag}_{no}'] = (int(line[6]), int(line[7]))
+                        if 'DSM' not in filename:
+                            gene_names[f'{loctag}_{no}'] = gene_names[loctag] 
+                            gene_names[f'{loctag}_{no-1}'] = (int(line[6]), int(line[7]))
+                        else:
+                            gene_names[f'{loctag}_{no-1}'] = gene_names[loctag] 
+                            gene_names[f'{loctag}_{no}'] = (int(line[6]), int(line[7]))
                         gene_names.pop(loctag)
             
     return gene_names #Returns dictionary locus_tag: (domain start, domain end)
@@ -166,6 +166,8 @@ def parse_GH70(indir, outdir, gene_dom, out_prefix):
                                     locus_tag_list = [locus_tag]
                                     if f'{locus_tag}_2' in locus_tags:
                                         locus_tag_list = [f'{locus_tag}_1', f'{locus_tag}_2']
+                                        if 'DSM' in gbk_file:
+                                            locus_tag_list = [f'{locus_tag}_2', f'{locus_tag}_1']
                                     for tag in locus_tag_list:
                                         domain = get_domains(feature.qualifiers['translation'][0], gene_dom[tag][0], gene_dom[tag][1])
                                         prot_record = SeqRecord(Seq(domain), tag, tag, '')
