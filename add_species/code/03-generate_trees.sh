@@ -20,6 +20,6 @@ cat $in_og $in_GH70 > $in_fasta
 mafft-linsi --thread $threads $in_fasta > $alignment 2> $aln_log
 
 # Create tree
-iqtree --redo -nt $threads -s $alignment -st AA -m TEST -bb 1000 -bnni 2> $tree_log
+iqtree --redo -nt $threads -s $alignment -st AA -m TEST -bb 1000 -bnni > $tree_log 2> $tree_log
 
 # Former model -m LG+G4+F
