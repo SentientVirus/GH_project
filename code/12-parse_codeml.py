@@ -45,6 +45,7 @@ sys.stdout = open(snakemake.log[0], 'a')
 infile = snakemake.input['txt'] #'codeml_out/a_kunkeei_GH70/a_kunkeei_GH70.txt'
 outfile1 = snakemake.output['dNdS'] #'codeml_out/a_kunkeei_GH70/new_dNdS.tsv'
 outfile2 = snakemake.output['stats'] #'codeml_out/a_kunkeei_GH70/new_stats.tsv'
+basal_strains = ['A1001', 'A1404']
 
 # =============================================================================
 # Define function to parse CodeML output
@@ -115,6 +116,7 @@ def parse_codeml_output(infile, outfile1, outfile2):
 #                if ds < 50 and ds > 0.01 and dnds < 99:
 
 #                    outfile.write(f'{first}\t{second}\t{dn}\t{ds}\t{dnds}\n')
+            if not any(basal in loctag.split('_')[0] for basal in basal_strains for loctag in [first, second]):
                 outfile.write(f'{second}\t{first}\t{dn}\t{ds}\t{dnds}\n')
                 print(f'Added dN, dS and w for pair {first} vs {second}.')
     

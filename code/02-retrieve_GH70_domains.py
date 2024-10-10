@@ -89,12 +89,12 @@ def get_domain_pos(directory, strains, domain_annot):
                         gene_names[loctag] = (int(line[6]), int(line[7]))
                     else: #Accounts for two domains in a gene
                         no = len([key for key in gene_names.keys() if loctag in key])+1
-                        if 'DSM' not in filename:
-                            gene_names[f'{loctag}_{no}'] = gene_names[loctag] 
-                            gene_names[f'{loctag}_{no-1}'] = (int(line[6]), int(line[7]))
-                        else:
-                            gene_names[f'{loctag}_{no-1}'] = gene_names[loctag] 
-                            gene_names[f'{loctag}_{no}'] = (int(line[6]), int(line[7]))
+                        # if 'DSM' not in filename:
+                        gene_names[f'{loctag}_{no}'] = gene_names[loctag] 
+                        gene_names[f'{loctag}_{no-1}'] = (int(line[6]), int(line[7]))
+                        # else:
+                        #     gene_names[f'{loctag}_{no-1}'] = gene_names[loctag] 
+                        #     gene_names[f'{loctag}_{no}'] = (int(line[6]), int(line[7]))
                         gene_names.pop(loctag)
             
     return gene_names #Returns dictionary locus_tag: (domain start, domain end)
@@ -137,7 +137,7 @@ def get_domains(sequence, start, end):
 # Function to parse nucleotide and amino acid sequences from GenBank files:
 # =============================================================================
 
-def parse_faa_fna(indir, outdir, gene_dom, out_prefix):
+def parse_GH70(indir, outdir, gene_dom, out_prefix):
     locus_tags = list(gene_dom.keys())                   #locus_tags of interest
     
     
@@ -162,11 +162,10 @@ def parse_faa_fna(indir, outdir, gene_dom, out_prefix):
                                 else:
                                     locus_tag = feature.qualifiers['locus_tag'][0]
                                     #print(locus_tag)
-                                if locus_tag in locus_tags: #if locus_tag is present in locus_tags
+                                if locus_tag in locus_tags or f'{locus_tag}_1' in locus_tags: #if locus_tag is present in locus_tags
+                                    locus_tag_list = [locus_tag]
                                     if f'{locus_tag}_2' in locus_tags:
-                                        locus_tag_list = [locus_tag, f'{locus_tag}_2']
-                                    else:
-                                        locus_tag_list = [locus_tag]
+                                        locus_tag_list = [f'{locus_tag}_1', f'{locus_tag}_2']
                                     for tag in locus_tag_list:
                                         domain = get_domains(feature.qualifiers['translation'][0], gene_dom[tag][0], gene_dom[tag][1])
                                         prot_record = SeqRecord(Seq(domain), tag, tag, '')
@@ -225,10 +224,10 @@ for gene_type in gene_types: #Loop through output filenames
     if gtype == 'GH70':
         domannot = 'Glycosyl hydrolase family 70'
         gene_domain = get_domain_pos(direct, strains, domannot)
-        parse_faa_fna(indir, outdir, gene_domain, gtype)
+        parse_GH70(indir, outdir, gene_domain, gtype)
         
     elif gtype == 'GH32':
         domannot = 'SSF75005'
         GH32_domain = get_GH32(direct, strains, domannot)
-        parse_faa_fna(indir, outdir, GH32_domain, gtype)
+        parse_GH70(indir, outdir, GH32_domain, gtype)
         

@@ -120,7 +120,6 @@ def parse_codeml_output(infile, outfile1, outfile2):
                 ds_list.append(ds)
 
 
-
                 if first.split('_')[0] in rep and second.split('_')[0] in rep:
 
 #                    outfile.write(f'{first}\t{second}\t{dn}\t{ds}\t{dnds}\n')

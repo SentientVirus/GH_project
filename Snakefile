@@ -55,7 +55,7 @@ rule retrieve_full_sequences:
 rule separate_GHs:
     output:
         expand("data/fasta/{GH}/{add}{GH}_{sufix}.{ext}", add = ["", "complete_"], GH = config["GHs"], ext = ["faa", "fna"], sufix = ["repset", "subset", "all"]),
-        expand("data/fasta/GH70/{add}{type}_{sufix}.{ext}", add = ["", "complete_"], type = ["GS1", "GS2", "GS3", "GS4", "BRS", "short", "NGB"], sufix = ["repset", "all"], ext = ["faa", "fna"]),
+        expand("data/fasta/GH70/{add}{type}_{sufix}.{ext}", add = ["", "complete_"], type = ["GS1", "GS2", "GS3", "GS4", "BRS", "BRS2", "BRS3", "BRS_clade", "short", "NGB"], sufix = ["repset", "all"], ext = ["faa", "fna"]),
         expand("data/fasta/GH70/{add}{type}_subset.{ext}", add = ["", "complete_"], type = ["GS1", "GS2", "BRS", "short", "NGB"], ext = ["faa", "fna"]),
         expand("data/fasta/GH32/{add}{type}_{suffix}.{ext}", add = ["", "complete_"], type = ["S1", "S2a", "S2b", "S3"], suffix = ["repset", "subset", "all"], ext = ["faa", "fna"])
     input:
@@ -67,6 +67,9 @@ rule separate_GHs:
         GS3 = config["GS3"],
         GS4 = config["GS4"],
         BRS = config["BRS"],
+        BRS2 = config["BRS2"],
+        BRS3 = config["BRS3"],
+        BRS_clade = config["BRS1"] + config["BRS2"] + config["BRS3"],
         short = config["short"],
         NGB = config["NGB"],
         S1 = config["S1"],
@@ -75,7 +78,7 @@ rule separate_GHs:
         S3 = config["S3"],
         repr = config["representatives"],
         subset = config["subset"],
-        GH70s = ["GS1", "GS2", "GS3", "GS4", "BRS", "NGB", "short"],
+        GH70s = ["GS1", "GS2", "GS3", "GS4", "BRS", "BRS2", "BRS3", "BRS_clade", "NGB", "short"],
         GH32s = ["S1", "S2a", "S2b", "S3"]
     log: "logs/python/subtypes.log"
     conda: "envs/biopython_env.yml"
@@ -102,7 +105,7 @@ rule create_GH70_functional:
     input:
         faa = expand("data/fasta/GH70/{type}_repset.faa", type = ["GS1", "BRS", "GS2", "GS3", "GS4", "NGB"]),
         fna = expand("data/fasta/GH70/{type}_repset.fna", type = ["GS1", "BRS", "GS2", "GS3", "GS4", "NGB"]),
-        outgroup = "outgroups.fasta" #Replace this to create outgroup gene tree as well
+        outgroup = "outgroups.fasta" #Fix this so that I get the domains to create outgroup gene tree as well
     shell:
         """
         > {output.faa}
@@ -134,13 +137,13 @@ rule create_GH70_functional_all:
 
 rule msa_gtf:
     output:
-        GH70 = expand("data/fasta/GH70/{type}_repset.mafft.{ext}", type = ["GH70_functional", "GS1", "BRS", "GS2", "NGB"], ext = ["faa", "fna"]),
+        GH70 = expand("data/fasta/GH70/{type}_repset.mafft.{ext}", type = ["GH70_functional", "GS1", "BRS", "BRS2", "BRS3", "BRS_clade", "GS2", "NGB"], ext = ["faa", "fna"]),
         GH32 = expand("data/fasta/GH32/{type}_repset.mafft.{ext}", type = ["GH32", "S1", "S2a", "S2b", "S3"], ext = ["faa", "fna"]),
         GH70_all = expand("data/fasta/GH70/GH70_functional_all.mafft.{ext}", ext = ["faa", "fna"]),
         GH32_all = expand("data/fasta/GH32/GH32_all.mafft.{ext}", ext = ["faa", "fna"]),
         GH70_out = "data/fasta/GH70/GH70_functional_outgroup_repset.mafft.faa"
     input:
-        GH70 = expand("data/fasta/GH70/{type}_repset.{ext}", type = ["GH70_functional", "GS1", "BRS", "GS2", "NGB"], ext = ["faa", "fna"]),
+        GH70 = expand("data/fasta/GH70/{type}_repset.{ext}", type = ["GH70_functional", "GS1", "BRS", "BRS2", "BRS3", "BRS_clade", "GS2", "NGB"], ext = ["faa", "fna"]),
         GH32 = expand("data/fasta/GH32/{type}_repset.{ext}", type = ["GH32", "S1", "S2a", "S2b", "S3"], ext = ["faa", "fna"]),
         GH70_all = expand("data/fasta/GH70/GH70_functional_all.{ext}", ext = ["faa", "fna"]),
         GH32_all = expand("data/fasta/GH32/GH32_all.{ext}", ext = ["faa", "fna"]),
@@ -192,14 +195,14 @@ rule msa_other:
 
 rule iqtree_gtf:
     output:
-        prot_GH70 = expand("data/fasta/GH70/trees/{type}_repset.mafft.faa.treefile", type = ["GH70_functional", "GS1", "BRS", "GS2", "NGB"]),
+        prot_GH70 = expand("data/fasta/GH70/trees/{type}_repset.mafft.faa.treefile", type = ["GH70_functional", "GS1", "BRS", "BRS2", "BRS3", "BRS_clade", "GS2", "NGB"]),
         gene_GH70 = expand("data/fasta/GH70/trees/{type}_repset.mafft.fna.treefile", type = ["GH70_functional", "GS1", "BRS", "GS2", "NGB"]),
         prot_GH32 = expand("data/fasta/GH32/trees/{type}_repset.mafft.faa.treefile", type = ["GH32", "S1", "S2a", "S3"]),
         gene_GH32 = expand("data/fasta/GH32/trees/{type}_repset.mafft.fna.treefile", type = ["GH32", "S1", "S2a", "S3"]),
         out_GH70 = "data/fasta/GH70/trees/GH70_functional_outgroup_repset.mafft.faa.treefile"
     input:
-        prot_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.faa", type = ["GH70_functional", "GS1", "BRS", "GS2", "NGB"]),
-        gene_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.fna", type = ["GH70_functional", "GS1", "BRS", "GS2", "NGB"]),
+        prot_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.faa", type = ["GH70_functional", "GS1", "BRS", "BRS2", "BRS3", "BRS_clade", "GS2", "NGB"]),
+        gene_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.fna", type = ["GH70_functional", "GS1", "BRS", "BRS2", "BRS3", "BRS_clade", "GS2", "NGB"]),
         prot_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.faa", type = ["GH32", "S1", "S2a", "S3"]),
         gene_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.fna", type = ["GH32", "S1", "S2a", "S3"]),
         out_GH70 = "data/fasta/GH70/GH70_functional_outgroup_repset.mafft.faa"
@@ -213,21 +216,21 @@ rule iqtree_gtf:
         mkdir -p data/fasta/GH70/trees && mkdir -p data/fasta/GH32/trees
         for i in {input.prot_GH70};
         do
-        iqtree -nt {threads} -s $i -st AA -m LG+F+I+G4 -bb 1000 -bnni >> {log}
+        iqtree -nt {threads} -s $i -st AA -mset LG,WAG,JTT -bb 1000 -bnni >> {log}
         done
         for j in {input.prot_GH32};
         do
-        iqtree -nt 8 -s $j -st AA -m LG+F+I+G4 -bb 1000 -bnni >> {log}
+        iqtree -nt 8 -s $j -st AA -mset LG,WAG,JTT -bb 1000 -bnni >> {log}
         done
         for k in {input.gene_GH70};
         do
-        iqtree -nt {threads} -s $k -st DNA -m TIM2+F+I+G4 -bb 1000 -bnni >> {log}
+        iqtree -nt {threads} -s $k -st DNA -m MFP -bb 1000 -bnni >> {log}
         done
         for l in {input.gene_GH32};
         do
-        iqtree -nt 8 -s $l -st DNA -m TIM2+F+I+G4 -bb 1000 -bnni >> {log}
+        iqtree -nt 8 -s $l -st DNA -m MFP -bb 1000 -bnni >> {log}
         done
-        iqtree -nt {threads} -s {input.out_GH70} -st AA -m WAG+F+I+G4 -bb 1000 -bnni >> {log}
+        iqtree -nt {threads} -s {input.out_GH70} -st AA -mset LG,WAG,JTT -bb 1000 -bnni >> {log}
         mv data/fasta/GH70/*.f*a.* data/fasta/GH70/trees
         mv data/fasta/GH32/*.f*a.* data/fasta/GH32/trees
         """ 
@@ -246,7 +249,7 @@ rule iqtree_other:
         mkdir -p data/fasta/other_genes/trees
         for i in {input.prot};
         do
-        iqtree -nt {threads} -s $i -st AA -m MFP -bb 1000 -bnni >> {log}
+        iqtree -nt {threads} -s $i -st AA -mset LG,WAG,JTT -bb 1000 -bnni >> {log}
         done
         for j in {input.gene};
         do
@@ -257,11 +260,11 @@ rule iqtree_other:
 
 rule pal2nal:
     output:
-        expand("data/codons/{types}_codon.pal2nal", types = ["GH70", "GS1", "GS2", "BRS", "GH32", "NGB", "S1", "S2a", "S2b", "S3"])
+        expand("data/codons/{types}_codon.pal2nal", types = ["GH70", "GS1", "GS2", "BRS", "BRS2", "BRS3", "BRS_clade", "GH32", "NGB", "S1", "S2a", "S2b", "S3"])
     input:
-        aln1_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.faa", type = ["GH70_functional", "GS1", "GS2", "BRS", "NGB"]),
+        aln1_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.faa", type = ["GH70_functional", "GS1", "GS2", "BRS", "BRS2", "BRS3", "BRS_clade", "NGB"]),
         aln1_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.faa", type = ["GH32", "S1", "S2a", "S2b", "S3"]),
-	aln2_GH70 = expand("data/fasta/GH70/{type}_repset.fna", type = ["GH70_functional", "GS1", "GS2", "BRS", "NGB"]),
+	aln2_GH70 = expand("data/fasta/GH70/{type}_repset.fna", type = ["GH70_functional", "GS1", "GS2", "BRS", "BRS2", "BRS3", "BRS_clade", "NGB"]),
         aln2_GH32 = expand("data/fasta/GH32/{type}_repset.fna", type = ["GH32", "S1", "S2a", "S2b", "S3"])
     log: "logs/pal2nal/repset_codons.log"
     shell:
@@ -338,12 +341,12 @@ rule pal2nal_other:
 
 rule codeml_exe:
     output:
-        summary = expand("results/{type}/{type}_repset.txt", type = ["GH70", "GS1", "GS2", "BRS", "NGB", "GH32", "S1", "S2a", "S3"]),
-        dN = expand("results/{type}/2ML.dN", type = ["GH70", "GS1", "GS2", "BRS", "GH32", "S1", "S2a", "S3"]),
-        dS = expand("results/{type}/2ML.dS", type = ["GH70", "GS1", "GS2", "BRS", "GH32", "S1", "S2a", "S3"])
+        summary = expand("results/{type}/{type}_repset.txt", type = ["GH70", "GS1", "GS2", "BRS", "BRS2", "BRS3", "BRS_clade", "NGB", "GH32", "S1", "S2a", "S3"]),
+        dN = expand("results/{type}/2ML.dN", type = ["GH70", "GS1", "GS2", "BRS", "BRS2", "BRS3", "NGB", "GH32", "S1", "S2a", "S3"]),
+        dS = expand("results/{type}/2ML.dS", type = ["GH70", "GS1", "GS2", "BRS", "BRS2", "BRS3", "NGB", "GH32", "S1", "S2a", "S3"])
     input:
-        codons = expand("data/codons/{types}_codon.pal2nal", types = ["GH70", "GS1", "GS2", "BRS", "NGB", "GH32", "S1", "S2a", "S3"]),
-        trees_GH70 = expand("data/fasta/GH70/trees/{type}_repset.mafft.faa.treefile", type = ["GH70_functional", "GS1", "BRS", "GS2", "NGB"]),
+        codons = expand("data/codons/{types}_codon.pal2nal", types = ["GH70", "GS1", "GS2", "BRS", "BRS2", "BRS3", "BRS_clade", "NGB", "GH32", "S1", "S2a", "S3"]),
+        trees_GH70 = expand("data/fasta/GH70/trees/{type}_repset.mafft.faa.treefile", type = ["GH70_functional", "GS1", "GS2", "BRS", "BRS2", "BRS3", "BRS_clade", "NGB"]),
         trees_GH32 = expand("data/fasta/GH32/trees/{type}_repset.mafft.faa.treefile", type = ["GH32", "S1", "S2a", "S3"])
     params:
         outdir = "/home/marina/GH_project/results"
@@ -369,10 +372,10 @@ rule codeml_other:
 		
 rule run_parser:
     output:
-        dNdS = expand("results/{type}/dNdS.tsv", type = ["GH70", "GS1", "GS2", "BRS", "NGB", "GH32", "S1", "S2a", "S3"]),
-        stats = expand("results/{type}/stats.tsv", type = ["GH70", "GS1", "GS2", "BRS", "NGB", "GH32", "S1", "S2a", "S3"])
+        dNdS = expand("results/{type}/dNdS.tsv", type = ["GH70", "GS1", "GS2", "BRS", "BRS2", "BRS3", "BRS_clade", "NGB", "GH32", "S1", "S2a", "S3"]),
+        stats = expand("results/{type}/stats.tsv", type = ["GH70", "GS1", "GS2", "BRS", "BRS2", "BRS3", "BRS_clade", "NGB", "GH32", "S1", "S2a", "S3"])
     input:
-        txt = expand("results/{type}/{type}_repset.txt", type = ["GH70", "GS1", "GS2", "BRS", "NGB", "GH32", "S1", "S2a", "S3"])
+        txt = expand("results/{type}/{type}_repset.txt", type = ["GH70", "GS1", "GS2", "BRS", "BRS2", "BRS3", "BRS_clade", "NGB", "GH32", "S1", "S2a", "S3"])
     log: "logs/python/repset_outtabs.log"
     script:
         "code/12-parse_codeml.py"

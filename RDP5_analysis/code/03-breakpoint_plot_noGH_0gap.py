@@ -17,14 +17,14 @@ from scipy.signal import find_peaks
 # =============================================================================
 # 0. Define inputs, outputs and paths
 # =============================================================================
-prefix = 'all_subsets_positions'
-prefix2 = 'all_subsets_7methods_5+_nogap_filtered_final'
+prefix = 'all_subsets_positions_aln'
+prefix2 = 'all_subsets_7methods_5+_0gap_filtered_assort'
 
 infolder = os.path.expanduser('~') + '/GH_project/RDP5_analysis'
 infile = f'{infolder}/RDP_output/{prefix2}.csv'
 breakfile = f'{infolder}/RDP_output/{prefix2}.csvBreakpointPositions.csv'
 outfolder = f'{infolder}/results'
-gene_pos = f'{infolder}/files/tab/all_subsets_nogap/{prefix}.tab'
+gene_pos = f'{infolder}/files/tab/all_subsets_0gaps/{prefix}.tab'
 outfile = f'{infolder}/plots/{prefix2}.png'
 
 if not os.path.exists(os.path.dirname(outfile)):
@@ -97,7 +97,7 @@ for yval in y_maxima:
         
         
 
-# ax.axvline(x=vline, color = 'r', linestyle = '--', linewidth = 3, zorder = 25) # Add horizontal line between segments
+ax.axvline(x=vline, color = 'r', linestyle = '--', linewidth = 3, zorder = 25) # Add horizontal line between segments
 
 ax.tick_params(          # Remove bottom ticks from x axis
     axis = 'x',          # Axis to be modified
@@ -133,7 +133,7 @@ ax3.set_xticks(range(min(x), max(x), 2000)) # Set ticks
 ax3.get_yaxis().set_visible(False) # Remove y axis
 
 #Add horizontal line between genomic segments
-# ax3.axvline(x=vline, color='r', linestyle='--', linewidth=3, zorder = 20)
+ax3.axvline(x=vline, color='r', linestyle='--', linewidth=3, zorder = 20)
 
 # Plot CDS
 for index, gene in genes.iterrows(): # Loop through CFD
@@ -168,19 +168,19 @@ for index, gene in genes.iterrows(): # Loop through CFD
     if gene['strand'] == 1 and gene['end']-gene['start'] > 500:
         hpos +=  headwidth
     if gene.name == 7:
-        gene_name = 'CDS2'
-    elif gene.name == 5:
-        gene_name = 'CDS4'
-    elif gene.name == 3:
-        gene_name = 'CDS5'
+        gene_name = 'CDS8'
     elif gene.name == 9:
-        gene_name = 'CDS1'
-    elif gene.name == 6:
+        gene_name = 'CDS7'
+    elif gene.name == 10:
+        gene_name = 'CDS5'
+    elif gene.name == 12:
+        gene_name = 'CDS4'
+    elif gene.name == 13:
         gene_name = 'CDS3'
     elif gene.name == 14:
-        gene_name = 'CDS7'
-    elif gene.name == 15:
-        gene_name = 'CDS8'
+        gene_name = 'CDS2'
+    elif gene.name == 16:
+        gene_name = 'CDS1'
     else: gene_name = gene['gene_name']
     ax3.annotate(gene_name, style = 'italic', rotation = 0, 
           xy = (hpos, 120), 
