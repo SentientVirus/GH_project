@@ -17,7 +17,7 @@ import random
 outdir = os.path.expanduser('~') + '/GH_project/plots/boxplot_dS'
 outfile = 'dS_boxplot.png'
 
-basal_strains = ['A1001', 'A1404']
+# basal_strains = ['A1001', 'A1404']
 
 inpath = os.path.expanduser('~') + '/GH_project/results'
 data_file = 'dNdS.tsv'
@@ -40,19 +40,19 @@ for j in range(len(gene_types)):
     gtype = gene_types[j]
     infolder = f'{inpath}/{gtype}'
     df = pd.read_csv(f'{infolder}/{data_file}', sep = '\t')
-    df['keep'] = df['locus1'].apply(lambda x: False if any(bs in x for bs in basal_strains) else True)
-    df = df[df['keep']==True]
-    df['keep'] = df['locus2'].apply(lambda x: False if any(bs in x for bs in basal_strains) else True)
-    df = df[df['keep']==True]
+    # df['keep'] = df['locus1'].apply(lambda x: False if any(bs in x for bs in basal_strains) else True)
+    # df = df[df['keep']==True]
+    # df['keep'] = df['locus2'].apply(lambda x: False if any(bs in x for bs in basal_strains) else True)
+    # df = df[df['keep']==True]
     data = list(df['dS'])
-    dat = [x if x < 10 else 10 for x in data]
+    # dat = [x if x < 5 else 5 for x in data]
     loc1 = list(df['locus1'])
     loc2 = list(df['locus2'])
     labels = [f'{loc1[i]}-{loc2[i]}' for i in range(len(loc1))]
     if j < 3:
-        data_dict[0].append(dat)
+        data_dict[0].append(data)
     else:
-        data_dict[1].append(dat )
+        data_dict[1].append(data)
     
 line_color = 'black' #'#9bfffd'
 median_color = 'cyan'

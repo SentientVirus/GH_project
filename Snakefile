@@ -96,6 +96,31 @@ rule get_neighboring_genes:
     script:
         "code/02.1-get_neighboring_seqs.py"
 
+rule get_outgroup_annot:
+    output:
+        "outgroups/interproscan/outgroup_domains.tsv"
+    input:
+        "outgroups/outgroups.faa"
+    threads: 16
+    conda: "envs/environment.yml"
+    log: "logs/interproscan/interpro_outgroups.log"
+    shell:
+        """
+        bash code/01.11-run_interpro.sh {input} {output} {log} {threads};
+        """
+
+rule get_outgroup_domains:
+    output:
+        "outgroups/outgroup_domains.faa"
+    input:
+        annot = "outgroups/interproscan/outgroup_domains.tsv",
+        seq = "outgroups/outgroups.faa"
+    threads: 1
+    conda: "envs/environment.yml"
+    log: "logs/python/outgroups/outgroup_domains.log"
+    script: "code/02.11-get_domains.py"
+
+
 rule create_GH70_functional:
     output:
         faa = "data/fasta/GH70/GH70_functional_repset.faa",
@@ -105,7 +130,7 @@ rule create_GH70_functional:
     input:
         faa = expand("data/fasta/GH70/{type}_repset.faa", type = ["GS1", "BRS", "GS2", "GS3", "GS4", "NGB"]),
         fna = expand("data/fasta/GH70/{type}_repset.fna", type = ["GS1", "BRS", "GS2", "GS3", "GS4", "NGB"]),
-        outgroup = "outgroups.fasta" #Fix this so that I get the domains to create outgroup gene tree as well
+        outgroup = "outgroups/outgroup_domains.faa" #Fix this so that I get the domains to create outgroup gene tree as well
     shell:
         """
         > {output.faa}
@@ -134,7 +159,6 @@ rule create_GH70_functional_all:
 
 #This pipeline requires Mafft, iqtree, pal2nal and paml. It also requires Python3 with biopython and pandas.
 #The conda environment files provide all required packages except for pal2nal (v14).
-
 rule msa_gtf:
     output:
         GH70 = expand("data/fasta/GH70/{type}_repset.mafft.{ext}", type = ["GH70_functional", "GS1", "BRS", "BRS2", "BRS3", "BRS_clade", "GS2", "NGB"], ext = ["faa", "fna"]),
@@ -216,21 +240,21 @@ rule iqtree_gtf:
         mkdir -p data/fasta/GH70/trees && mkdir -p data/fasta/GH32/trees
         for i in {input.prot_GH70};
         do
-        iqtree -nt {threads} -s $i -st AA -mset LG,WAG,JTT -bb 1000 -bnni >> {log}
+        iqtree -nt AUTO -ntmax {threads} -s $i -st AA -mset Q.pfam,LG,WAG,JTT -bb 1000 -bnni >> {log}
         done
         for j in {input.prot_GH32};
         do
-        iqtree -nt 8 -s $j -st AA -mset LG,WAG,JTT -bb 1000 -bnni >> {log}
+        iqtree -nt AUTO -ntmax {threads} -s $j -st AA -mset Q.pfam,LG,WAG,JTT -bb 1000 -bnni >> {log}
         done
         for k in {input.gene_GH70};
         do
-        iqtree -nt {threads} -s $k -st DNA -m MFP -bb 1000 -bnni >> {log}
+        iqtree -nt AUTO -ntmax {threads} -s $k -st DNA -m MFP -bb 1000 -bnni >> {log}
         done
         for l in {input.gene_GH32};
         do
-        iqtree -nt 8 -s $l -st DNA -m MFP -bb 1000 -bnni >> {log}
+        iqtree -nt AUTO -ntmax {threads} -s $l -st DNA -m MFP -bb 1000 -bnni >> {log}
         done
-        iqtree -nt {threads} -s {input.out_GH70} -st AA -mset LG,WAG,JTT -bb 1000 -bnni >> {log}
+        iqtree -nt AUTO -ntmax {threads} -s {input.out_GH70} -st AA -mset Q.pfam,LG,WAG,JTT -bb 1000 -bnni >> {log}
         mv data/fasta/GH70/*.f*a.* data/fasta/GH70/trees
         mv data/fasta/GH32/*.f*a.* data/fasta/GH32/trees
         """ 
