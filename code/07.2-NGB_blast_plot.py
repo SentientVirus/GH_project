@@ -26,41 +26,41 @@ import pandas as pd
 # 1. Define inputs
 # =============================================================================
 #Dictionary to color strains by phylogroup
-leaf_color = {'A0901': '#A027FF', 'A1001': '#E5BA60', 'A1002': '#A027FF',
-              'A1003': '#1E55F6', 'A1201': '#A027FF', 'A1202': '#00AEFF',
-              'A1401': '#00AEFF', 'A1404': '#FF74D6', 'A1802': '#A027FF',
-              'A1803': '#A027FF', 'A1805': '#00AEFF', 'A2001': '#A027FF',
-              'A2002': '#E5BA60', 'A2003': '#E5BA60', 'A2101': '#00AEFF',
-              'A2102': '#A027FF', 'A2103': '#1E55F6', 'G0101': '#1E55F6', 
-              'G0102': '#1E55F6', 'G0103': '#1E55F6', 'G0401': '#1E55F6',
-              'G0402': '#1E55F6', 'G0403': '#00AEFF', 'G0404': '#1E55F6',
-              'G0405': '#1E55F6', 'G0406': '#00AEFF', 'G0407': '#1E55F6',
-              'G0408': '#1E55F6', 'G0410': '#1E55F6', 'G0412': '#1E55F6',
-              'G0414': '#1E55F6', 'G0415': '#1E55F6', 'G0417': '#1E55F6',
-              'G0420': '#00AEFF', 'G0601': '#1E55F6', 'G0602': '#1E55F6',
-              'G0702': '#1E55F6', 'G0801': '#1E55F6', 'G0802': '#1E55F6',
-              'G0803': '#1E55F6', 'G0804': '#1E55F6', 'Fhon2': '#1E55F6',
-              'H1B104J': '#1E55F6', 'H1B105A': '#1E55F6', 'H1B302M': '#1E55F6',
-              'H2B105J': '#A027FF', 'H3B101A': '#1E55F6', 'H3B101J': '#1E55F6',
-              'H3B101X': '#A027FF', 'H3B102A': '#1E55F6', 'H3B102X': '#A027FF',
-              'H3B103J': '#1E55F6', 'H3B103X': '#A027FF','H3B103M': '#1E55F6', 
-              'H3B104J': '#1E55F6', 'H3B104X': '#1E55F6', 'H3B107A': '#1E55F6', 
-              'H3B109M': '#1E55F6', 'H3B110M': '#1E55F6', 'H3B111A': '#1E55F6', 
-              'H3B111M': '#1E55F6', 'H3B202M': '#A027FF', 'H3B202X': '#1E55F6', 
-              'H3B203J': '#1E55F6', 'H3B203M': '#A027FF', 'H3B204J': '#1E55F6', 
-              'H3B204M': '#A027FF', 'H3B205J': '#1E55F6', 'H3B206M': '#A027FF', 
-              'H3B207X': '#1E55F6', 'H3B208X': '#1E55F6', 'H3B209X': '#00AEFF', 
-              'H4B101A': '#A027FF', 'H4B102A': '#A027FF', 'H4B103J': '#A027FF', 
-              'H4B104A': '#A027FF', 'H4B111J': '#A027FF', 'H4B114J': '#A027FF', 
-              'H4B116J': '#A027FF', 'H4B202J': '#1E55F6', 'H4B203M': '#A027FF', 
-              'H4B204J': '#1E55F6', 'H4B205J': '#1E55F6', 'H4B206J': '#A027FF', 
-              'H4B210M': '#A027FF', 'H4B211M': '#1E55F6', 'H4B303J': '#A027FF', 
-              'H4B402J': '#1E55F6', 'H4B403J': '#A027FF', 'H4B404J': '#A027FF', 
-              'H4B405J': '#A027FF', 'H4B406M': '#A027FF', 'H4B410M': '#A027FF', 
-              'H4B411M': '#A027FF', 'H4B412M': '#1E55F6', 'H4B501J': '#1E55F6', 
-              'H4B502X': '#1E55F6', 'H4B503X': '#1E55F6', 'H4B504J': '#00AEFF',
-              'H4B505J': '#00AEFF', 'H4B507J': '#1E55F6', 'H4B507X': '#1E55F6', 
-              'H4B508X': '#1E55F6', 'MP2': '#00AEFF', 'IBH001': 'black', 
+leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
+              'A1003': '#0072B2', 'A1201': '#D55E00', 'A1202': '#33B18F',
+              'A1401': '#33B18F', 'A1404': '#FF74D6', 'A1802': '#D55E00',
+              'A1803': '#D55E00', 'A1805': '#33B18F', 'A2001': '#D55E00',
+              'A2002': '#771853', 'A2003': '#771853', 'A2101': '#33B18F',
+              'A2102': '#D55E00', 'A2103': '#0072B2', 'G0101': '#0072B2', 
+              'G0102': '#0072B2', 'G0103': '#0072B2', 'G0401': '#0072B2',
+              'G0402': '#0072B2', 'G0403': '#33B18F', 'G0404': '#0072B2',
+              'G0405': '#0072B2', 'G0406': '#33B18F', 'G0407': '#0072B2',
+              'G0408': '#0072B2', 'G0410': '#0072B2', 'G0412': '#0072B2',
+              'G0414': '#0072B2', 'G0415': '#0072B2', 'G0417': '#0072B2',
+              'G0420': '#33B18F', 'G0601': '#0072B2', 'G0602': '#0072B2',
+              'G0702': '#0072B2', 'G0801': '#0072B2', 'G0802': '#0072B2',
+              'G0803': '#0072B2', 'G0804': '#0072B2', 'Fhon2': '#0072B2',
+              'H1B104J': '#0072B2', 'H1B105A': '#0072B2', 'H1B302M': '#0072B2',
+              'H2B105J': '#D55E00', 'H3B101A': '#0072B2', 'H3B101J': '#0072B2',
+              'H3B101X': '#D55E00', 'H3B102A': '#0072B2', 'H3B102X': '#D55E00',
+              'H3B103J': '#0072B2', 'H3B103X': '#D55E00', 'H3B103M': '#0072B2', 
+              'H3B104J': '#0072B2', 'H3B104X': '#0072B2', 'H3B107A': '#0072B2', 
+              'H3B109M': '#0072B2', 'H3B110M': '#0072B2', 'H3B111A': '#0072B2', 
+              'H3B111M': '#0072B2', 'H3B202M': '#D55E00', 'H3B202X': '#0072B2', 
+              'H3B203J': '#0072B2', 'H3B203M': '#D55E00', 'H3B204J': '#0072B2', 
+              'H3B204M': '#D55E00', 'H3B205J': '#0072B2', 'H3B206M': '#D55E00', 
+              'H3B207X': '#0072B2', 'H3B208X': '#0072B2', 'H3B209X': '#33B18F', 
+              'H4B101A': '#D55E00', 'H4B102A': '#D55E00', 'H4B103J': '#D55E00', 
+              'H4B104A': '#D55E00', 'H4B111J': '#D55E00', 'H4B114J': '#D55E00', 
+              'H4B116J': '#D55E00', 'H4B202J': '#0072B2', 'H4B203M': '#D55E00', 
+              'H4B204J': '#0072B2', 'H4B205J': '#0072B2', 'H4B206J': '#D55E00', 
+              'H4B210M': '#D55E00', 'H4B211M': '#0072B2', 'H4B303J': '#D55E00', 
+              'H4B402J': '#0072B2', 'H4B403J': '#D55E00', 'H4B404J': '#D55E00', 
+              'H4B405J': '#D55E00', 'H4B406M': '#D55E00', 'H4B410M': '#D55E00', 
+              'H4B411M': '#D55E00', 'H4B412M': '#0072B2', 'H4B501J': '#0072B2', 
+              'H4B502X': '#0072B2', 'H4B503X': '#0072B2', 'H4B504J': '#33B18F',
+              'H4B505J': '#33B18F', 'H4B507J': '#0072B2', 'H4B507X': '#0072B2', 
+              'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': 'black', 
               'DSMZ12361': 'black'}
 
 #NGB locus tags
@@ -90,8 +90,10 @@ phylo_order = {1:'G0101', 2:'H4B2-05J', 3:'H4B2-11M', 4:'H1B1-04J',
               34:'IBH001', 35:'H4B2-06J', 36:'H3B2-03M', 37:'A1404', 38:'A1001'}
 
 #Paths to inputs and outputs
-outpath = '../blast_tabs'
-folder_path2 = '../Akunkeei_files/gbff'
+projdir = os.path.expanduser('~') + '/GH_project'
+outpath = f'{projdir}/blast_tabs'
+folder_path2 = os.path.expanduser('~') + '/Akunkeei_files/gbff'
+outfig = f'{projdir}/plots/pyGenomeViz/NGB_region.svg'
 
 
 # =============================================================================
@@ -225,7 +227,7 @@ for i in range(1, len(phylo_order.keys())+1): #Loop through strain names in the 
                     color = '#c475ff' #Change the color of the CDS (purple)
                 #If the gene is a cas gene or endonuclease
                 elif 'restriction' in cds.qualifiers['product'][0].lower() or 'endonuclease' in cds.qualifiers['product'][0].lower() or 'HsdR' in cds.qualifiers['product'][0] or gene_name == 'cas2':
-                    color = '#ffa375' #Change color (orange)
+                    color = '#eeff75' #Change color (magenta)
                 elif 'ABC' in cds.qualifiers['product'][0]: #If the gene is annotated as ABC transporter
                     color = '#b8ff75' #Change color (green)
                 elif strain in phage_pos.keys(): #If the strain has a phage
@@ -372,22 +374,22 @@ fig = gv.plotfig(dpi = 400) #Plot the figure with a resolution of 400 dpi
 handles = [
     Line2D([], [], marker='', color='black', label='Tracks', ms=20, ls='none'),
     Line2D([], [], marker='>', color='skyblue', label='CDS', ms=20, ls='none'),
-    Line2D([], [], marker='>', color='#7581ff', label='Phage genes', ms=20, ls='none'),
-    Line2D([], [], marker='>', color='#ffa375', label='CRISPR endonucleases', ms=20, ls='none'),
     Line2D([], [], marker='>', color='#c475ff', label='NGB glycosyl hydrolase', ms=20, ls='none'),
+    Line2D([], [], marker='>', color='#7581ff', label='Phage genes', ms=20, ls='none'),
     Line2D([], [], marker='>', color='#b8ff75', label='ABC transporters', ms=20, ls='none'),
+    Line2D([], [], marker='>', color='#eeff75', label='CRISPR endonucleases', ms=20, ls='none'),
     Line2D([], [], marker='>', color='black', label='Transposase', ms=20, ls='none'),
     Line2D([], [], marker='', color='black', label='', ms=20, ls='none'),
     Line2D([], [], marker='', color='black', label='Matches', ms=20, ls='none'),
     Line2D([], [], marker='s', color='grey', label='Forward match', ms=20, ls='none'),
     Line2D([], [], marker='s', color='red', label='Reverse match', ms=20, ls='none'),
-    Line2D([], [], marker='', color='#E5BA60', label='', ms=20, ls='none'),
-    Line2D([], [], marker='', color='#E5BA60', label='Strain names', lw=2, ms=20, ls='none'),
-    Line2D([], [], marker='X', color='#1E55F6', label='Phylogroup A', ms=15, ls='none'),
-    Line2D([], [], marker='X', color='#00AEFF', label='Phylogroup B', ms=15, ls='none'),
-    Line2D([], [], marker='X', color='#A027FF', label='Phylogroup C', ms=15, ls='none'),
+    Line2D([], [], marker='', color='#771853', label='', ms=20, ls='none'),
+    Line2D([], [], marker='', color='#771853', label='Strain names', lw=2, ms=20, ls='none'),
+    Line2D([], [], marker='X', color='#0072B2', label='Phylogroup A', ms=15, ls='none'),
+    Line2D([], [], marker='X', color='#33B18F', label='Phylogroup B', ms=15, ls='none'),
+    Line2D([], [], marker='X', color='#D55E00', label='Phylogroup C', ms=15, ls='none'),
     Line2D([], [], marker='X', color='#FF74D6', label='Phylogroup E', ms=15, ls='none'),
-    Line2D([], [], marker='X', color='#E5BA60', label='Phylogroup F', ms=15, ls='none'),
+    Line2D([], [], marker='X', color='#771853', label='Phylogroup F', ms=15, ls='none'),
     Line2D([], [], marker='X', color='black', label='Not in Dyrhage et al. (2022)', ms=15, ls='none')
 ]
 
@@ -401,7 +403,7 @@ legend.get_texts()[0].set_fontweight('bold')
 legend.get_texts()[8].set_fontweight('bold')
 legend.get_texts()[12].set_fontweight('bold')
             
-fig.savefig('figure5.svg') #Save figure to SVG
-fig.savefig('figure5.tiff') #Save figure to TIFF
-gv.savefig_html('figure5.html') #Save figure to HTML
+fig.savefig(outfig) #Save figure to SVG
+fig.savefig(outfig.replace('svg', 'tiff')) #Save figure to TIFF
+gv.savefig_html(outfig.replace('svg', 'html')) #Save figure to HTML
     
