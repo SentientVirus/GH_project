@@ -61,18 +61,20 @@ leaf_color = {'A0901': '#A027FF', 'A1001': '#E5BA60', 'A1002': '#A027FF',
 # =============================================================================
 # Locus tags
 # =============================================================================
-GS1 = ['A1001_12310', 'A1003_12540', 'A1202_13520', 'A1401_12750', 'A1805_12820',
+GS1 = ['A1001_12310', 'A1202_13520', 'A1401_12750', 'A1805_12820',
        'FHON2_13540', 'G0101_12800', 'G0403_13100', 'H1B104J_13010', 
        'H1B105A_12300', 'H1B302M_12880', 'H3B101A_13240', 'H3B104J_12990', 
        'H3B104X_13200', 'H3B202X_12850', 'H3B203J_13370', 'H3B203M_12480', 
-       'H3B206M_12830', 'H3B206M_12840', 'H3B209X_13340', 'H4B111J_13560', 'H4B111J_13570',
-       'H4B202J_12880', 'H4B204J_13330', 'H4B205J_12990', 'H4B211M_13000',
-       'H4B402J_12600', 'H4B406M_13450', 'H4B406M_13460', 'H4B412M_13240',
-       'H4B501J_12890', 'H4B503X_12670', 'H4B504J_13460', 'H4B505J_12880',
-       'APS55_RS03850', 'LDX55_06325', 'K2W83_RS06180']
+       'H3B206M_12840', 'H3B209X_13340', 'H4B111J_13570', 'H4B202J_12880', 
+       'H4B204J_13330', 'H4B205J_12990', 'H4B211M_13000', 'H4B402J_12600', 
+       'H4B405J_13360', 'H4B406M_13460', 'H4B412M_13240', 'H4B501J_12890', 
+       'H4B503X_12670', 'H4B504J_13460', 'H4B505J_12880', 'APS55_RS03850', 
+       'LDX55_06325', 'K2W83_RS06180']
 GS2 = ['FHON2_13560', 'FHON2_13570', 'G0403_13120', 'H1B302M_12900', 
        'H3B101A_13260', 'H3B104X_13220', 'H3B202X_12860', 'H3B203J_13390',
        'H3B209X_13370', 'H4B504J_13480', 'H4B505J_12900', 'APS55_RS03845']
+GS3 = ['H3B206M_12830', 'H4B111J_13560', 'H4B405J_13350', 'H4B406M_13450']
+GS4 = ['A1003_12540']
 GS2BRS = ['H3B104J_13020', 'H4B202J_12890', 'H4B204J_13350', 'LDX55_06335', 
           'K2W83_RS06185']
 BRS = ['A1401_12760', 'FHON2_13550', 'G0403_13110', 'H1B302M_12890', 
@@ -103,10 +105,19 @@ phylo_order = {1:'G0101', 2:'H4B2-05J', 3:'H4B2-11M', 4:'H1B1-04J',
               30:'H4B4-05J', 31:'H4B1-11J', 32:'H4B4-06M', 33:'A0901', 
               34:'IBH001', 35:'H4B2-06J', 36:'H3B2-03M', 37:'A1404', 38:'A1001'}
 
+color_dict = {'GS1': '#ff7575', 'GS3': '#ff7594', 'GS2': '#ff75b6', 
+              'GS4': '#ff75ea', 'GS2BRS': '#ff75ff', 'BRS': '#e875ff', 
+              'S1': '#ffb875', 'S2a': '#ffc475', 'S2b': '#ffd775'}
 
-outpath = 'blast_tabs'
-folder_path = '~/Akunkeei_files/fna/reverse'
+
+projdir = os.path.expanduser('~') + '/GH_project'
+outpath = f'{projdir}/blast_tabs'
+folder_path = os.path.expanduser('~') + '/Akunkeei_files/fna/reverse'
 folder_path2 = os.path.expanduser('~') + '/Akunkeei_files/gbff/modified_gbff'
+outfig = f'{projdir}/plots/pyGenomeViz/dynamic_region.svg'
+
+if not os.path.exists(os.path.dirname(outfig)):
+    os.makedirs(os.path.dirname(outfig))
 
 
 def get_tabs(phylo_dict, folder_path, outpath):
@@ -202,29 +213,6 @@ for i in range(1, len(phylo_order.keys())+1):
         protstart = int(cds.location.start) #Get CDS start
         end = int(cds.location.end) #Get CDS end
         strand = cds.strand #Get strand
-        # if cds.qualifiers['locus_tag'][0] in GS1 or cds.qualifiers['locus_tag'][0][3:] in GS1:
-        #     gene_name = 'GS1'
-        # elif cds.qualifiers['locus_tag'][0] in GS2 or cds.qualifiers['locus_tag'][0][3:] in GS2:
-        #     gene_name = 'GS2'
-        #     cds.qualifiers['locus_tag'][0]
-        # elif cds.qualifiers['locus_tag'][0] in BRS or cds.qualifiers['locus_tag'][0][3:] in BRS:
-        #     gene_name = 'BRS'
-        #     cds.qualifiers['locus_tag'][0]
-        # elif cds.qualifiers['locus_tag'][0] in GS2 or cds.qualifiers['locus_tag'][0][3:] in GS2BRS:
-        #     gene_name = 'GS2_BRS'
-        #     cds.qualifiers['locus_tag'][0]
-        # elif cds.qualifiers['locus_tag'][0] in S1 or cds.qualifiers['locus_tag'][0][3:] in S1:
-        #     gene_name = 'S1'
-        #     cds.qualifiers['locus_tag'][0]
-        # elif cds.qualifiers['locus_tag'][0] in S2a or cds.qualifiers['locus_tag'][0][3:] in S2a:
-        #     gene_name = 'S2a'
-        #     cds.qualifiers['locus_tag'][0]
-        # elif cds.qualifiers['locus_tag'][0] in S2b or cds.qualifiers['locus_tag'][0][3:] in S2b:
-        #     gene_name = 'S2b'
-        #     cds.qualifiers['locus_tag'][0]
-        # elif cds.qualifiers['locus_tag'][0] in S3 or cds.qualifiers['locus_tag'][0][3:] in S3:
-        #     gene_name = 'S3'
-        #     cds.qualifiers['locus_tag'][0]
         color = 'skyblue'
         if 'transposase' not in cds.qualifiers['product'][0] and 'gene' in cds.qualifiers.keys():
             gene_name = cds.qualifiers['gene'][0]
@@ -234,31 +222,15 @@ for i in range(1, len(phylo_order.keys())+1):
                 gene_name = gene_name.replace('_I', '')
             else:
                 gene_name = ''
-            if gene_name == 'GS1' or gene_name[:-1] == 'GS1':
-                color = '#ff7575'
-            elif gene_name == 'GS2' or gene_name[:-1] == 'GS2':
-                color = '#ff75b6'
-            elif (gene_name == 'BRS' or gene_name[:-1] == 'BRS'):
-                color = '#e875ff'
-            elif gene_name == 'GS2BRS':
-                color = '#ff75ee'
-            elif gene_name  == 'S1':
-                color = '#ffb875'
-            elif gene_name == 'S2a' or gene_name == 'S2b':
-                color = '#ffd775'
-            elif gene_name == 'S3':
-                color = '#fff575'
+            for key in color_dict.keys():
+                if gene_name == key or gene_name[:-1] == key:
+                    color = color_dict[key]
         elif 'transposase' in cds.qualifiers['product'][0]:
             gene_name = ''
             color = 'black'
         else:
             gene_name = ''
         gene_n = gene_name.replace('*', '')
-        if gene_n in ['branch', 'branch2', 'GTB', 'wzyC', 'GH39', 'rfbX', 'ydiL']:
-            gene_name = ''
-        elif gene_name == 'yifK2':
-            gene_name = 'yifK'
-        #This sets the CDS arrows and adds gene names
         track.add_feature(protstart, end, strand, label = gene_name, 
                           labelcolor = 'black', labelsize = 12, facecolor = color, 
                           linewidth = 1, labelrotation = 45, labelvpos = 'top', 
@@ -324,14 +296,12 @@ fig = gv.plotfig(400) #We plot the figure
 gv.set_colorbar(fig, vmin = 50, bar_height = 0.05) #We add a color bar to interpret the colors
 handles = [
     Line2D([], [], marker="", color='black', label="Tracks", ms=20, ls="none"),
-    Line2D([], [], marker=">", color="skyblue", label="CDS", ms=20, ls="none"),
-    Line2D([], [], marker=">", color="#ff7575", label="GS1 glycosyl hydrolase", ms=20, ls="none"),
-    Line2D([], [], marker=">", color='#ff75b6', label="GS2 glycosyl hydrolase", ms=20, ls="none"),
-    Line2D([], [], marker=">", color='#ff75ee', label="Double-GH70 domain", ms=20, ls="none"),
-    Line2D([], [], marker=">", color='#e875ff', label="BRS glycosyl hydrolase", ms=20, ls="none"),
-    Line2D([], [], marker=">", color='#ffb875', label="S1 glycosyl hydrolase", ms=20, ls="none"),
-    Line2D([], [], marker=">", color='#ffd775', label="S2 glycosyl hydrolase", ms=20, ls="none"),
-    Line2D([], [], marker=">", color='#fff575', label="S3 glycosyl hydrolase", ms=20, ls="none"),
+    Line2D([], [], marker=">", color="skyblue", label="CDS", ms=20, ls="none")
+    ]
+
+handles += [Line2D([], [], marker=">", color=color_dict[GH_type], label=f'{GH_type} glycosyl hydrolase', ms=20, ls='none') for GH_type in color_dict.keys()]
+
+handles += [
     Line2D([], [], marker=">", color='black', label="Transposase", ms=20, ls="none"),
     Line2D([], [], marker="", color='#E5BA60', label="", ms=20, ls="none"),
     Line2D([], [], marker="", color='black', label="Matches", ms=20, ls="none"),
@@ -349,12 +319,14 @@ handles = [
 
 legend = fig.legend(handles=handles, bbox_to_anchor=(1.05, 1))
 legend.get_texts()[0].set_fontweight('bold')
-legend.get_texts()[11].set_fontweight('bold')
-legend.get_texts()[15].set_fontweight('bold')
+legend.get_texts()[13].set_fontweight('bold')
+legend.get_texts()[17].set_fontweight('bold')
 
 # Set the fontsize for legend labels
 legend_fontsize = 20
 for text in legend.get_texts():
     text.set_fontsize(legend_fontsize)
     
-fig.savefig("figure3.svg")
+fig.savefig(outfig)
+fig.savefig(outfig.replace('svg', 'png'))
+fig.savefig(outfig.replace('svg', 'tiff'))
