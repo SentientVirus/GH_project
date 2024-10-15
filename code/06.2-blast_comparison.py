@@ -221,8 +221,8 @@ for i in range(1, len(phylo_order.keys())+1):
                 gene_name = gene_name.replace('_partial', '*')
             elif 'gene' in cds.qualifiers.keys() and '_I' in gene_name:
                 gene_name = gene_name.replace('_I', '')
-            else:
-                gene_name = ''
+            # else:
+            #     gene_name = ''
             for key in color_dict.keys():
                 if gene_name == key or gene_name[:-1] == key:
                     color = color_dict[key]
