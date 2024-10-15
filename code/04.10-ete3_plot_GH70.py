@@ -63,7 +63,7 @@ if not os.path.exists(outdir):
 
 
 t = Tree(treefile, format = 0)
-outnode = t.get_common_ancestor('AOR73699.1_4_6_gtf_L_fermentum', 'AAU08014.2_4_6_gtf_L_reuteri') #GH70
+outnode = t.get_common_ancestor('AOR73699.1_L_fermentum', 'AAU08014.2_L_reuteri') #GH70
 t.set_outgroup(outnode)
 
 ts = TreeStyle()
