@@ -147,7 +147,8 @@ def retrieve_gene_seqs(input_dir):
                 gene_name = nbr.split('_')[0]
             else:
                 gene_name = nbr.split('_')[1]
-            check = True
+            if 'BRS2' not in nbr and 'BRS3' not in nbr and 'BRS_clade' not in nbr:
+                check = True
         if check:
             suffix = nbr.split('.')[-1]
             print(f'Suffix is {suffix}')
@@ -233,7 +234,7 @@ for comparison in group_names.values():
         gene = gene_order[gene_no]
         file = f'{comparison}_{gene}.pal2nal.fna' # Input alignment
         
-        if file in os.listdir(aln_path) and not ('only' in file and 'BRS' in file):
+        if file in os.listdir(aln_path) and not (('only' in file and gene == 'BRS') or ('BRS2' in file or 'BRS3' in file or 'clade' in file)):
             print(f'Retrieving lengths from {aln_path}/{file}')
         
             with open(f'{aln_path}/{file}') as handle:
@@ -278,7 +279,7 @@ for comparison in group_names.values():
             
         file = f'{comparison}_{gene}.pal2nal.fna' # Input alignment
         
-        if file in os.listdir(aln_path) and not ('only' in file and gene == 'BRS'): # If the gene is present in at least two strains of a comparison
+        if file in os.listdir(aln_path) and not (('only' in file and gene == 'BRS') or ('BRS2' in file or 'BRS3' in file or 'clade' in file)): # If the gene is present in at least two strains of a comparison
             print(f'Retrieving codons from {aln_path}/{file}')
         
             pos_dict = {}
