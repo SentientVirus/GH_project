@@ -11,9 +11,9 @@ GH32 S1-3 genes.
 """
 from Bio.Blast.Applications import NcbiblastpCommandline as cline_blast
 from matplotlib.lines import Line2D
-from matplotlib.patches import Patch
-import matplotlib.transforms as transforms
-from pygenomeviz import Genbank as gbk_read, GenomeViz
+from Bio.SeqFeature import SimpleLocation
+from pygenomeviz import GenomeViz
+from pygenomeviz.parser import Genbank as gbk_read
 from Bio import GenBank as gbk
 import os
 import pandas as pd
@@ -131,10 +131,6 @@ def get_tabs(phylo_dict, folder_path, outpath):
         cline_input = cline_blast(cmd = 'blastn', query = strain2_file, subject = strain1_file, remote = False, out = outfile, outfmt = 7)
         os.system(str(cline_input));
 
-# get_tabs(phylo_order, folder_path, outpath)
-
-
-
 # =============================================================================
 # In this section, we establish the start and end positions for every strain
 # and save them to a dictionary. I also get the chromosome IDs to change them
@@ -184,9 +180,6 @@ def get_info(phylo_dict, folder_path2, length = 0): #OBS! Genome lengths are wro
     return accession_strain, pos_dict, lengths_dict
     
 acc, pos, lengths = get_info(phylo_order, folder_path2, 40000)
-                           
-# OBS! There were some issues (now solved), probably because I changed the 
-# order of the genomes. The Blast matches don't fully align with the CDS plots.
 
 
 # =============================================================================
@@ -195,49 +188,74 @@ acc, pos, lengths = get_info(phylo_order, folder_path2, 40000)
 
 # Set plot style
 gv = GenomeViz(
-    fig_track_height = 0.4,
-    link_track_ratio = 3.0,
-    align_type = 'center',
-    tick_style = 'bar',
+    fig_track_height = 0.42,
+    link_track_ratio = 0.8,
+    track_align_type = 'center',
     )
+
 for i in range(1, len(phylo_order.keys())+1):
     strain = phylo_order[i]
     genbank_file = f'{folder_path2}/{strain}_genomic.gbff'
     if strain != 'MP2':
         rev = True
     else: rev = False
-    genbk = gbk_read(genbank_file, reverse = rev, min_range = pos[strain][0], max_range = pos[strain][1])
-    features = genbk.extract_features('CDS')
-    track = gv.add_feature_track(genbk.name.replace('_genomic', ''), size = genbk.range_size, start_pos = genbk.min_range, labelcolor = leaf_color[strain.replace('-', '')])
-    #Loop through CDS
-    for cds in features:
-        protstart = int(cds.location.start) #Get CDS start
-        end = int(cds.location.end) #Get CDS end
-        strand = cds.strand #Get strand
-        color = 'skyblue'
-        if 'transposase' not in cds.qualifiers['product'][0] and 'gene' in cds.qualifiers.keys():
-            gene_name = cds.qualifiers['gene'][0]
-            if '_partial' in gene_name:
-                gene_name = gene_name.replace('_partial', '*')
-            elif 'gene' in cds.qualifiers.keys() and '_I' in gene_name:
-                gene_name = gene_name.replace('_I', '')
-            # else:
-            #     gene_name = ''
-            for key in color_dict.keys():
-                if gene_name == key or gene_name[:-1] == key:
-                    color = color_dict[key]
-        elif 'transposase' in cds.qualifiers['product'][0]:
-            gene_name = ''
-            color = 'black'
-        else:
-            gene_name = ''
-        gene_n = gene_name.replace('*', '')
-        track.add_feature(protstart, end, strand, label = gene_name, 
-                          labelcolor = 'black', labelsize = 12, facecolor = color, 
-                          linewidth = 1, labelrotation = 45, labelvpos = 'top', 
-                          labelhpos = 'center', labelha = 'left', arrow_shaft_ratio = 1.0)
-        track.set_sublabel(position = 'bottom-left')
-        gene_name = ''
+    genbk = gbk_read(genbank_file) #, reverse = rev, min_range = pos[strain][0], max_range = pos[strain][1])
+    segments = dict(region1=(pos[strain][0], pos[strain][1]))
+    track = gv.add_feature_track(name = genbk.name.replace('_genomic', '').replace('Z12361', ''), #Create track (use DSM as strain name for DSMZ12361)
+                                 segments = segments, #Add segments to track
+                                 label_kws = dict(color = leaf_color[strain.replace('-', '')])) #Add strain name color based on phylogroup
+    for segment in track.segments: #Loop through segments in the track
+        if strain != 'MP2': #If the strain is not MP2
+            target_range = (lengths[strain][0] - segment.range[1], 
+                            lengths[strain][0] - segment.range[0]) #Get the target region on the opposite strand
+            features = genbk.extract_features(feature_type = 'CDS', 
+                                              target_range = target_range) #Extract features from GenBank file
+
+            for feature in features: #Loop through features
+                new_end = lengths[strain][0] - feature.location.start #Reverse start
+                new_start = lengths[strain][0] - feature.location.end #Reverse end
+                print(new_start, new_end)
+                new_strand = feature.location.strand*-1 #Reverse strand
+                feature.location = SimpleLocation(new_start, new_end, 
+                                                  new_strand) #Update feature position
+        else: #If the strain is MP2
+            features = genbk.extract_features(feature_type = 'CDS', 
+                                              target_range = segment.range)  #Extract the features directly, based on the segment range
+        #Loop through CDS
+        for cds in features: #Loop through CDS
+            protstart = int(cds.location.start) #Get CDS start
+            end = int(cds.location.end) #Get CDS end
+            strand = cds.location.strand #Get strand
+            color = 'skyblue' #Set color of most CDS
+            gene_name  = '' #Initialize gene name
+            if 'gene' in cds.qualifiers.keys():
+                gene_name = cds.qualifiers['gene'][0] #When possible, add four-letter gene name
+                if 'transposase' not in cds.qualifiers['product'][0]: #If the gene is not a transposon
+                    gene_name = cds.qualifiers['gene'][0]
+                    if '_partial' in gene_name:
+                        gene_name = gene_name.replace('_partial', '*')
+                    elif 'gene' in cds.qualifiers.keys() and '_I' in gene_name:
+                        gene_name = gene_name.replace('_I', '')
+                    # else:
+                    #     gene_name = ''
+                    for key in color_dict.keys():
+                        if gene_name == key or gene_name[:-1] == key:
+                            color = color_dict[key]
+                elif 'transposase' in cds.qualifiers['product'][0]:
+                    gene_name = ''
+                    color = 'black'
+             
+            if segment.start <= protstart <= end <= segment.end: #If the CDS is inside the segment to be plotted
+                segment.add_feature(protstart, end, strand, label = gene_name, #Add CDS to segment (position and label)
+                                  plotstyle = 'bigarrow', fc = color, lw = 1, arrow_shaft_ratio = 1, #Set arrow style, CDS color, CDS line width and arrow vs shaft ratio
+                                  text_kws = dict(color = 'black', rotation = 45, #Set label properties (label and rotation)
+                                                  size = 15, ymargin = 0, #Set label properties (text size and distance from the CDS)
+                                                  vpos = 'top', hpos = 'left')) #Set label properties (vertical and horizontal position)
+            segment.add_sublabel(f'{segment.start:,} - {segment.end:,} bp')  #Add text indicating segment range to the plot
+
+        track.align_label = True #Align track label (strain name) to track
+        track.set_segment_sep() #Set separator (//) between segments
+
         
 # =============================================================================
 # Here I modify sligthly the tab files that I created.
@@ -246,55 +264,70 @@ for i in range(1, len(phylo_order.keys())):
     with open(f'{outpath}/{i}.tab') as tabfile:
         k = 0
         for line in tabfile:
-                #print(line)
                 k += 1
                 #We can also use this loop to generate a list with the fields:
-                if "Fields" in line:
+                if 'Fields' in line:
                     headers = line
                 elif k > 10:
                     break
-    header_list = headers.split(",") #Divide comma-separated fields
-    header_list[0] = header_list[0].replace("# Fields: ", "") #Remove start of line
-    header_list = [header.strip().strip("\n") for header in header_list] #Remove spaces and line breaks from beginning
     
-    file_df = pd.read_csv(f'{outpath}/{i}.tab', sep = "\t", skiprows = 5, header = None) #Read as tab-separated file, skip 5 rows and don't set the remaining rows as headers
+    header_list = headers.split(',') #Divide comma-separated fields in the header string to create a list
+    header_list[0] = header_list[0].replace('# Fields: ', '') #Remove the start of the line
+    header_list = [header.strip().strip('\n') for header in header_list] #Remove spaces and line breaks from beginning
+    
+    #Read Blast comparisons as tab-separated file, skip 5 rows and don't set the remaining rows as headers
+    file_df = pd.read_csv(f'{outpath}/{i}.tab', sep = '\t', skiprows = 5, header = None)
     file_df = file_df[:-1] #Remove the last row, that also contains a comment
     file_df.columns = header_list #Add column names
-    strain2 = file_df.values[0, 0]
-    strain2_name = list(acc.keys())[list(acc.values()).index(strain2)]
-    file_df = file_df.replace(strain2, strain2_name)
-    strain1 = file_df.values[0, 1]
+    strain2 = file_df.values[0, 0] #Retrieve the accession of the query strain
+    strain2_name = list(acc.keys())[list(acc.values()).index(strain2)] #Using the accession, retrieve the key (strain name)
+    file_df = file_df.replace(strain2, strain2_name) #Replace the accession with the strain name in the dataframe
+    strain1 = file_df.values[0, 1] #Do the same for the subject strain
     strain1_name = list(acc.keys())[list(acc.values()).index(strain1)]
     file_df = file_df.replace(strain1, strain1_name)
-    print(strain1_name, strain2_name)
+    print(f'Loading comparison between {strain1_name} and {strain2_name}') #Print information about the comparison being made
+
+    query_pos = pos[phylo_order[i + 1]] #Retrieve start and end position of the query segment
+    subject_pos = pos[phylo_order[i]] #Retrieve start and end position of the subject segment
     
-    query_pos = (pos[phylo_order[i + 1]][0] - lengths[phylo_order[i + 1]][1], pos[phylo_order[i + 1]][1] - lengths[phylo_order[i + 1]][1])
-    subject_pos = (pos[phylo_order[i]][0] - lengths[phylo_order[i]][1], pos[phylo_order[i]][1] - lengths[phylo_order[i]][1])
-    tab_df = file_df.copy()
+    tab_df = file_df.copy() #Copy file_df to a new dataframe
+    subject_check = False #Check that states whether the subject has one or two segments to plot
+    query_check = False #Check that states whether the query has one or two segments to plot
     
-    tab_df = tab_df.drop(tab_df[tab_df["q. end"] < query_pos[0]].index)
-    tab_df = tab_df.drop(tab_df[tab_df["s. end"] < subject_pos[0]].index)
-    tab_df["q. start"][tab_df["q. start"] < query_pos[0]] = query_pos[0]
-    tab_df["s. start"][tab_df["s. start"] < subject_pos[0]] = subject_pos[0]
-    tab_df = tab_df.drop(tab_df[tab_df["q. start"] > query_pos[1]].index)
-    tab_df = tab_df.drop(tab_df[tab_df["s. start"] > subject_pos[1]].index)
-    tab_df["q. end"][tab_df["q. end"] > query_pos[1]] = query_pos[1]
-    tab_df["s. end"][tab_df["s. end"] > subject_pos[1]] = subject_pos[1]
-    tab_df = tab_df[~tab_df["query acc.ver"].str.startswith('#')]
-    tab_df = tab_df.reset_index()
+    # Figure out how to loop through segments to drop genes (idea: compare strain name with tab df and retrieve those tracks, then loop through segments)
+    tab_df = tab_df.drop(tab_df.index[tab_df['q. end'] < query_pos[0]]) #Drop CDS that start after the end of the query segment
+    tab_df = tab_df.drop(tab_df.index[tab_df['q. start'] > query_pos[1]]) #Drop CDS that end before the start of the query segment
+    tab_df.loc[tab_df['q. start'] < query_pos[0], 'q. start'] = query_pos[0] #Trim the start of matches that overlap with the segment, but start before the segment
+    tab_df.loc[tab_df['q. end'] > query_pos[1], 'q. end'] = query_pos[1] #Trim the end of matches that overlap with the segment, but end after the segment
+    
+    #Do the same for the subject as for the query
+    tab_df = tab_df.drop(tab_df.index[tab_df['s. end'] < subject_pos[0]])
+    tab_df = tab_df.drop(tab_df.index[tab_df['s. start'] > subject_pos[1]])
+    tab_df.loc[tab_df['s. end'] > subject_pos[1], 's. end'] = subject_pos[1]
+    tab_df.loc[tab_df['s. start'] < subject_pos[0], 's. start'] = subject_pos[0]
+    
+    tab_df = tab_df[~tab_df['query acc.ver'].str.startswith('#')] #Remove rows with query strain names starting with #
+    tab_df = tab_df.reset_index() #Reset the index of the dataframe
     
     for j in range(len(tab_df)):
-        #We define the links
-        link1 = (tab_df.loc[j, "query acc.ver"], tab_df.loc[j, "q. start"] + lengths[phylo_order[i+1]][1], tab_df.loc[j, "q. end"] + lengths[phylo_order[i+1]][1])
-        link2 = (tab_df.loc[j, "subject acc.ver"], tab_df.loc[j, "s. start"] + lengths[phylo_order[i]][1], tab_df.loc[j, "s. end"] + lengths[phylo_order[i]][1])
-        #We define the percentage of identity (important to color the links)
-        identity = tab_df.loc[j, "% identity"]
-        #Here we add the links to the gv plot
-        gv.add_link(link1, link2, v = identity, vmin = 50, curve = True)
-        gv.tick_style = "bar" #This adds the scale of the plot (20 Kb)
+        #Get strain names from dataframe and shorten name of DSM
+        strain1_name = tab_df.loc[j, 'query acc.ver'].replace('Z12361', '')
+        strain2_name = tab_df.loc[j, 'subject acc.ver'].replace('Z12361', '')
         
-fig = gv.plotfig(400) #We plot the figure
-gv.set_colorbar(fig, vmin = 50, bar_height = 0.05) #We add a color bar to interpret the colors
+        #Define the percentage of identity (to color the links)
+        identity = tab_df.loc[j, '% identity']
+        
+        #Define the links (strain name, segment, start, end)
+        link1 = (strain1_name, 'region1', tab_df.loc[j, 'q. start'], tab_df.loc[j, 'q. end'])
+        link2 = (strain2_name, 'region1', tab_df.loc[j, 's. start'], tab_df.loc[j, 's. end'])
+        
+        #Add the links to the gv plot, especifying the colors of Blast matches (v indicates the variable setting color, and vmin is the minimum value)
+        gv.add_link(link1, link2, color = 'grey', inverted_color = 'red', v = identity, vmin = 50, curve = True) #Curve makes the matches form curves
+        
+        
+        
+gv.set_colorbar(['grey', 'red'], vmin = 50, bar_height = 0.05, tick_labelsize = 16)
+fig = gv.plotfig(dpi = 400)
 handles = [
     Line2D([], [], marker="", color='black', label="Tracks", ms=20, ls="none"),
     Line2D([], [], marker=">", color="skyblue", label="CDS", ms=20, ls="none")
@@ -318,10 +351,14 @@ handles += [
     Line2D([], [], marker="X", color='black', label="Not in Dyrhage et al. (2022)", ms=15, ls="none")
 ]
 
-legend = fig.legend(handles=handles, bbox_to_anchor=(1.05, 1))
+#Assign legent to figure. bbox_to_anchor sets the position, frameon removes the 
+#frame (border) of the legend box, and labelspacing increases vertical space between legends
+legend = fig.legend(handles=handles, bbox_to_anchor=(1.35, 1), frameon = False,
+                    fontsize = 16)#, labelspacing=1)
+
 legend.get_texts()[0].set_fontweight('bold')
-legend.get_texts()[13].set_fontweight('bold')
-legend.get_texts()[17].set_fontweight('bold')
+legend.get_texts()[14].set_fontweight('bold')
+legend.get_texts()[18].set_fontweight('bold')
 
 # Set the fontsize for legend labels
 legend_fontsize = 20
@@ -329,5 +366,5 @@ for text in legend.get_texts():
     text.set_fontsize(legend_fontsize)
     
 fig.savefig(outfig)
-fig.savefig(outfig.replace('svg', 'png'))
+fig.savefig(outfig.replace('svg', 'pdf'))
 fig.savefig(outfig.replace('svg', 'tiff'))
