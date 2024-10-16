@@ -137,46 +137,63 @@ def get_tabs(phylo_dict, folder_path, outpath):
 # to strain IDs.
 # =============================================================================
 
-def get_info(phylo_dict, folder_path2, length = 0): #OBS! Genome lengths are wrong because plasmid lengths are summed!
-    locus_dict = {'IBH001': 'LDX55_06270', 'DSMZ12361': 'K2W83_RS06135', 'MP2': 'APS55_RS03895'}
-    accession_strain = {}
-    pos_dict = {}
-    lengths_dict = {}
-    for strain in phylo_dict.values():
-        genbank_file = f'{folder_path2}/{strain}_genomic.gbff'
-        with open(genbank_file) as handle:
-            check = 0
-            for record in gbk.parse(handle):
-                if strain not in accession_strain.keys():
-                    accession_strain[strain] = f'{record.accession[0]}.1'
-                    genome_length = len(record.sequence)
-                    lengths_dict[strain] = [genome_length, check]
-                # else:
-                #     lengths_dict[strain][0] = lengths_dict[strain][0] + len(record.sequence)
-                #     check += len(record.sequence)
-                #     lengths_dict[strain][1] = check
-                if strain not in ['IBH001', 'MP2', 'DSMZ12361']:
-                    for feature in record.features:
-                        gene_name = [qual for qual in feature.qualifiers if 'gene' in qual.key]
-                        if len(gene_name) > 0:
-                            gene = gene_name[0]
-                            if 'ohrR' in gene.value:
-                                start = int(feature.location.split('..')[0]) + 2000
+def get_info(phylo_dict, folder_path2, length = 0):
+    '''
+    Function to get the start and end coordinates to be plotted.
+    
+    Input parameters:
+        @param phylo_dict (dict, {str: int}): Dictionary indicating the order 
+        in which the strains should be plotted. This parameter should 
+        correspond to the order for the Blast comparisons.
+        @param folder_path2 (str): Path where the input GenBank files are.
+        @param length (int): Length of the segment to be plotted.
+    
+    Output parameters:
+        @param accession_strain (dict, {str: [str, ...]}): Dictionary with 
+        strain names as keys and NCBI accessions as values.
+        @param pos_dict (dict, {str: (int, int)}): Dictionary with tuples
+        indicating start and end positions.
+        @lengths_dict (dict, {str: int}): Dictionary with the names of the strains
+        as keys and the lengths of the chromosome as values.
+    '''
+    #In these strains, the target gene to set the start is annotated differently,
+    #so it is added manually
+    locus_dict = {'IBH001': 'LDX55_06270', 'DSMZ12361': 'K2W83_RS06135', 
+                  'MP2': 'APS55_RS03895'}
+    accession_strain = {} #Temporary variable to store NCBI accessions
+    pos_dict = {} #Dictionary to store the total genome length of each strain
+    lengths_dict = {} #Diccionary of start and end positions
+    for strain in phylo_dict.values(): #Loop through strain names
+        genbank_file = f'{folder_path2}/{strain}_genomic.gbff' #Set name of GenBank file
+        with open(genbank_file) as handle: #Read GenBank file
+            for record in gbk.parse(handle): #Loop through the records (chromosomes or plasmids) in the file
+                if strain not in accession_strain.keys(): #If the strain is not in the accession dictionary (we only get the first record)
+                    accession_strain[strain] = f'{record.accession[0]}.1' #Associate accession to strain name
+                    genome_length = len(record.sequence) #Get length of the record
+                    lengths_dict[strain] = genome_length #Initialize length dictionary
+                    
+                if strain not in ['IBH001', 'MP2', 'DSMZ12361']: #Retrieve start position in the strains
+                    for feature in record.features:  #Loop through features (mostly CDS) in the record
+                        gene_name = [qual for qual in feature.qualifiers if 'gene' in qual.key] #Get the four-letter gene name
+                        if len(gene_name) > 0: #If there is at least one qualifier
+                            gene = gene_name[0] #Set the gene name to the first qualifier (gene name or locus tag)
+                            if 'ohrR' in gene.value: #If the gene name includes ohrR
+                                start = int(feature.location.split('..')[0]) + 2000 #Set start location to the beginning of ohrR + 2kb
 
-                else:
-                    for feature in record.features:
-                        locus_tag = [qual for qual in feature.qualifiers if 'locus_tag' in qual.key]
-                        if len(locus_tag) > 0 and locus_tag[0].value.replace('"', '') == locus_dict[strain]:
-                            start = int(feature.location.split('..')[0].replace('complement(', '')) + 5000
-                            if strain == 'MP2':
-                                start -= 10000
-            if strain != 'MP2':
-                start = lengths_dict[strain][0] - (start + length)
-                end = start + length
-                pos_dict[strain] = (start, end)
-            else:
-                end = start - length
-                pos_dict[strain] = (end, start)
+                else: #If the strain is annotated differently
+                    for feature in record.features: #Loop through genes in the strain
+                        locus_tag = [qual for qual in feature.qualifiers if 'locus_tag' in qual.key] #Loop through gene information
+                        if len(locus_tag) > 0 and locus_tag[0].value.replace('"', '') == locus_dict[strain]: #Get the gene with the same locus tag as in locus_dict
+                            start = int(feature.location.split('..')[0].replace('complement(', '')) + 5000 #Set the start position to the start of that gene + 5kb
+                            if strain == 'MP2': #If the strain is MP2
+                                start -= 10000 #Set the start to minus 10kb (forward)
+            if strain != 'MP2': #If the strain is not MP2 (assembly of the reverse strand)
+                start = lengths_dict[strain] - (start + length) #Set the start to the opposite strand
+                end = start + length #Set the end to the start + segment length
+                pos_dict[strain] = (start, end) #Save the new position to a dictionary
+            else: #If the strain is MP2
+                end = start - length #Calculate the beginning point of the segment
+                pos_dict[strain] = (end, start) #Store the results in a dictionary
     return accession_strain, pos_dict, lengths_dict
     
 acc, pos, lengths = get_info(phylo_order, folder_path2, 40000)
@@ -188,32 +205,29 @@ acc, pos, lengths = get_info(phylo_order, folder_path2, 40000)
 
 # Set plot style
 gv = GenomeViz(
-    fig_track_height = 0.42,
-    link_track_ratio = 0.8,
-    track_align_type = 'center',
+    fig_track_height = 0.42, #Height of the tracks with the representation of the CDS
+    link_track_ratio = 0.8, #Size ratio between the links (Blast comparisons) and the tracks
+    track_align_type = 'center', #Align tracks to the center
     )
 
-for i in range(1, len(phylo_order.keys())+1):
-    strain = phylo_order[i]
-    genbank_file = f'{folder_path2}/{strain}_genomic.gbff'
-    if strain != 'MP2':
-        rev = True
-    else: rev = False
-    genbk = gbk_read(genbank_file) #, reverse = rev, min_range = pos[strain][0], max_range = pos[strain][1])
-    segments = dict(region1=(pos[strain][0], pos[strain][1]))
+for i in range(1, len(phylo_order.keys())+1): #Loop through strain names in the order dictionary
+    strain = phylo_order[i] #Get the name of a strain
+    genbank_file = f'{folder_path2}/{strain}_genomic.gbff' #Get GenBank file based on strain name
+    genbk = gbk_read(genbank_file) #Read GenBank file with PyGenomeViz
+    segments = dict(region1=(pos[strain][0], pos[strain][1])) #Retrieve the segment to be plotted
     track = gv.add_feature_track(name = genbk.name.replace('_genomic', '').replace('Z12361', ''), #Create track (use DSM as strain name for DSMZ12361)
                                  segments = segments, #Add segments to track
                                  label_kws = dict(color = leaf_color[strain.replace('-', '')])) #Add strain name color based on phylogroup
     for segment in track.segments: #Loop through segments in the track
         if strain != 'MP2': #If the strain is not MP2
-            target_range = (lengths[strain][0] - segment.range[1], 
-                            lengths[strain][0] - segment.range[0]) #Get the target region on the opposite strand
+            target_range = (lengths[strain] - segment.range[1], 
+                            lengths[strain] - segment.range[0]) #Get the target region on the opposite strand
             features = genbk.extract_features(feature_type = 'CDS', 
                                               target_range = target_range) #Extract features from GenBank file
 
             for feature in features: #Loop through features
-                new_end = lengths[strain][0] - feature.location.start #Reverse start
-                new_start = lengths[strain][0] - feature.location.end #Reverse end
+                new_end = lengths[strain] - feature.location.start #Reverse start
+                new_start = lengths[strain] - feature.location.end #Reverse end
                 print(new_start, new_end)
                 new_strand = feature.location.strand*-1 #Reverse strand
                 feature.location = SimpleLocation(new_start, new_end, 
@@ -232,16 +246,17 @@ for i in range(1, len(phylo_order.keys())+1):
                 gene_name = cds.qualifiers['gene'][0] #When possible, add four-letter gene name
                 if 'transposase' not in cds.qualifiers['product'][0]: #If the gene is not a transposon
                     gene_name = cds.qualifiers['gene'][0]
-                    if '_partial' in gene_name:
+                    if '_partial' in gene_name: #Add stars to indicate that genes are incomplete
                         gene_name = gene_name.replace('_partial', '*')
-                    elif 'gene' in cds.qualifiers.keys() and '_I' in gene_name:
+                    elif 'gene' in cds.qualifiers.keys() and '_I' in gene_name: #Retrieve the set of genes that were manually annotated in the GenBanks
                         gene_name = gene_name.replace('_I', '')
-                    # else:
-                    #     gene_name = ''
-                    for key in color_dict.keys():
+                    for key in color_dict.keys(): #Use a different color for wach type of GH gene
                         if gene_name == key or gene_name[:-1] == key:
                             color = color_dict[key]
-            elif 'transposase' in cds.qualifiers['product'][0]:
+                else: #If the gene is a transposon
+                    color = 'black' #Color it in black
+                    
+            elif 'transposase' in cds.qualifiers['product'][0]: #Color transposases in black
                 gene_name = ''
                 color = 'black'
              
@@ -260,16 +275,16 @@ for i in range(1, len(phylo_order.keys())+1):
 # =============================================================================
 # Here I modify sligthly the tab files that I created.
 # =============================================================================
-for i in range(1, len(phylo_order.keys())):     
-    with open(f'{outpath}/{i}.tab') as tabfile:
-        k = 0
-        for line in tabfile:
-                k += 1
-                #We can also use this loop to generate a list with the fields:
-                if 'Fields' in line:
-                    headers = line
-                elif k > 10:
-                    break
+for i in range(1, len(phylo_order.keys())): #Loop through strains in the order in which they will be plotted     
+    with open(f'{outpath}/{i}.tab') as tabfile: #Open Blast comparison file for each strain
+        k = 0 #Initialize parameter to retrieve column names
+        for line in tabfile: #Loop through lines in tab file
+                k += 1 #Increase the value of k
+                #Generate a list with the fields:
+                if 'Fields' in line: #If the line contains the string Fields
+                    headers = line #Assign the header string to a variable
+                elif k > 10: #If we pass the line
+                    break #End loop
     
     header_list = headers.split(',') #Divide comma-separated fields in the header string to create a list
     header_list[0] = header_list[0].replace('# Fields: ', '') #Remove the start of the line
@@ -323,11 +338,13 @@ for i in range(1, len(phylo_order.keys())):
         
         #Add the links to the gv plot, especifying the colors of Blast matches (v indicates the variable setting color, and vmin is the minimum value)
         gv.add_link(link1, link2, color = 'grey', inverted_color = 'red', v = identity, vmin = 50, curve = True) #Curve makes the matches form curves
-        
-        
-        
+            
+#Set legend for the Blast matches (two adjacent colorbars that show the colors of forward and reverse matches with a minimum of 50% identity)        
 gv.set_colorbar(['grey', 'red'], vmin = 50, bar_height = 0.05, tick_labelsize = 16)
 fig = gv.plotfig(dpi = 400)
+
+#Create legend text (label) and icons (marker sets the size, color sets marker color, ms sets marker size and ls sets border size)
+#The first two variables are the data to be plotted in the x and y axis, and therefore are empty
 handles = [
     Line2D([], [], marker="", color='black', label="Tracks", ms=20, ls="none"),
     Line2D([], [], marker=">", color="skyblue", label="CDS", ms=20, ls="none")
@@ -356,16 +373,12 @@ handles += [
 legend = fig.legend(handles=handles, bbox_to_anchor=(1.35, 1), frameon = False,
                     fontsize = 16)#, labelspacing=1)
 
+#Set legend headers to bold
 legend.get_texts()[0].set_fontweight('bold')
 legend.get_texts()[14].set_fontweight('bold')
 legend.get_texts()[18].set_fontweight('bold')
-
-# Set the fontsize for legend labels
-legend_fontsize = 20
-for text in legend.get_texts():
-    text.set_fontsize(legend_fontsize)
     
-fig.savefig(outfig)
-fig.savefig(outfig.replace('svg', 'png'))
-fig.savefig(outfig.replace('svg', 'tiff'))
+fig.savefig(outfig) #Save figure to SVG
+fig.savefig(outfig.replace('svg', 'png')) #Save figure to PNG
+fig.savefig(outfig.replace('svg', 'tiff')) #Save figure to TIFF
 gv.savefig_html(outfig.replace('svg', 'html')) #Save figure to HTML

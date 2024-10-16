@@ -101,7 +101,7 @@ outfig = f'{projdir}/plots/pyGenomeViz/NGB_region.svg'
 # dictionary. Get the chromosome IDs to change them to strain IDs.
 # =============================================================================
 
-def get_info(phylo_dict, folder_path2, length = 0): #OBS! Genome lengths are wrong because plasmid lengths are summed!    
+def get_info(phylo_dict, folder_path2, length = 0):
     '''
     Function to get the start and end coordinates to be plotted.
     
@@ -128,7 +128,7 @@ def get_info(phylo_dict, folder_path2, length = 0): #OBS! Genome lengths are wro
     lengths_dict = {} #Dictionary to store the total genome length of each strain
     pos_dict = {} #Diccionary of start and end positions
     
-    for strain in phylo_dict.values(): #Loopt through strain names
+    for strain in phylo_dict.values(): #Loop through strain names
         genbank_file = f'{folder_path2}/{strain}_genomic.gbff' #Set name of GenBank file
         start = 0 #Initialize start position
         with open(genbank_file) as handle: #Read GenBank file
@@ -155,8 +155,8 @@ def get_info(phylo_dict, folder_path2, length = 0): #OBS! Genome lengths are wro
                                     start += 10000
                                 break
 
-                else:
-                    for feature in record.features: #If the strain is annotated differently
+                else: #If the strain is annotated differently
+                    for feature in record.features: #Loop through genes in the strain
                         locus_tag = [qual for qual in feature.qualifiers if 'locus_tag' in qual.key] #Loop through gene information
                         if len(locus_tag) > 0 and locus_tag[0].value.replace('"', '') == locus_dict[strain]: #Get the gene with the same locus tag as in locus_dict
                             start = int(feature.location.split('..')[0].replace('complement(', '')) + 2000 #Set the start position to the start of that gene + 2kb
@@ -175,7 +175,7 @@ acc, pos, lengths = get_info(phylo_order, folder_path2, 40000) #Run function
 # 3. Create tracks with the CDS to plot
 # =============================================================================
 
-# Set plot style
+#Set plot style
 gv = GenomeViz(
     fig_track_height = 0.42, #Height of the tracks with the representation of the CDS
     link_track_ratio = 0.8, #Size ratio between the links (Blast comparisons) and the tracks
@@ -396,7 +396,7 @@ handles = [
 #Assign legent to figure. bbox_to_anchor sets the position, frameon removes the 
 #frame (border) of the legend box, and labelspacing increases vertical space between legends
 legend = fig.legend(handles=handles, bbox_to_anchor=(1.28, 1), frameon = False,
-                    fontsize = 16)#, labelspacing=1)
+                    fontsize = 16)
 
 #Set legend headers to bold
 legend.get_texts()[0].set_fontweight('bold')
