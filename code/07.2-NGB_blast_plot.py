@@ -405,5 +405,6 @@ legend.get_texts()[12].set_fontweight('bold')
             
 fig.savefig(outfig) #Save figure to SVG
 fig.savefig(outfig.replace('svg', 'tiff')) #Save figure to TIFF
+fig.savefig(outfig.replace('svg', 'png')) #Save figure to PNG
 gv.savefig_html(outfig.replace('svg', 'html')) #Save figure to HTML
     

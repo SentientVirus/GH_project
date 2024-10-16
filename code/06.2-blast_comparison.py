@@ -151,10 +151,10 @@ def get_info(phylo_dict, folder_path2, length = 0): #OBS! Genome lengths are wro
                     accession_strain[strain] = f'{record.accession[0]}.1'
                     genome_length = len(record.sequence)
                     lengths_dict[strain] = [genome_length, check]
-                else:
-                    lengths_dict[strain][0] = lengths_dict[strain][0] + len(record.sequence)
-                    check += len(record.sequence)
-                    lengths_dict[strain][1] = check
+                # else:
+                #     lengths_dict[strain][0] = lengths_dict[strain][0] + len(record.sequence)
+                #     check += len(record.sequence)
+                #     lengths_dict[strain][1] = check
                 if strain not in ['IBH001', 'MP2', 'DSMZ12361']:
                     for feature in record.features:
                         gene_name = [qual for qual in feature.qualifiers if 'gene' in qual.key]
@@ -241,9 +241,9 @@ for i in range(1, len(phylo_order.keys())+1):
                     for key in color_dict.keys():
                         if gene_name == key or gene_name[:-1] == key:
                             color = color_dict[key]
-                elif 'transposase' in cds.qualifiers['product'][0]:
-                    gene_name = ''
-                    color = 'black'
+            elif 'transposase' in cds.qualifiers['product'][0]:
+                gene_name = ''
+                color = 'black'
              
             if segment.start <= protstart <= end <= segment.end: #If the CDS is inside the segment to be plotted
                 segment.add_feature(protstart, end, strand, label = gene_name, #Add CDS to segment (position and label)
@@ -366,5 +366,6 @@ for text in legend.get_texts():
     text.set_fontsize(legend_fontsize)
     
 fig.savefig(outfig)
-fig.savefig(outfig.replace('svg', 'pdf'))
+fig.savefig(outfig.replace('svg', 'png'))
 fig.savefig(outfig.replace('svg', 'tiff'))
+gv.savefig_html(outfig.replace('svg', 'html')) #Save figure to HTML
