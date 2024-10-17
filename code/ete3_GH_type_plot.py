@@ -43,42 +43,42 @@ from collections import Counter
 # Set colors for strains and CDS
 # =============================================================================
 
-leaf_color = {'A0901': '#2AA380', 'A1001': '#A3C615', 'A1002': '#2AA380',
-              'A1003': '#2C85D8', 'A1201': '#2AA380', 'A1202': '#21C1D1',
-              'A1401': '#21C1D1', 'A1404': '#7ACA2E', 'A1802': '#2AA380',
-              'A1803': '#2AA380', 'A1805': '#21C1D1', 'A2001': '#2AA380',
-              'A2002': '#A3C615', 'A2003': '#A3C615', 'A2101': '#21C1D1',
-              'A2102': '#2AA380', 'A2103': '#2C85D8', 'G0101': '#2C85D8', 
-              'G0102': '#2C85D8', 'G0103': '#2C85D8', 'G0401': '#2C85D8',
-              'G0402': '#2C85D8', 'G0403': '#21C1D1', 'G0404': '#2C85D8',
-              'G0405': '#2C85D8', 'G0406': '#21C1D1', 'G0407': '#2C85D8',
-              'G0408': '#2C85D8', 'G0410': '#2C85D8', 'G0412': '#2C85D8',
-              'G0414': '#2C85D8', 'G0415': '#2C85D8', 'G0417': '#2C85D8',
-              'G0420': '#21C1D1', 'G0601': '#2C85D8', 'G0602': '#2C85D8',
-              'G0702': '#2C85D8', 'G0801': '#2C85D8', 'G0802': '#2C85D8',
-              'G0803': '#2C85D8', 'G0804': '#2C85D8', 'Fhon2': '#2C85D8',
-              'H1B104J': '#2C85D8', 'H1B105A': '#2C85D8', 'H1B302M': '#2C85D8',
-              'H2B105J': '#2AA380', 'H3B101A': '#2C85D8', 'H3B101J': '#2C85D8',
-              'H3B101X': '#2AA380', 'H3B102A': '#2C85D8', 'H3B102X': '#2AA380',
-              'H3B103J': '#2C85D8', 'H3B103X': '#2AA380','H3B103M': '#2C85D8', 
-              'H3B104J': '#2C85D8', 'H3B104X': '#2C85D8', 'H3B107A': '#2C85D8', 
-              'H3B109M': '#2C85D8', 'H3B110M': '#2C85D8', 'H3B111A': '#2C85D8', 
-              'H3B111M': '#2C85D8', 'H3B202M': '#2AA380', 'H3B202X': '#2C85D8', 
-              'H3B203J': '#2C85D8', 'H3B203M': '#2AA380', 'H3B204J': '#2C85D8', 
-              'H3B204M': '#2AA380', 'H3B205J': '#2C85D8', 'H3B206M': '#2AA380', 
-              'H3B207X': '#2C85D8', 'H3B208X': '#2C85D8', 'H3B209X': '#21C1D1', 
-              'H4B101A': '#2AA380', 'H4B102A': '#2AA380', 'H4B103J': '#2AA380', 
-              'H4B104A': '#2AA380', 'H4B111J': '#2AA380', 'H4B114J': '#2AA380', 
-              'H4B116J': '#2AA380', 'H4B202J': '#2C85D8', 'H4B203M': '#2AA380', 
-              'H4B204J': '#2C85D8', 'H4B205J': '#2C85D8', 'H4B206J': '#2AA380', 
-              'H4B210M': '#2AA380', 'H4B211M': '#2C85D8', 'H4B303J': '#2AA380', 
-              'H4B402J': '#2C85D8', 'H4B403J': '#2AA380', 'H4B404J': '#2AA380', 
-              'H4B405J': '#2AA380', 'H4B406M': '#2AA380', 'H4B410M': '#2AA380', 
-              'H4B411M': '#2AA380', 'H4B412M': '#2C85D8', 'H4B501J': '#2C85D8', 
-              'H4B502X': '#2C85D8', 'H4B503X': '#2C85D8', 'H4B504J': '#21C1D1', 
-              'H4B505J': '#21C1D1', 'H4B507J': '#2C85D8', 'H4B507X': '#2C85D8', 
-              'H4B508X': '#2C85D8', 'MP2': '#21C1D1', 'IBH001': 'black', 
-              'DSM': 'black'}
+leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
+              'A1003': '#0072B2', 'A1201': '#D55E00', 'A1202': '#33B18F',
+              'A1401': '#33B18F', 'A1404': '#FF74D6', 'A1802': '#D55E00',
+              'A1803': '#D55E00', 'A1805': '#33B18F', 'A2001': '#D55E00',
+              'A2002': '#771853', 'A2003': '#771853', 'A2101': '#33B18F',
+              'A2102': '#D55E00', 'A2103': '#0072B2', 'G0101': '#0072B2', 
+              'G0102': '#0072B2', 'G0103': '#0072B2', 'G0401': '#0072B2',
+              'G0402': '#0072B2', 'G0403': '#33B18F', 'G0404': '#0072B2',
+              'G0405': '#0072B2', 'G0406': '#33B18F', 'G0407': '#0072B2',
+              'G0408': '#0072B2', 'G0410': '#0072B2', 'G0412': '#0072B2',
+              'G0414': '#0072B2', 'G0415': '#0072B2', 'G0417': '#0072B2',
+              'G0420': '#33B18F', 'G0601': '#0072B2', 'G0602': '#0072B2',
+              'G0702': '#0072B2', 'G0801': '#0072B2', 'G0802': '#0072B2',
+              'G0803': '#0072B2', 'G0804': '#0072B2', 'Fhon2': '#0072B2',
+              'H1B104J': '#0072B2', 'H1B105A': '#0072B2', 'H1B302M': '#0072B2',
+              'H2B105J': '#D55E00', 'H3B101A': '#0072B2', 'H3B101J': '#0072B2',
+              'H3B101X': '#D55E00', 'H3B102A': '#0072B2', 'H3B102X': '#D55E00',
+              'H3B103J': '#0072B2', 'H3B103X': '#D55E00', 'H3B103M': '#0072B2', 
+              'H3B104J': '#0072B2', 'H3B104X': '#0072B2', 'H3B107A': '#0072B2', 
+              'H3B109M': '#0072B2', 'H3B110M': '#0072B2', 'H3B111A': '#0072B2', 
+              'H3B111M': '#0072B2', 'H3B202M': '#D55E00', 'H3B202X': '#0072B2', 
+              'H3B203J': '#0072B2', 'H3B203M': '#D55E00', 'H3B204J': '#0072B2', 
+              'H3B204M': '#D55E00', 'H3B205J': '#0072B2', 'H3B206M': '#D55E00', 
+              'H3B207X': '#0072B2', 'H3B208X': '#0072B2', 'H3B209X': '#33B18F', 
+              'H4B101A': '#D55E00', 'H4B102A': '#D55E00', 'H4B103J': '#D55E00', 
+              'H4B104A': '#D55E00', 'H4B111J': '#D55E00', 'H4B114J': '#D55E00', 
+              'H4B116J': '#D55E00', 'H4B202J': '#0072B2', 'H4B203M': '#D55E00', 
+              'H4B204J': '#0072B2', 'H4B205J': '#0072B2', 'H4B206J': '#D55E00', 
+              'H4B210M': '#D55E00', 'H4B211M': '#0072B2', 'H4B303J': '#D55E00', 
+              'H4B402J': '#0072B2', 'H4B403J': '#D55E00', 'H4B404J': '#D55E00', 
+              'H4B405J': '#D55E00', 'H4B406M': '#D55E00', 'H4B410M': '#D55E00', 
+              'H4B411M': '#D55E00', 'H4B412M': '#0072B2', 'H4B501J': '#0072B2', 
+              'H4B502X': '#0072B2', 'H4B503X': '#0072B2', 'H4B504J': '#33B18F',
+              'H4B505J': '#33B18F', 'H4B507J': '#0072B2', 'H4B507X': '#0072B2', 
+              'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': 'black', 
+              'DSMZ12361': 'black'}
 
 color_dict = {'1': 'blue', '2': 'orange', '3': 'green', '4': 'red', '5': 'purple',
               '6': 'magenta', '7': 'brown'}
@@ -86,21 +86,16 @@ color_dict = {'1': 'blue', '2': 'orange', '3': 'green', '4': 'red', '5': 'purple
 hpr_colors = ['#ADB8CE', '#8C95A7', '#687287', '#505B6F', '#58506F', '#64506F',
               '#6F5150', '#6F6250', '#696F50']
 
-gene_colors = {'GS1': '#FF7575', 'GS2': '#FF75B6', 'BRS': '#E875FF', #'BRS': '#D930BD',
+gene_colors = {'GS1': '#FF7575', 'GS2': '#FF75B6', 'BRS': '#E875FF',
                'S1': '#FFE0C3', 'S2a': '#FFF0CB', 'S2b': '#FFF0CB', 
                'S3': '#FFFCD0', 'mhpD': '#CCCCCC', 'hpcG': '#CCCCCC', 
-               'oppA': '#CCCCCC'}
-
-# Old colors {'S3': '#FFEF00', 'S2a': '#FFC800', S2b: '#FFC800', 'S1': '#FF9600'}
+               'oppA': '#CCCCCC', 'GS3': '#FFC2D0', 'GS4': '#FF8A75'}
 
 alt_colors = {'GS1': '#FFC0C0', 'GS2': '#FFC0DE', 'BRS': '#F4C0FF'}
 
 # =============================================================================
 # Set target region and load input files
 # =============================================================================
-
-# Idea: Re-do the trees and use A1003 to root all of them
-# TO DO: Should I keep extra genes in the trees?
 # TO DO: Annotate script and integrate into Snakemake
 
 segment_length = 25000
@@ -109,7 +104,7 @@ padding = 500
 config_file = os.path.expanduser('~') + '/GH_project/config.yml'
 indir =  os.path.expanduser('~') + '/GH_project/plots/tabfiles'
 outdir =  os.path.expanduser('~') + '/GH_project/plots/trees'
-GH_types = ['GS1', 'GS2', 'BRS']
+GH_types = ['BRS', 'GS1', 'GS2']
 domain_path =  os.path.expanduser('~') + '/interproscan'
 doub_GS1_strains = ['H3B2-06M', 'H4B1-11J', 'H4B5-05J', 'H4B4-06M']
 
@@ -176,16 +171,18 @@ with open(config_file) as conf:
     
     GS1 = py_config['GS1']
     GS2 = py_config['GS2']
+    GS3 = py_config['GS3']
+    GS3_repr = [tag.split('_')[0] for tag in GS3]
     S1 = py_config['S1']
     S2a = py_config['S2a']
     S2b = py_config['S2b']
-    S3 = py_config['S3'] # Let's wait and see if the rest works before...
+    S3 = py_config['S3']
     BRS = ['A1401_12770'] + py_config['BRS']
     GH70_doms = GS1 + GS2 + BRS
     strains = py_config['representatives']
     s_nominus = [strain.replace('-', '') for strain in strains]
     # Retrieve BRS domains of the GS2_BRS proteins
-    GS2_BRS =  [replace_strain_name(GH_gene.replace('_2', '')) for GH_gene in GS2 if GH_gene.replace('_2', '') in BRS] + [replace_strain_name(GH_gene) for GH_gene in BRS if GH_gene.replace('_2', '') in GS2]
+    GS2_BRS =  [GH_gene.replace('_2', '') for GH_gene in GS2 if GH_gene.replace('_2', '_1') in BRS] #+ [replace_strain_name(GH_gene.replace('_1', '')) for GH_gene in BRS if GH_gene.replace('_1', '') in GS2]
     # Retrieve the most different GS1 group in strains with two GS1
     curated_strains = [strain.replace('-', '').replace('DSMZ12361', 'DSM') for strain in strains]
     GS1_strains = [replace_strain_name(gs).split('_')[0] for gs in GS1 if replace_strain_name(gs).split('_')[0] in curated_strains]
@@ -196,7 +193,7 @@ with open(config_file) as conf:
 domain_dict = {}
 for GH in GH_types:
     print(f'\n\nGH70 {GH} genes...', end = '\n')
-    treefile =  os.path.expanduser('~') + '/GH_project/data/fasta/GH70/trees/{GH}_repset.mafft.faa.treefile'
+    treefile =  os.path.expanduser('~') + f'/GH_project/data/fasta/GH70/trees/{GH}_repset.mafft.faa.treefile'
     # count_file = snakemake.input.counts
     if not os.path.exists(outdir):
         os.makedirs(outdir)
@@ -211,12 +208,15 @@ for GH in GH_types:
         gene = replace_strain_name(gene_dom)
         if gene_dom in GS1:
             gene_types[gene] = 'GS1'
-        elif gene_dom in GS2:
-            if gene_dom in BRS:
+        elif gene_dom in GS2 or (gene_dom[:-2] + '_2' in GS2):
+            if gene_dom[:-2] + '_1' in BRS:
                 gene_types[gene] = 'GS2_BRS'
+                # print(gene[:-2])
             else: gene_types[gene] = 'GS2'
         elif gene_dom in BRS:
             gene_types[gene] = 'BRS'
+        elif gene_dom in GS3:
+            gene_types[gene] = 'GS3'
         else: print('Something is VERY wrong here...')
             
     tabs = [file for file in os.listdir(indir) if any(list(strain in file for strain in strains))] #snakemake.input.tabs #Maybe I should regenerate the tabs adding locus tag and annotation separately...
@@ -231,12 +231,19 @@ for GH in GH_types:
             freader = csv.reader(dfile, delimiter = '\t')
             for line in freader:
                 gene_locus = replace_strain_name(line[0]).replace('-', '').replace('fhon2', 'Fhon2')
-                if ((line[0] in GH70_doms) or (gene_locus.upper() in GH70_doms) or ('MP2' in domain_file and int(gene_locus.split('_')[1]) < 14000)) and 'Glycosyl hydrolase family 70' in line[5]:
+                if ((line[0] in GH70_doms) or (gene_locus.upper() in GH70_doms) or (f'{gene_locus.upper()}_1' in GH70_doms) or (f'{line[0]}_1' in GH70_doms) or ('MP2' in domain_file and int(gene_locus.split('_')[1]) < 14000)) and 'Glycosyl hydrolase family 70' in line[5]:
                     if 'MP2' in domain_file:
                         gene_locus = gene_locus.replace('_13350', '_03850').replace('_13360', '_03845')
                     pos = (int(line[6])*3, int(line[7])*3)
                     if gene_locus in domain_dict.keys() and domain_dict[gene_locus] != pos:
-                        gene_locus = f'{gene_locus}_2'
+                        if 'DSM' not in domain_file:
+                            domain_dict[f'{gene_locus}_1'] = domain_dict[gene_locus]
+                            del domain_dict[gene_locus]
+                            gene_locus = f'{gene_locus}_2'
+                        else:
+                            domain_dict[f'{gene_locus}_2'] = domain_dict[gene_locus]
+                            del domain_dict[gene_locus]
+                            gene_locus = f'{gene_locus}_1'
                     domain_dict[gene_locus] = pos
     
 # =============================================================================
@@ -246,7 +253,7 @@ for GH in GH_types:
     
     #Root tree
     if GH == 'GS1':
-        outnode = 'A1003_12540'
+        outnode = 'A1001_12310'
     elif GH == 'GS2':
         outnode = t.get_common_ancestor('H3B104X_13220', 'H4B504J_13480') # GS2
     else:
@@ -296,7 +303,6 @@ for GH in GH_types:
     
     #Add leaf names and plot region
     for leaf in lnames: # Loop through leaf names (locus tags)
-        # n = 0
         for file in sorted(tabs): # Loop through CDS tab files
             strain = leaf.split('_')[0] # Get strain name from locus tag
             if strain in file.replace('-', ''): # If strain name (without -) is in the tab file:
@@ -313,9 +319,8 @@ for GH in GH_types:
                     genes = csv.reader(gfile, delimiter='\t')
                     
                     for gene in genes:
-                        # border = 'black'
                         
-                        if any(list(gs in gene[0] for gs in GH70_doms + S1 + S2a + S2b + S3)) or (S3_check == True and S2a_check == True and ('oppA' in gene[0] or 'mhpD' in gene[0] or 'hpcG' in gene[0])): #GS1+GS2+BRS)):
+                        if any(list(gs in gene[0] for gs in GH70_doms + GS2_BRS + GS3 + S1 + S2a + S2b + S3)) or (S3_check == True and S2a_check == True and ('oppA' in gene[0] or 'mhpD' in gene[0] or 'hpcG' in gene[0])): #GS1+GS2+BRS)):
                                 
                             if any(list(bs in gene[0] for bs in S2b)):
                                 print(gene[0], 'is S2b')
@@ -329,7 +334,7 @@ for GH in GH_types:
                                 if GS1_check == 0:
                                     start = int(gene[1]) - padding - gapscale
                                     end = start + segment_length  
-                                    GS1_check += 1
+                                GS1_check += 1
                                 S2a_check = True
                                 gene[0] = 'S2a'
                                 
@@ -340,7 +345,15 @@ for GH in GH_types:
                                 GS1_check += 1
                                 gene[0] = 'S1'
                                 
-                            elif any(list(gs in gene[0] for gs in GS1)) or (gene[0] == 'gtfC' and check == False) or (strain in doub_GS1_strains and GS1_check < 2):
+                            elif any(list(gs in gene[0] for gs in GS3)):
+                                print(f'Processing gene {gene[0]}...')
+                                print(gene[0], 'is GS3')
+                                start = int(gene[1]) - padding - gapscale
+                                end = start + segment_length
+                                GS1_check += 1
+                                gene[0] = 'GS3'
+                                
+                            elif any(list(gs in gene[0] for gs in GS1)):
                                 print(gene[0], 'is GS1')
                                 if strain != 'MP2':
                                     if GS1_check == 0:
@@ -350,27 +363,20 @@ for GH in GH_types:
                                     GS1_check += 1
                                 gene[0] = 'GS1'
                                 
-                            elif any(list(gs.replace('_2', '') in gene[0] for gs in GS2)) or (gene[0] == 'gtfC' and check == True):
-                                # if GH == 'GS2':
-                                #     border = 'black'
-                                if any(list(bs.replace('_2', '') in gene[0] for bs in BRS)):
-                                    print(gene[0], 'is GS2_BRS')
-                                    # if GH == 'BRS' and replace_strain_name(gene[0]) == leaf.replace('_2', ''):
-                                    #     border = 'black'
-                                    gene[0] = 'GS2_BRS'
+                            elif any(list(gs in gene[0] for gs in GS2_BRS)):
+                                print(gene[0], 'is GS2_BRS')
+                                gene[0] = 'GS2_BRS'
                                     
-                                else:
-                                    print(gene[0], 'is GS2')
-                                    gene[0] = 'GS2'
-                                    if strain == 'MP2' and check == False:
-                                        start = int(gene[1]) - padding - gapscale
-                                        end = start + segment_length
-                                        check = True
+                            elif any(list(gs in gene[0] for gs in GS2)):
+                                print(gene[0], 'is GS2')
+                                gene[0] = 'GS2'
+                                if strain == 'MP2' and check == False:
+                                    start = int(gene[1]) - padding - gapscale
+                                    end = start + segment_length
+                                    check = True
                                         
                             elif any(list(bs in gene[0] for bs in BRS)):
                                 print(gene[0], 'is BRS')
-                                # if GH == 'BRS' and replace_strain_name(gene[0]) == leaf.replace('_2', ''):
-                                #     border = 'black'
                                 if 'A1401_12770' in gene[0]:
                                     gene[1] = int(gene[1]) + 11
                                     
@@ -389,8 +395,6 @@ for GH in GH_types:
                                 col = f'{"rgradient:" + gene_colors["BRS"] + "|" + gene_colors["GS2"]}'
                             else:
                                 col = gene_colors[gene[0]]
-                            # if border == 'white':
-                            #     border = 'black' #col[-7:]
                                 
                             info_list = [int(gene[1])-start, int(gene[2])-start, '[]', 0, 20, border, col, format_str]
                             
@@ -399,9 +403,6 @@ for GH in GH_types:
                             else:
                                 gene_dict[leaf].append(info_list)
             
-    # if GH != 'GS1':
-    #     length_dict = {key:20000 for key in gene_dict} #gene_dict[key][-1][1]+100 for key in gene_dict}
-    # else: length_dict = {key:23000 for key in gene_dict}
     if GH == 'BRS':
         length_dict = {key:segment_length for key in gene_dict}
     elif GH == 'GS1':
@@ -421,24 +422,22 @@ for GH in GH_types:
     for key in gene_dict.keys():
         print(key)
         new_domains = []
-        # add_BRS = True
         for element in gene_dict[key]:
             divide = False
-        #     if (GH == 'BRS' and key in GS2_BRS and 'GS2_BRS' in element[7]) or (GH == 'BRS' and key not in GS2_BRS):
-        #         add_BRS = True
-        #         print(element[7], GH)
-        #     else:
-        #         add_BRS = False
             if GH == 'BRS' and key in GS2_BRS and GH in element[7] and element == gene_dict[key][-1]:
                 divide = True
                 print(key, GH, 'True1')
             elif GH == 'BRS' and f'|{GH}' in element[7] and element[1] - element[0] > 2000 and ((key == 'H4B204J_13340' or key == 'IBH001_06330') or ('GS2_BRS' not in gene_dict[key][-1][7])):
                 divide = True
                 print(key, GH, 'True2')
+            elif GH == 'BRS' and '|GS2_BRS' in element[7] and key.endswith('_1'):
+                divide = True
+                print(key, GH, 'True4')
             elif GH == 'GS2' and f'|{GH}' in element[7]:
                 divide = True
             elif GH == 'GS1' and f'|{GH}' in element[7]:
-                check2 = (key in max_GS1.values()) + (key.split('_')[0] in S2b_repr) + (key.split('_')[0] in S2a_repr) + (key.split('_')[0] in S1_repr) #+ (key.split('_')[0] in S3_repr)
+                print(key, element)
+                check2 = (key in max_GS1.values()) + (key.split('_')[0] in S2b_repr) + (key.split('_')[0] in S2a_repr) + (key.split('_')[0] in S1_repr) + (key.split('_')[0] in GS3_repr)
                 print(key, check2)
                 if element == gene_dict[key][check2] or 'MP2' in key:
                     divide = True
@@ -449,18 +448,11 @@ for GH in GH_types:
                 new_domain[0] = element[0] + domain_dict[key][0] - 1
                 new_domain[1] = element[0] + domain_dict[key][1] - 1
                 new_domain[7] = new_domain[7].replace('GS2_BRS', GH)
-                # new_domain[7] = new_domain[7].replace('black', 'white')
                 new_domain[5] = 'black'
-                # if f'{key}_2' in GS2_BRS or key.replace('_2', '') in GS2_BRS or key in GS2_BRS:
-                #     new_domain[7] = new_domain[7].replace('GS2_BRS', GH)
-                #     print(GH)
-                # element[2] = '[]'
                 for GH_typ in GH_types:
                     if GH_typ in element[7] and 'GS2_BRS' not in element[7]:
-                        #element[5] = alt_colors[GH_typ]
                         element[6] = alt_colors[GH_typ]
                     else:
-                        #element[5] = element[5].replace(gene_colors[GH_typ], alt_colors[GH_typ])
                         element[6] = element[6].replace(gene_colors[GH_typ], alt_colors[GH_typ])
                 if 'GS2_BRS' not in element[7]:
                     element[7] = element[7].replace(gene_types[key], '')
@@ -475,13 +467,10 @@ for GH in GH_types:
                 new_domains.append(next_domain)
                 new_domains.append(new_domain)
             else:
-                # element[2] = '[]'
                 for GH_typ2 in GH_types:
                     if GH_typ2 in element[7] and 'GS2_BRS' not in element[7]:
-                        #element[5] = alt_colors[GH_typ2]
                         element[6] = alt_colors[GH_typ2]
                     elif GH_typ2 in element[7]:
-                        #element[5] = element[5].replace(gene_colors[GH_typ2], alt_colors[GH_typ2])
                         element[6] = element[6].replace(gene_colors[GH_typ2], alt_colors[GH_typ2])
                 new_domains.append(element)
         gene_dict[key] = new_domains # I need to add some kind of check where I check that the key gene type is the same as the gene type to add domains, and then I need to check that it is the right domain when there are two genes that are classified as the same
@@ -521,7 +510,6 @@ for GH in GH_types:
 # =============================================================================
 # Print tree
 # =============================================================================
-    #t.convert_to_ultrametric() #For nicer visualization
     t.render(f'{outdir}/{outplot}', tree_style = ts)
     t.render(f'{outdir}/{outplot.replace(".png", ".tiff")}', tree_style = ts)
     t.render(f'{outdir}/{outplot.replace(".png", ".svg")}', tree_style = ts) 
