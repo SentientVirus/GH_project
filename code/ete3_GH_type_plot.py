@@ -190,7 +190,7 @@ domain_dict = {} #Create empty dictionary
 for GH in GH_types: #Loop through gene types
     print(f'\n\nGH70 {GH} genes...', end = '\n') #Print gene type
     treefile =  os.path.expanduser('~') + f'/GH_project/data/fasta/GH70/trees/{GH}_repset.mafft.faa.treefile' #Load tree file
-    outplot = f'{GH}_phylogeny.png' #Specify name of the output plot
+    outplot = f'{GH}_CDS_phylogeny.png' #Specify name of the output plot
 
     gene_types = {} # Create dictionary to assign gene types
     for gene_dom in GH70_doms: #Loop through locus tags
@@ -243,7 +243,7 @@ for GH in GH_types: #Loop through gene types
     if GH == 'GS1':
         outnode = 'A1001_12310' #Root of GS1
     elif GH == 'GS2':
-        outnode = t.get_common_ancestor('H3B104X_13220', 'H4B504J_13480') #Root of GS2
+        outnode = t.get_common_ancestor('H3B104X_13220', 'H4B505J_12900') #Root of GS2
     else:
         outnode = t.get_common_ancestor('LDX55_06330', 'H4B204J_13340') #Root of BRS
     t.set_outgroup(outnode) #Set the root
