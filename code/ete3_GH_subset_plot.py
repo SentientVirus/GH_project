@@ -86,7 +86,7 @@ leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
 # =============================================================================
 # TO DO: Integrate into Snakemake
 outdir =  os.path.expanduser('~') + '/GH_project/plots/trees' #Directory to store output plots
-GH_types = ['BRS', 'GS1', 'GS2'] #Types of GH to plot
+GH_types = ['BRS', 'GS1', 'GS2', 'S2a'] #Types of GH to plot
 
 #Create output directory if it doesn't exist
 if not os.path.exists(outdir): 
@@ -139,6 +139,8 @@ def fix_strand(my_info_list):
 
 for GH in GH_types:
     treefile =  os.path.expanduser('~') + f'/GH_project/data/fasta/GH70/trees/{GH}_repset.mafft.faa.treefile' #Load tree file
+    if GH == 'S2a':
+        treefile = treefile.replace('70', '32')
     outplot = f'{GH}_phylogeny.png' #Specify name of the output plot
     
 # =============================================================================
@@ -153,6 +155,7 @@ for GH in GH_types:
         outnode = t.get_common_ancestor('H3B104X_13220', 'H4B505J_12900') #Root of GS2
     elif GH == 'BRS':
         outnode = t.get_common_ancestor('LDX55_06330', 'H4B204J_13340') #Root of BRS
+    else: outnode = 'A1001_12300' #Root of S2a
     t.set_outgroup(outnode) #Set the root
     
 # =============================================================================
@@ -160,8 +163,8 @@ for GH in GH_types:
 # =============================================================================
     ts = TreeStyle() #Create default tree style
     ts.show_branch_length = False # Hide support values
-    ts.scale =  500 #General tree scale
-    ts.branch_vertical_margin = 5 # Space between branches
+    ts.scale = 400 #General tree scale
+    ts.branch_vertical_margin = -5 # Space between branches
     ts.show_branch_support = False
     ts.show_leaf_name = False # Hide unformatted leaf names
     ts.show_scale = False # Hide tree scale
@@ -183,7 +186,7 @@ for GH in GH_types:
                 color = 'black' #Color the support value in black
             else: color = 'dimgrey' #Otherwise, color the support value in grey
             if n.support >= 80: #If the support value is above 80%
-                support_face = TextFace(int(n.support), fgcolor = color, fsize = 10) #Format support value text
+                support_face = TextFace(int(n.support), fgcolor = color, fsize = 12) #Format support value text
                 n.add_face(support_face, column=0, position='branch-top') #Add the text to the tree
     
 # =============================================================================
@@ -201,7 +204,7 @@ for GH in GH_types:
         lname = replace_strain_name(leaf.name) #Get the right name for each leaf
         strain = lname.split('_')[0] #Get the name of the strain
         color = leaf_color.get(strain, None) #Color leaves according to strain phylogroup
-        name_face = TextFace(lname, fgcolor = color, fsize = 18) #Create text with corrected locus tag
+        name_face = TextFace(lname, fgcolor = color, fsize = 20) #Create text with corrected locus tag
         leaf.add_face(name_face, column=0, position='branch-right') #Add formatted leaf names
         
 # =============================================================================
