@@ -3,9 +3,8 @@
 """
 Created on Mon Dec 20 11:06:54 2021
 
-This script creates plots of the domains of GH70 and GH32 proteins
-next to a strain phylogeny. To plot a specific gene type, the script has
-to be manually updated.
+This script creates a plot of the GH70 phylogeny, including
+outgroups.
 
 @author: Marina Mota Merlo
 """
