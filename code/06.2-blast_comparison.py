@@ -9,6 +9,7 @@ GH32 S1-3 genes.
 
 @author: Marina Mota Merlo
 """
+
 from Bio.Blast.Applications import NcbiblastpCommandline as cline_blast
 from matplotlib.lines import Line2D
 from Bio.SeqFeature import SimpleLocation
@@ -371,7 +372,7 @@ handles += [
 #Assign legent to figure. bbox_to_anchor sets the position, frameon removes the 
 #frame (border) of the legend box, and labelspacing increases vertical space between legends
 legend = fig.legend(handles=handles, bbox_to_anchor=(1.35, 1), frameon = False,
-                    fontsize = 16)#, labelspacing=1)
+                    fontsize = 16)
 
 #Set legend headers to bold
 legend.get_texts()[0].set_fontweight('bold')

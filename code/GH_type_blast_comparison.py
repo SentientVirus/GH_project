@@ -15,8 +15,10 @@ from Bio.Blast.Applications import NcbiblastpCommandline as cline_blast
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 import matplotlib.transforms as transforms
-from pygenomeviz import Genbank as gbk_read, GenomeViz
+from pygenomeviz import GenomeViz
+from pygenomeviz.parser import Genbank as gbk_read
 from Bio import GenBank as gbk
+from Bio.SeqFeature import SimpleLocation
 import os
 import pandas as pd
 from ete3 import Tree
@@ -25,58 +27,66 @@ from itertools import compress
 # =============================================================================
 # Color dictionary for strain names
 # =============================================================================
-leaf_color = {'A0901': '#A027FF', 'A1001': '#E5BA60', 'A1002': '#A027FF',
-              'A1003': '#1E55F6', 'A1201': '#A027FF', 'A1202': '#00AEFF',
-              'A1401': '#00AEFF', 'A1404': '#FF74D6', 'A1802': '#A027FF',
-              'A1803': '#A027FF', 'A1805': '#00AEFF', 'A2001': '#A027FF',
-              'A2002': '#E5BA60', 'A2003': '#E5BA60', 'A2101': '#00AEFF',
-              'A2102': '#A027FF', 'A2103': '#1E55F6', 'G0101': '#1E55F6', 
-              'G0102': '#1E55F6', 'G0103': '#1E55F6', 'G0401': '#1E55F6',
-              'G0402': '#1E55F6', 'G0403': '#00AEFF', 'G0404': '#1E55F6',
-              'G0405': '#1E55F6', 'G0406': '#00AEFF', 'G0407': '#1E55F6',
-              'G0408': '#1E55F6', 'G0410': '#1E55F6', 'G0412': '#1E55F6',
-              'G0414': '#1E55F6', 'G0415': '#1E55F6', 'G0417': '#1E55F6',
-              'G0420': '#00AEFF', 'G0601': '#1E55F6', 'G0602': '#1E55F6',
-              'G0702': '#1E55F6', 'G0801': '#1E55F6', 'G0802': '#1E55F6',
-              'G0803': '#1E55F6', 'G0804': '#1E55F6', 'Fhon2': '#1E55F6',
-              'H1B104J': '#1E55F6', 'H1B105A': '#1E55F6', 'H1B302M': '#1E55F6',
-              'H2B105J': '#A027FF', 'H3B101A': '#1E55F6', 'H3B101J': '#1E55F6',
-              'H3B101X': '#A027FF', 'H3B102A': '#1E55F6', 'H3B102X': '#A027FF',
-              'H3B103J': '#1E55F6', 'H3B103X': '#A027FF','H3B103M': '#1E55F6', 
-              'H3B104J': '#1E55F6', 'H3B104X': '#1E55F6', 'H3B107A': '#1E55F6', 
-              'H3B109M': '#1E55F6', 'H3B110M': '#1E55F6', 'H3B111A': '#1E55F6', 
-              'H3B111M': '#1E55F6', 'H3B202M': '#A027FF', 'H3B202X': '#1E55F6', 
-              'H3B203J': '#1E55F6', 'H3B203M': '#A027FF', 'H3B204J': '#1E55F6', 
-              'H3B204M': '#A027FF', 'H3B205J': '#1E55F6', 'H3B206M': '#A027FF', 
-              'H3B207X': '#1E55F6', 'H3B208X': '#1E55F6', 'H3B209X': '#00AEFF', 
-              'H4B101A': '#A027FF', 'H4B102A': '#A027FF', 'H4B103J': '#A027FF', 
-              'H4B104A': '#A027FF', 'H4B111J': '#A027FF', 'H4B114J': '#A027FF', 
-              'H4B116J': '#A027FF', 'H4B202J': '#1E55F6', 'H4B203M': '#A027FF', 
-              'H4B204J': '#1E55F6', 'H4B205J': '#1E55F6', 'H4B206J': '#A027FF', 
-              'H4B210M': '#A027FF', 'H4B211M': '#1E55F6', 'H4B303J': '#A027FF', 
-              'H4B402J': '#1E55F6', 'H4B403J': '#A027FF', 'H4B404J': '#A027FF', 
-              'H4B405J': '#A027FF', 'H4B406M': '#A027FF', 'H4B410M': '#A027FF', 
-              'H4B411M': '#A027FF', 'H4B412M': '#1E55F6', 'H4B501J': '#1E55F6', 
-              'H4B502X': '#1E55F6', 'H4B503X': '#1E55F6', 'H4B504J': '#00AEFF',
-              'H4B505J': '#00AEFF', 'H4B507J': '#1E55F6', 'H4B507X': '#1E55F6', 
-              'H4B508X': '#1E55F6', 'MP2': '#00AEFF', 'IBH001': 'black', 
+#Dictionary to color strains by phylogroup
+leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
+              'A1003': '#0072B2', 'A1201': '#D55E00', 'A1202': '#33B18F',
+              'A1401': '#33B18F', 'A1404': '#FF74D6', 'A1802': '#D55E00',
+              'A1803': '#D55E00', 'A1805': '#33B18F', 'A2001': '#D55E00',
+              'A2002': '#771853', 'A2003': '#771853', 'A2101': '#33B18F',
+              'A2102': '#D55E00', 'A2103': '#0072B2', 'G0101': '#0072B2', 
+              'G0102': '#0072B2', 'G0103': '#0072B2', 'G0401': '#0072B2',
+              'G0402': '#0072B2', 'G0403': '#33B18F', 'G0404': '#0072B2',
+              'G0405': '#0072B2', 'G0406': '#33B18F', 'G0407': '#0072B2',
+              'G0408': '#0072B2', 'G0410': '#0072B2', 'G0412': '#0072B2',
+              'G0414': '#0072B2', 'G0415': '#0072B2', 'G0417': '#0072B2',
+              'G0420': '#33B18F', 'G0601': '#0072B2', 'G0602': '#0072B2',
+              'G0702': '#0072B2', 'G0801': '#0072B2', 'G0802': '#0072B2',
+              'G0803': '#0072B2', 'G0804': '#0072B2', 'Fhon2': '#0072B2',
+              'H1B104J': '#0072B2', 'H1B105A': '#0072B2', 'H1B302M': '#0072B2',
+              'H2B105J': '#D55E00', 'H3B101A': '#0072B2', 'H3B101J': '#0072B2',
+              'H3B101X': '#D55E00', 'H3B102A': '#0072B2', 'H3B102X': '#D55E00',
+              'H3B103J': '#0072B2', 'H3B103X': '#D55E00', 'H3B103M': '#0072B2', 
+              'H3B104J': '#0072B2', 'H3B104X': '#0072B2', 'H3B107A': '#0072B2', 
+              'H3B109M': '#0072B2', 'H3B110M': '#0072B2', 'H3B111A': '#0072B2', 
+              'H3B111M': '#0072B2', 'H3B202M': '#D55E00', 'H3B202X': '#0072B2', 
+              'H3B203J': '#0072B2', 'H3B203M': '#D55E00', 'H3B204J': '#0072B2', 
+              'H3B204M': '#D55E00', 'H3B205J': '#0072B2', 'H3B206M': '#D55E00', 
+              'H3B207X': '#0072B2', 'H3B208X': '#0072B2', 'H3B209X': '#33B18F', 
+              'H4B101A': '#D55E00', 'H4B102A': '#D55E00', 'H4B103J': '#D55E00', 
+              'H4B104A': '#D55E00', 'H4B111J': '#D55E00', 'H4B114J': '#D55E00', 
+              'H4B116J': '#D55E00', 'H4B202J': '#0072B2', 'H4B203M': '#D55E00', 
+              'H4B204J': '#0072B2', 'H4B205J': '#0072B2', 'H4B206J': '#D55E00', 
+              'H4B210M': '#D55E00', 'H4B211M': '#0072B2', 'H4B303J': '#D55E00', 
+              'H4B402J': '#0072B2', 'H4B403J': '#D55E00', 'H4B404J': '#D55E00', 
+              'H4B405J': '#D55E00', 'H4B406M': '#D55E00', 'H4B410M': '#D55E00', 
+              'H4B411M': '#D55E00', 'H4B412M': '#0072B2', 'H4B501J': '#0072B2', 
+              'H4B502X': '#0072B2', 'H4B503X': '#0072B2', 'H4B504J': '#33B18F',
+              'H4B505J': '#33B18F', 'H4B507J': '#0072B2', 'H4B507X': '#0072B2', 
+              'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': 'black', 
               'DSMZ12361': 'black'}
+
+color_dict = {'BRS': '#e875ff', 'GS2BRS': '#FF75ED', 'GS2': '#ff75b6', 
+              'GS3': '#ff7594', 'GS1': '#ff7575', 'GS4': '#FF8A75',
+              'S1': '#FFA175', 'S2a': '#ffb875', 'S2b': '#ffd775', 
+              'S3': '#fff575'}
 
 # =============================================================================
 # Locus tags
 # =============================================================================
-GS1 = ['A1001_12310', 'A1003_12540', 'A1202_13520', 'A1401_12750', 'A1805_12820',
+GS1 = ['A1001_12310', 'A1202_13520', 'A1401_12750', 'A1805_12820',
        'FHON2_13540', 'G0101_12800', 'G0403_13100', 'H1B104J_13010', 
        'H1B105A_12300', 'H1B302M_12880', 'H3B101A_13240', 'H3B104J_12990', 
        'H3B104X_13200', 'H3B202X_12850', 'H3B203J_13370', 'H3B203M_12480', 
-       'H3B206M_12830', 'H3B206M_12840', 'H3B209X_13340', 'H4B111J_13560', 'H4B111J_13570',
-       'H4B202J_12880', 'H4B204J_13330', 'H4B205J_12990', 'H4B211M_13000',
-       'H4B402J_12600', 'H4B406M_13450', 'H4B406M_13460', 'H4B412M_13240',
-       'H4B501J_12890', 'H4B503X_12670', 'H4B504J_13460', 'H4B505J_12880',
-       'APS55_RS03850', 'LDX55_06325', 'K2W83_RS06180']
+       'H3B206M_12840', 'H3B209X_13340', 'H4B111J_13570', 'H4B202J_12880', 
+       'H4B204J_13330', 'H4B205J_12990', 'H4B211M_13000', 'H4B402J_12600', 
+       'H4B405J_13360', 'H4B406M_13460', 'H4B412M_13240', 'H4B501J_12890', 
+       'H4B503X_12670', 'H4B504J_13460', 'H4B505J_12880', 'APS55_RS03850', 
+       'LDX55_06325', 'K2W83_RS06180']
 GS2 = ['FHON2_13560', 'FHON2_13570', 'G0403_13120', 'H1B302M_12900', 
        'H3B101A_13260', 'H3B104X_13220', 'H3B202X_12860', 'H3B203J_13390',
        'H3B209X_13370', 'H4B504J_13480', 'H4B505J_12900', 'APS55_RS03845']
+GS3 = ['H3B206M_12830', 'H4B111J_13560', 'H4B405J_13350', 'H4B406M_13450']
+GS4 = ['A1003_12540']
 GS2BRS = ['H3B104J_13020', 'H4B202J_12890', 'H4B204J_13350', 'LDX55_06335', 
           'K2W83_RS06185']
 BRS = ['A1401_12760', 'FHON2_13550', 'G0403_13110', 'H1B302M_12890', 
@@ -136,16 +146,11 @@ def get_info(phylo_dict, tag_dict, folder_path2, length = 0): #OBS! Genome lengt
         loctag = tag_dict[j]
         genbank_file = f'{folder_path2}/{phylo_dict[j]}_genomic.gbff'
         with open(genbank_file) as handle:
-            check = 0
             for record in gbk.parse(handle):
                 if loctag not in accession_strain.keys():
                     accession_strain[loctag] = f'{record.accession[0]}.1'
                     genome_length = len(record.sequence)
-                    lengths_dict[loctag] = [genome_length, check]
-                else:
-                    lengths_dict[loctag][0] = lengths_dict[loctag][0] + len(record.sequence)
-                    check += len(record.sequence)
-                    lengths_dict[loctag][1] = check
+                    lengths_dict[loctag] = genome_length
                 if strain not in ['IBH001', 'MP2', 'DSMZ12361']:
                     for feature in record.features:
                         gene_name = [qual for qual in feature.qualifiers if 'gene' in qual.key]
@@ -162,7 +167,7 @@ def get_info(phylo_dict, tag_dict, folder_path2, length = 0): #OBS! Genome lengt
                             if strain == 'MP2':
                                 start -= 10000
             if strain != 'MP2':
-                start = lengths_dict[loctag][0] - (start + length)
+                start = lengths_dict[loctag] - (start + length)
                 end = start + length
                 pos_dict[loctag] = (start, end)
             else:
@@ -176,7 +181,7 @@ def get_info(phylo_dict, tag_dict, folder_path2, length = 0): #OBS! Genome lengt
 outpath = os.path.expanduser('~') + '/GH_project/blast_tabs/subplots'
 folder_path = os.path.expanduser('~') + '/Akunkeei_files/fna/reverse'
 folder_path2 = os.path.expanduser('~') + '/Akunkeei_files/gbff/modified_gbff'
-outfig = os.path.expanduser('~') + '/GH_project/plots/trees'
+outfig = os.path.expanduser('~') + '/GH_project/plots/pyGenomeViz'
 GH_types = ['GS1', 'GS2', 'BRS']
 
 # =============================================================================
@@ -187,23 +192,19 @@ for GH_type in GH_types:
     treefile = os.path.expanduser('~') + f'/GH_project/data/fasta/GH70/trees/{GH_type}_repset.mafft.faa.treefile'
     t = Tree(treefile, format = 0)
     if GH_type == 'GS1':
-        outnode = 'A1003_12540' # GS1
+        outnode = 'A1001_12310' #GS1 root
     elif GH_type == 'GS2':
-        outnode = t.get_common_ancestor('H3B104X_13220', 'H4B505J_12900')
+        outnode = t.get_common_ancestor('H3B104X_13220', 'H4B505J_12900') #GS2 root
     elif GH_type == 'BRS':
-        outnode = t.get_common_ancestor('H3B101A_13250', 'LDX55_06330')
+        outnode = t.get_common_ancestor('H3B101A_13250', 'LDX55_06330') #BRS root
     else: raise Exception(f'{GH_type} is not a valid GH70 gene type') 
     t.set_outgroup(outnode)
     generat_0r = list(t.get_leaf_names())
     phylo_order = {no + 1: generat_0r[-(no + 1)] for no in reversed(range(len(generat_0r)))}
     
-    # OBS! Maybe I should re-do the Blast comparisons reversing the genome.
-    
     phylo_list = [get_strain_name(leaf, True) for leaf in generat_0r]
     phylo_strains = {key: get_strain_name(phylo_order[key], True) for key in phylo_order.keys()}
     get_tabs(phylo_strains, folder_path, outpath)
-    
-    
     
     # =============================================================================
     # In this section, we establish the start and end positions for every strain
@@ -212,75 +213,76 @@ for GH_type in GH_types:
     # =============================================================================
     acc, pos, lengths = get_info(phylo_strains, phylo_order, folder_path2, 40000)
     
-    
     # =============================================================================
     # Now, ready for the plotting!
     # =============================================================================
     # Set plot style
     gv = GenomeViz(
-        fig_track_height = 0.4,
-        link_track_ratio = 3.0,
-        align_type = 'center',
-        tick_style = 'bar',
+        fig_track_height = 0.42, #Height of the tracks with the representation of the CDS
+        link_track_ratio = 0.8, #Size ratio between the links (Blast comparisons) and the tracks
+        track_align_type = 'center', #Align tracks to the center
         )
-    for i in range(1, len(phylo_strains.keys())+1):
-        strain = phylo_strains[i]
-        locus = phylo_order[i]
-    
-        genbank_file = f'{folder_path2}/{strain}_genomic.gbff'
-        if strain != 'MP2':
-            rev = True
-        else: rev = False
-        genbk = gbk_read(genbank_file, reverse = rev, min_range = pos[locus][0], max_range = pos[locus][1])
-        features = genbk.extract_features('CDS')
-        track_name = genbk.name.replace('_genomic', '').replace(strain, locus)
-        locname = get_strain_name(locus)
-            
-        track = gv.add_feature_track(genbk.name.replace('_genomic', '').replace(strain, locname), size = genbk.range_size, start_pos = genbk.min_range, labelcolor = leaf_color[strain.replace('-', '')])
+
+    for i in range(1, len(phylo_strains.keys())+1): #Loop through strain names in the order dictionary
+        strain = phylo_strains[i] #Get the name of a strain
+        locus = phylo_order[i] #Get the locus tag of the gene
+        genbank_file = f'{folder_path2}/{strain}_genomic.gbff' #Get GenBank file based on strain name
+        genbk = gbk_read(genbank_file) #Read GenBank file with PyGenomeViz
+        segments = dict(region1=(pos[locus][0], pos[locus][1])) #Retrieve the segment to be plotted
+        track = gv.add_feature_track(name = get_strain_name(locus), #Create track (use DSM as strain name for DSMZ12361)
+                                     segments = segments, #Add segments to track
+                                     label_kws = dict(color = leaf_color[strain.replace('-', '')])) #Add strain name color based on phylogroup
+        for segment in track.segments: #Loop through segments in the track
+            if strain != 'MP2': #If the strain is not MP2
+                target_range = (lengths[locus] - segment.range[1], 
+                                lengths[locus] - segment.range[0]) #Get the target region on the opposite strand
+                features = genbk.extract_features(feature_type = 'CDS', 
+                                                  target_range = target_range) #Extract features from GenBank file
+
+                for feature in features: #Loop through features
+                    new_end = lengths[locus] - feature.location.start #Reverse start
+                    new_start = lengths[locus] - feature.location.end #Reverse end
+                    print(new_start, new_end)
+                    new_strand = feature.location.strand*-1 #Reverse strand
+                    feature.location = SimpleLocation(new_start, new_end, 
+                                                      new_strand) #Update feature position
+            else: #If the strain is MP2
+                features = genbk.extract_features(feature_type = 'CDS', 
+                                                  target_range = segment.range)  #Extract the features directly, based on the segment range
         #Loop through CDS
         for cds in features:
             protstart = int(cds.location.start) #Get CDS start
             end = int(cds.location.end) #Get CDS end
             strand = cds.strand #Get strand
             color = 'skyblue'
-            if 'transposase' not in cds.qualifiers['product'][0] and 'gene' in cds.qualifiers.keys():
-                gene_name = cds.qualifiers['gene'][0]
-                if '_partial' in gene_name:
-                    gene_name = gene_name.replace('_partial', '*')
-                elif 'gene' in cds.qualifiers.keys() and '_I' in gene_name:
-                    gene_name = gene_name.replace('_I', '')
-                else:
-                    gene_name = ''
-                if gene_name == 'GS1' or gene_name[:-1] == 'GS1':
-                    color = '#ff7575'
-                elif gene_name == 'GS2' or gene_name[:-1] == 'GS2':
-                    color = '#ff75b6'
-                elif (gene_name == 'BRS' or gene_name[:-1] == 'BRS'):
-                    color = '#e875ff'
-                elif gene_name == 'GS2BRS':
-                    color = '#ff75ee'
-                elif gene_name  == 'S1':
-                    color = '#ffb875'
-                elif gene_name == 'S2a' or gene_name == 'S2b':
-                    color = '#ffd775'
-                elif gene_name == 'S3':
-                    color = '#fff575'
-            elif 'transposase' in cds.qualifiers['product'][0]:
+            if 'gene' in cds.qualifiers.keys():
+                gene_name = cds.qualifiers['gene'][0] #When possible, add four-letter gene name
+                if 'transposase' not in cds.qualifiers['product'][0]: #If the gene is not a transposon
+                    gene_name = cds.qualifiers['gene'][0]
+                    if '_partial' in gene_name: #Add stars to indicate that genes are incomplete
+                        gene_name = gene_name.replace('_partial', '*')
+                    elif 'gene' in cds.qualifiers.keys() and '_I' in gene_name: #Retrieve the set of genes that were manually annotated in the GenBanks
+                        gene_name = gene_name.replace('_I', '')
+                    for key in color_dict.keys(): #Use a different color for wach type of GH gene
+                        if gene_name == key or gene_name[:-1] == key:
+                            color = color_dict[key]
+                else: #If the gene is a transposon
+                    color = 'black' #Color it in black
+                    
+            elif 'transposase' in cds.qualifiers['product'][0]: #Color transposases in black
                 gene_name = ''
                 color = 'black'
             else:
                 gene_name = ''
-            gene_n = gene_name.replace('*', '')
-            if gene_n in ['branch', 'branch2', 'GTB', 'wzyC', 'GH39', 'rfbX', 'ydiL']:
-                gene_name = ''
-            elif gene_name == 'yifK2':
-                gene_name = 'yifK'
+
             #This sets the CDS arrows and adds gene names
-            track.add_feature(protstart, end, strand, label = gene_name, 
-                              labelcolor = 'black', labelsize = 12, facecolor = color, 
-                              linewidth = 1, labelrotation = 45, labelvpos = 'top', 
-                              labelhpos = 'center', labelha = 'left', arrow_shaft_ratio = 1.0)
-            track.set_sublabel(position = 'bottom-left')
+            if segment.start <= protstart <= end <= segment.end: #If the CDS is inside the segment to be plotted
+                segment.add_feature(protstart, end, strand, label = gene_name,#Add CDS to segment (position and label)
+                                  text_kws = dict(color = 'black', size = 15, #Set label properties (color and size)
+                                                  rotation = 45, hpos = 'left', #Set label properties (position and rotation)
+                                                  vpos = 'top', ymargin = 0),
+                                  plotstyle = 'bigarrow', fc = color, lw = 1, #Set arrow style, CDS color, CDS line width and arrow vs shaft ratio
+                                  arrow_shaft_ratio = 1.0)
             gene_name = ''
             
     # =============================================================================
@@ -313,17 +315,15 @@ for GH_type in GH_types:
         file_df = file_df[:-1] #Remove the last row, that also contains a comment
         file_df.columns = header_list #Add column names
         strain2 = file_df.values[0, 0]
-        strain2_name = list(acc.keys())[i] #list(acc.keys())[list(acc.values()).index(strain2)]
+        strain2_name = list(acc.keys())[i]
         file_df = file_df.replace(strain2, strain2_name)
         strain1 = file_df.values[0, 1]
-        strain1_name = list(acc.keys())[i-1] #list(acc.keys())[list(acc.values()).index(strain1)]
+        strain1_name = list(acc.keys())[i-1]
         file_df = file_df.replace(strain1, strain1_name)
-        # print(f'{i}:\t{strain1_name}\t{strain2_name}')
-        query_pos =  (int(pos[phylo_order[i + 1]][0] - lengths[phylo_order[i + 1]][1]), int(pos[phylo_order[i + 1]][1] - lengths[phylo_order[i + 1]][1]))
-        subject_pos = (int(pos[phylo_order[i]][0] - lengths[phylo_order[i]][1]), int(pos[phylo_order[i]][1] - lengths[phylo_order[i]][1]))
+        query_pos =  (int(pos[phylo_order[i + 1]][0]), int(pos[phylo_order[i + 1]][1]))
+        subject_pos = (int(pos[phylo_order[i]][0]), int(pos[phylo_order[i]][1]))
     
         tab_df = file_df.copy()
-        # print(f'{i}:\t{tab_df.iloc[0]["query acc.ver"]}\t{tab_df.iloc[0]["subject acc.ver"]}')
         
         tab_df['query acc.ver'] =  tab_df['query acc.ver'].apply(lambda x: get_strain_name(str(x))) #tab_df['query acc.ver'].str.replace('LDX55', 'IBH001').replace('K2W83_RS', 'DSM_').replace('APS55_RS', 'MP2_').replace('FHON', 'Fhon')
         tab_df['subject acc.ver'] = tab_df['subject acc.ver'].apply(lambda x: get_strain_name(str(x))) #tab_df['subject acc.ver'].str.replace('LDX55', 'IBH001').replace('K2W83_RS', 'DSM_').replace('APS55_RS', 'MP2_').replace('FHON', 'Fhon')
@@ -341,50 +341,84 @@ for GH_type in GH_types:
         
         for j in range(len(tab_df)):
             #We define the links
-            link1 = (tab_df.loc[j, 'query acc.ver'], tab_df.loc[j, 'q. start'] + lengths[next_locus][1], tab_df.loc[j, 'q. end'] + lengths[next_locus][1])
-            link2 = (tab_df.loc[j, 'subject acc.ver'], tab_df.loc[j, 's. start'] + lengths[locus][1], tab_df.loc[j, 's. end'] + lengths[locus][1])
+            link1 = (tab_df.loc[j, 'query acc.ver'], tab_df.loc[j, 'q. start'], tab_df.loc[j, 'q. end'])
+            link2 = (tab_df.loc[j, 'subject acc.ver'], tab_df.loc[j, 's. start'], tab_df.loc[j, 's. end'])
             #We define the percentage of identity (important to color the links)
             identity = tab_df.loc[j, '% identity']
             #Here we add the links to the gv plot
             gv.add_link(link1, link2, v = identity, vmin = 50, curve = True)
             gv.tick_style = 'bar' #This adds the scale of the plot (20 Kb)
             
-    fig = gv.plotfig(400) #We plot the figure
-    gv.set_colorbar(fig, vmin = 50, bar_height = 0.05) #We add a color bar to interpret the colors
-    handles = [
-        Line2D([], [], marker='', color='black', label='Tracks', ms=20, ls='none'),
-        Line2D([], [], marker='>', color='skyblue', label='CDS', ms=20, ls='none'),
-        Line2D([], [], marker='>', color='#ff7575', label='GS1 glycosyl hydrolase', ms=20, ls='none'),
-        Line2D([], [], marker='>', color='#ff75b6', label='GS2 glycosyl hydrolase', ms=20, ls='none'),
-        Line2D([], [], marker='>', color='#ff75ee', label='Double-GH70 domain', ms=20, ls='none'),
-        Line2D([], [], marker='>', color='#e875ff', label='BRS glycosyl hydrolase', ms=20, ls='none'),
-        Line2D([], [], marker='>', color='#ffb875', label='S1 glycosyl hydrolase', ms=20, ls='none'),
-        Line2D([], [], marker='>', color='#ffd775', label='S2 glycosyl hydrolase', ms=20, ls='none'),
-        Line2D([], [], marker='>', color='#fff575', label='S3 glycosyl hydrolase', ms=20, ls='none'),
-        Line2D([], [], marker='>', color='black', label='Transposase', ms=20, ls='none'),
-        Line2D([], [], marker='', color='#E5BA60', label='', ms=20, ls='none'),
-        Line2D([], [], marker='', color='black', label='Matches', ms=20, ls='none'),
-        Line2D([], [], marker='s', color='grey', label='Forward match', ms=20, ls='none'),
-        Line2D([], [], marker='s', color='red', label='Reverse match', ms=20, ls='none'),
-        Line2D([], [], marker='', color='#E5BA60', label='', ms=20, ls='none'),
-        Line2D([], [], marker='', color='#E5BA60', label='Strain names', lw=2, ms=20, ls='none'),
-        Line2D([], [], marker='X', color='#1E55F6', label='Phylogroup A', ms=15, ls='none'),
-        Line2D([], [], marker='X', color='#00AEFF', label='Phylogroup B', ms=15, ls='none'),
-        Line2D([], [], marker='X', color='#A027FF', label='Phylogroup C', ms=15, ls='none'),
-        Line2D([], [], marker='X', color='#FF74D6', label='Phylogroup E', ms=15, ls='none'),
-        Line2D([], [], marker='X', color='#E5BA60', label='Phylogroup F', ms=15, ls='none'),
-        Line2D([], [], marker='X', color='black', label='Not in Dyrhage et al. (2022)', ms=15, ls='none')
-    ]
+    gv.set_colorbar(['grey', 'red'], vmin = 50, bar_height = 0.05, 
+                    tick_labelsize = 16) #We add a color bar to interpret the colors
+    fig = gv.plotfig(dpi = 400) #We plot the figure
     
-    legend = fig.legend(handles=handles, bbox_to_anchor=(1.05, 1))
-    legend.get_texts()[0].set_fontweight('bold')
-    legend.get_texts()[11].set_fontweight('bold')
-    legend.get_texts()[15].set_fontweight('bold')
-    
-    # Set the fontsize for legend labels
-    legend_fontsize = 20
-    for text in legend.get_texts():
-        text.set_fontsize(legend_fontsize)
+    if GH_type != 'GS1':
+        handles = [
+            Line2D([], [], marker='', color='black', label='Tracks', ms=20, ls='none'),
+            Line2D([], [], marker='>', color='skyblue', label='CDS', ms=20, ls='none'),
+            Line2D([], [], marker='>', color='#e875ff', label='BRS glycosyl hydrolase', ms=20, ls='none'),
+            Line2D([], [], marker='>', color='#ff75ee', label='Double-GH70 domain', ms=20, ls='none'),
+            Line2D([], [], marker='>', color='#ff75b6', label='GS2 glycosyl hydrolase', ms=20, ls='none'),
+            Line2D([], [], marker='>', color='#ff7575', label='GS1 glycosyl hydrolase', ms=20, ls='none'),
+            Line2D([], [], marker='>', color='#FFA175', label='S1 glycosyl hydrolase', ms=20, ls='none'),
+            Line2D([], [], marker='>', color='black', label='Transposase', ms=20, ls='none'),
+            Line2D([], [], marker='', color='#E5BA60', label='', ms=20, ls='none'),
+            Line2D([], [], marker='', color='black', label='Matches', ms=20, ls='none'),
+            Line2D([], [], marker='s', color='grey', label='Forward match', ms=20, ls='none'),
+            Line2D([], [], marker='s', color='red', label='Reverse match', ms=20, ls='none'),
+            Line2D([], [], marker='', color='#E5BA60', label='', ms=20, ls='none'),
+            Line2D([], [], marker='', color='#E5BA60', label='Strain names', lw=2, ms=20, ls='none'),
+            Line2D([], [], marker="X", color='#0072B2', label="Phylogroup A", ms=15, ls="none"),
+            Line2D([], [], marker="X", color='#33B18F', label="Phylogroup B", ms=15, ls="none"),
+            Line2D([], [], marker="X", color='#D55E00', label="Phylogroup C", ms=15, ls="none"),
+            Line2D([], [], marker="X", color='#FF74D6', label="Phylogroup E", ms=15, ls="none"),
+            Line2D([], [], marker="X", color='#771853', label="Phylogroup F", ms=15, ls="none"),
+            Line2D([], [], marker='X', color='black', label='Not in Dyrhage et al. (2022)', ms=15, ls='none')
+        ]
+    else:
+        handles = [
+            Line2D([], [], marker='', color='black', label='Tracks', ms=20, ls='none'),
+            Line2D([], [], marker='>', color='skyblue', label='CDS', ms=20, ls='none'),
+            Line2D([], [], marker='>', color='#e875ff', label='BRS glycosyl hydrolase', ms=20, ls='none'),
+            Line2D([], [], marker='>', color='#ff75ee', label='Double-GH70 domain', ms=20, ls='none'),
+            Line2D([], [], marker='>', color='#ff75b6', label='GS2 glycosyl hydrolase', ms=20, ls='none'),
+            Line2D([], [], marker='>', color='#ff7594', label='GS3 glycosyl hydrolase', ms=20, ls='none'),
+            Line2D([], [], marker='>', color='#ff7575', label='GS1 glycosyl hydrolase', ms=20, ls='none'),
+            Line2D([], [], marker='>', color='#FFA175', label='S1 glycosyl hydrolase', ms=20, ls='none'),
+            Line2D([], [], marker='>', color='#ffb875', label='S2a glycosyl hydrolase', ms=20, ls='none'),
+            Line2D([], [], marker='>', color='#ffd775', label='S2b glycosyl hydrolase', ms=20, ls='none'),
+            Line2D([], [], marker='>', color='#fff575', label='S3 glycosyl hydrolase', ms=20, ls='none'),
+            Line2D([], [], marker='>', color='black', label='Transposase', ms=20, ls='none'),
+            Line2D([], [], marker='', color='#E5BA60', label='', ms=20, ls='none'),
+            Line2D([], [], marker='', color='black', label='Matches', ms=20, ls='none'),
+            Line2D([], [], marker='s', color='grey', label='Forward match', ms=20, ls='none'),
+            Line2D([], [], marker='s', color='red', label='Reverse match', ms=20, ls='none'),
+            Line2D([], [], marker='', color='#E5BA60', label='', ms=20, ls='none'),
+            Line2D([], [], marker='', color='#E5BA60', label='Strain names', lw=2, ms=20, ls='none'),
+            Line2D([], [], marker="X", color='#0072B2', label="Phylogroup A", ms=15, ls="none"),
+            Line2D([], [], marker="X", color='#33B18F', label="Phylogroup B", ms=15, ls="none"),
+            Line2D([], [], marker="X", color='#D55E00', label="Phylogroup C", ms=15, ls="none"),
+            Line2D([], [], marker="X", color='#FF74D6', label="Phylogroup E", ms=15, ls="none"),
+            Line2D([], [], marker="X", color='#771853', label="Phylogroup F", ms=15, ls="none"),
+            Line2D([], [], marker='X', color='black', label='Not in Dyrhage et al. (2022)', ms=15, ls='none')
+        ]
         
-    fig.savefig(f'{outfig}/{GH_type}_blast.svg')
-    fig.savefig(f'{outfig}/{GH_type}_blast.png')
+    #Create the legend
+    legend = fig.legend(handles=handles, bbox_to_anchor=(1.35, 1), 
+                        frameon = False, fontsize = 16)
+    
+    #Take into account that GS1 includes more gene types in the legend
+    if GH_type != 'GS1':
+        legend.get_texts()[0].set_fontweight('bold')
+        legend.get_texts()[9].set_fontweight('bold')
+        legend.get_texts()[13].set_fontweight('bold')
+    else:
+        legend.get_texts()[0].set_fontweight('bold')
+        legend.get_texts()[13].set_fontweight('bold')
+        legend.get_texts()[17].set_fontweight('bold')
+        
+    fig.savefig(f'{outfig}/{GH_type}_blast.svg') #Save figure to SVG
+    fig.savefig(f'{outfig}/{GH_type}_blast.png') #Save figure to PNG
+    fig.savefig(f'{outfig}/{GH_type}_blast.tiff') #Save figure to TIFF
+    gv.savefig_html(f'{outfig}/{GH_type}_blast.html') #Save figure to HTML
