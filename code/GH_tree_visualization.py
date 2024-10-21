@@ -36,14 +36,15 @@ class protein_obj:
         return f'<{len(self.domains)}-domain protein of length {self.length} at locus {self.locus}>'
 
 types = {'SP': ['Signal peptide', 'DI', '#00197F'], 'GH70': ['Glycosyl hydrolase family 70', 'EL', '#FF006F'], 'DUF': ['DUF5776', 'TR', '#7D8292'],'GH32': ['Glycosyl hydrolase family 32', 'EL', '#EE3900'], 'CB': ['Choline-binding', 'RE', '#FFAB00'], 'CWB': ['Cell-wall binding', 'RE', '#FF8900']}
-indir = '../../interproscan'
+workdir = os.path.expanduser('~') + '/GH_project'
+indir = f'{workdir}/interproscan'
 
 GH_types = ['GH70', 'GH32']
 for GH_type in GH_types:
-    ref_tree = f'../data/fasta/{GH_type}/trees/{GH_type}_functional_repset.mafft.faa.treefile'
+    ref_tree = f'{workdir}/data/fasta/{GH_type}/trees/{GH_type}_functional_repset.mafft.faa.treefile'
     if GH_type == 'GH32':
         ref_tree = ref_tree.replace('functional_', '')
-    dom_out = f'../data/tabs/{GH_type}_domain_file.txt'
+    dom_out = f'{workdir}/data/tabs/{GH_type}_domain_file.txt'
     
     proteins = {}
     locus_list = []

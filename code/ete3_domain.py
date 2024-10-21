@@ -10,55 +10,58 @@ to be manually updated.
 @author: Marina Mota Merlo
 """
 
-from ete3 import Tree, TreeStyle, NodeStyle, SeqMotifFace, TextFace
-import re
+from ete3 import Tree, TreeStyle, NodeStyle, SeqMotifFace, TextFace, RectFace, CircleFace
+import re, os
 
-leaf_color = {'A0901': '#A027FF', 'A1001': '#E5BA60', 'A1002': '#A027FF',
-              'A1003': '#1E55F6', 'A1201': '#A027FF', 'A1202': '#00AEFF',
-              'A1401': '#00AEFF', 'A1404': '#FF74D6', 'A1802': '#A027FF',
-              'A1803': '#A027FF', 'A1805': '#00AEFF', 'A2001': '#A027FF',
-              'A2002': '#E5BA60', 'A2003': '#E5BA60', 'A2101': '#00AEFF',
-              'A2102': '#A027FF', 'A2103': '#1E55F6', 'G0101': '#1E55F6', 
-              'G0102': '#1E55F6', 'G0103': '#1E55F6', 'G0401': '#1E55F6',
-              'G0402': '#1E55F6', 'G0403': '#00AEFF', 'G0404': '#1E55F6',
-              'G0405': '#1E55F6', 'G0406': '#00AEFF', 'G0407': '#1E55F6',
-              'G0408': '#1E55F6', 'G0410': '#1E55F6', 'G0412': '#1E55F6',
-              'G0414': '#1E55F6', 'G0415': '#1E55F6', 'G0417': '#1E55F6',
-              'G0420': '#00AEFF', 'G0601': '#1E55F6', 'G0602': '#1E55F6',
-              'G0702': '#1E55F6', 'G0801': '#1E55F6', 'G0802': '#1E55F6',
-              'G0803': '#1E55F6', 'G0804': '#1E55F6', 'FHON2': '#1E55F6',
-              'H1B104J': '#1E55F6', 'H1B105A': '#1E55F6', 'H1B302M': '#1E55F6',
-              'H2B105J': '#A027FF', 'H3B101A': '#1E55F6', 'H3B101J': '#1E55F6',
-              'H3B101X': '#A027FF', 'H3B102A': '#1E55F6', 'H3B102X': '#A027FF',
-              'H3B103J': '#1E55F6', 'H3B103X': '#A027FF','H3B103M': '#1E55F6', 
-              'H3B104J': '#1E55F6', 'H3B104X': '#1E55F6', 'H3B107A': '#1E55F6', 
-              'H3B109M': '#1E55F6', 'H3B110M': '#1E55F6', 'H3B111A': '#1E55F6', 
-              'H3B111M': '#1E55F6', 'H3B202M': '#A027FF', 'H3B202X': '#1E55F6', 
-              'H3B203J': '#1E55F6', 'H3B203M': '#A027FF', 'H3B204J': '#1E55F6', 
-              'H3B204M': '#A027FF', 'H3B205J': '#1E55F6', 'H3B206M': '#A027FF', 
-              'H3B207X': '#1E55F6', 'H3B208X': '#1E55F6', 'H3B209X': '#00AEFF', 
-              'H4B101A': '#A027FF', 'H4B102A': '#A027FF', 'H4B103J': '#A027FF', 
-              'H4B104A': '#A027FF', 'H4B111J': '#A027FF', 'H4B114J': '#A027FF', 
-              'H4B116J': '#A027FF', 'H4B202J': '#1E55F6', 'H4B203M': '#A027FF', 
-              'H4B204J': '#1E55F6', 'H4B205J': '#1E55F6', 'H4B206J': '#A027FF', 
-              'H4B210M': '#A027FF', 'H4B211M': '#1E55F6', 'H4B303J': '#A027FF', 
-              'H4B402J': '#1E55F6', 'H4B403J': '#A027FF', 'H4B404J': '#A027FF', 
-              'H4B405J': '#A027FF', 'H4B406M': '#A027FF', 'H4B410M': '#A027FF', 
-              'H4B411M': '#A027FF', 'H4B412M': '#1E55F6', 'H4B501J': '#1E55F6', 
-              'H4B502X': '#1E55F6', 'H4B503X': '#1E55F6', 'H4B504J': '#00AEFF',
-              'H4B505J': '#00AEFF', 'H4B507J': '#1E55F6', 'H4B507X': '#1E55F6', 
-              'H4B508X': '#1E55F6', 'MP2': '#00AEFF', 'IBH001': 'black', 
-              'DSM': 'black'}
+leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
+              'A1003': '#0072B2', 'A1201': '#D55E00', 'A1202': '#33B18F',
+              'A1401': '#33B18F', 'A1404': '#FF74D6', 'A1802': '#D55E00',
+              'A1803': '#D55E00', 'A1805': '#33B18F', 'A2001': '#D55E00',
+              'A2002': '#771853', 'A2003': '#771853', 'A2101': '#33B18F',
+              'A2102': '#D55E00', 'A2103': '#0072B2', 'G0101': '#0072B2', 
+              'G0102': '#0072B2', 'G0103': '#0072B2', 'G0401': '#0072B2',
+              'G0402': '#0072B2', 'G0403': '#33B18F', 'G0404': '#0072B2',
+              'G0405': '#0072B2', 'G0406': '#33B18F', 'G0407': '#0072B2',
+              'G0408': '#0072B2', 'G0410': '#0072B2', 'G0412': '#0072B2',
+              'G0414': '#0072B2', 'G0415': '#0072B2', 'G0417': '#0072B2',
+              'G0420': '#33B18F', 'G0601': '#0072B2', 'G0602': '#0072B2',
+              'G0702': '#0072B2', 'G0801': '#0072B2', 'G0802': '#0072B2',
+              'G0803': '#0072B2', 'G0804': '#0072B2', 'Fhon2': '#0072B2',
+              'H1B104J': '#0072B2', 'H1B105A': '#0072B2', 'H1B302M': '#0072B2',
+              'H2B105J': '#D55E00', 'H3B101A': '#0072B2', 'H3B101J': '#0072B2',
+              'H3B101X': '#D55E00', 'H3B102A': '#0072B2', 'H3B102X': '#D55E00',
+              'H3B103J': '#0072B2', 'H3B103X': '#D55E00', 'H3B103M': '#0072B2', 
+              'H3B104J': '#0072B2', 'H3B104X': '#0072B2', 'H3B107A': '#0072B2', 
+              'H3B109M': '#0072B2', 'H3B110M': '#0072B2', 'H3B111A': '#0072B2', 
+              'H3B111M': '#0072B2', 'H3B202M': '#D55E00', 'H3B202X': '#0072B2', 
+              'H3B203J': '#0072B2', 'H3B203M': '#D55E00', 'H3B204J': '#0072B2', 
+              'H3B204M': '#D55E00', 'H3B205J': '#0072B2', 'H3B206M': '#D55E00', 
+              'H3B207X': '#0072B2', 'H3B208X': '#0072B2', 'H3B209X': '#33B18F', 
+              'H4B101A': '#D55E00', 'H4B102A': '#D55E00', 'H4B103J': '#D55E00', 
+              'H4B104A': '#D55E00', 'H4B111J': '#D55E00', 'H4B114J': '#D55E00', 
+              'H4B116J': '#D55E00', 'H4B202J': '#0072B2', 'H4B203M': '#D55E00', 
+              'H4B204J': '#0072B2', 'H4B205J': '#0072B2', 'H4B206J': '#D55E00', 
+              'H4B210M': '#D55E00', 'H4B211M': '#0072B2', 'H4B303J': '#D55E00', 
+              'H4B402J': '#0072B2', 'H4B403J': '#D55E00', 'H4B404J': '#D55E00', 
+              'H4B405J': '#D55E00', 'H4B406M': '#D55E00', 'H4B410M': '#D55E00', 
+              'H4B411M': '#D55E00', 'H4B412M': '#0072B2', 'H4B501J': '#0072B2', 
+              'H4B502X': '#0072B2', 'H4B503X': '#0072B2', 'H4B504J': '#33B18F',
+              'H4B505J': '#33B18F', 'H4B507J': '#0072B2', 'H4B507X': '#0072B2', 
+              'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': 'black', 
+              'DSMZ12361': 'black'}
+
 
 shapes = {'RE': '[]', 'EL': '()', 'DI': '<>', 'TR': 'o'}
 
 GH_types = ['GH32', 'GH70']
 
+workdir = os.path.expanduser('~') + '/GH_project'
+
 for GH_type in GH_types:
 
-    domain_file = f'../data/tabs/{GH_type}_domain_file.txt'
-    treefile = f'../data/fasta/{GH_type}/trees/{GH_type}_functional_outgroup_repset.mafft.faa.treefile' #'data/fasta/GH32/trees/GH32_repset.mafft.faa.treefile' #'data/fasta/GH70/trees/GH70_functional_outgroup_repset.mafft.faa.treefile'
-    outfile = f'../plots/trees/{GH_type}_domains.png' #'figure2.png' #'figure1.png'
+    domain_file = f'{workdir}/data/tabs/{GH_type}_domain_file.txt'
+    treefile = f'{workdir}/data/fasta/{GH_type}/trees/{GH_type}_functional_outgroup_repset.mafft.faa.treefile' #'data/fasta/GH32/trees/GH32_repset.mafft.faa.treefile' #'data/fasta/GH70/trees/GH70_functional_outgroup_repset.mafft.faa.treefile'
+    outfile = f'{workdir}/plots/trees/{GH_type}_domains.png'
     
     if GH_type == 'GH70':
         t = Tree(treefile, format = 0)
@@ -130,25 +133,29 @@ for GH_type in GH_types:
                     if domain[i+4] == 'SP' or domain[i+4] == 'CWB':
                         size = 15
                         if domain[i+4] == 'CWB':
-                            domain[i+3] = '#585858'
+                            domain[i+3] = '#cce769'
                             domain[i+4] = 'CB'
                         else:
                             domain[i] = 'TR'
-                            domain[i+3] = '#00AAFF'
+                            domain[i+3] = '#9975ff'
                     else:
                         size = 24
                         if domain[i+4] == 'GH70':
-                            domain[i+3] = '#FF0000' # #C70039 (all) #B600FF (NCB), #D930BD (BRS), #FF0000 (GS1), #FF009B (GS2), #7000FF (short)
+                            domain[i+3] = '#FF7575' #'#FFB875' # #C70039 (all) #B600FF (NCB), #D930BD (BRS), #FF0000 (GS1), #FF009B (GS2), #7000FF (short)
+                        elif domain[i+4] == 'GH32':
+                            domain[i+3] = '#FFB875'
                         elif domain[i+4] == 'CB':
                             domain[i+4] = 'GB'
-                            domain[i+3] = '#222222'
+                            domain[i+3] = '#75cd5e'
+                        elif domain[i+4] == 'DUF':
+                            domain[i+3] = '#e875ff'
                     if domain[i+4] != 'GH70' and domain[i+4] != 'GH32':
                         dom_dict[domain[0]].append([int(domain[i+1]), int(domain[i+2]), 
                         shapes[domain[i]], None, 40, domain[i+3], domain[i+3], None])
                     else:
                         dom_dict[domain[0]].append([int(domain[i+1]), int(domain[i+2]), 
                         shapes[domain[i]], None, 40, domain[i+3], domain[i+3],
-                        f'arial|{size}|white|{domain[i+4]}'])
+                        f'arial|{size}|black|{domain[i+4]}'])
                         
                     i += 5
                     
@@ -158,8 +165,14 @@ for GH_type in GH_types:
         #     nleaf = leaf.name[:-2]
         # else:
         nleaf = leaf.name
+        if leaf.name[-2] == '_':
+            gene_name = leaf.name[:-2]
+        else: gene_name = ''
         if nleaf in seq_dict.keys():
             seqFace = SeqMotifFace(seq_dict[nleaf], motifs = dom_dict[nleaf], seq_format = 'line', scale_factor = 0.8)
+            (t & f'{leaf.name}').add_face(seqFace, 0, 'aligned')
+        elif gene_name in seq_dict.keys():
+            seqFace = SeqMotifFace(seq_dict[gene_name], motifs = dom_dict[gene_name], seq_format = 'line', scale_factor = 0.8)
             (t & f'{leaf.name}').add_face(seqFace, 0, 'aligned')
         if 'LDX55' in nleaf:
             nleaf = nleaf.replace('LDX55', 'IBH001')
@@ -177,6 +190,22 @@ for GH_type in GH_types:
         
         
     #print(t)
+    ts.layout_fn = lambda node: True
+    ts.legend.add_face(RectFace(60, 40, fgcolor = None, bgcolor = '#75cd5e', label = ''), column=0)
+    ts.legend.add_face(TextFace(' Glucan-binding domain', fsize = 32), column = 1)
+    if GH_type == 'GH70':
+        ts.legend.add_face(RectFace(60, 40, fgcolor = None, bgcolor = '#cce769', label = ''), column=0)
+        ts.legend.add_face(TextFace(' Cell wall-binding domain', fsize = 32), column = 1)
+        ts.legend.add_face(RectFace(60, 40, fgcolor = None, bgcolor = '#FF7575', label = ''), column=0)
+        ts.legend.add_face(TextFace(' GH70 domain', fsize = 32), column = 1)
+        ts.legend.add_face(CircleFace(30, color = '#e875ff', label = ''), column=0)
+        ts.legend.add_face(TextFace(' DUF5776', fsize = 32), column = 1)
+    elif GH_type == 'GH32':
+        ts.legend.add_face(RectFace(60, 40, fgcolor = None, bgcolor = '#FFB875', label = ''), column=0)
+        ts.legend.add_face(TextFace(' GH32 domain', fsize = 32), column = 1)
+    ts.legend.add_face(CircleFace(30, color = '#9975ff', label = ''), column=0)
+    ts.legend.add_face(TextFace(' Signal peptide', fsize = 32), column = 1)
+    ts.legend_position = 2
     t.ladderize(1)
     # t.convert_to_ultrametric()
     t.render(outfile, tree_style = ts)
