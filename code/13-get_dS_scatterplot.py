@@ -119,7 +119,7 @@ for i in range(len(GH_types)): #Loop through gene types
     #Plot values >0 and <0 separately, set number of bars in the histogram
     axs[1, i].hist(sorted(sub_dif), bins = int((max(sub_dif)-min(sub_dif))//0.0625))
     axs[1, i].hist(sorted(over_dif), bins = int((max(over_dif)-min(over_dif))//0.0625))
-    #Add a vertival line over 0
+    #Add a vertival line over 0´
     axs[1, i].axvline(0, color = 'black')
     
 plt.savefig(outplot, bbox_inches = 'tight') #Save the image as PNG
