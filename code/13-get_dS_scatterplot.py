@@ -8,6 +8,7 @@ Created on Tue Oct 22 14:24:33 2024
 import os
 import pandas as pd
 from matplotlib import pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
 
 # =============================================================================
 # 1. Define the paths to input and output files
@@ -49,6 +50,7 @@ if not os.path.exists(os.path.dirname(outplot)): #If the output directory doesn'
     os.makedirs(os.path.dirname(outplot)) #Create the output directory
 
 core_ds_dict = {} #Create a dictionary to store the pairwise core dS values
+core_dn_dict = {}
 with open(core_ds) as core: #Open the file with core dS values
     df = pd.read_csv(core, sep = '\t') #Load the file as a dataframe
     for index, row in df.iterrows(): #Loop through the rows in the dataframe
@@ -56,15 +58,22 @@ with open(core_ds) as core: #Open the file with core dS values
         strain2 = replace_strain_name(row['strain2']) #Retrieve the second strain in the pair
         if not strain1[0] == 'L' and not strain2[0] == 'L': #Skip strains with names starting with L
             core_ds_dict[tuple(sorted((strain1, strain2)))] = row['mean_dS'] #Use sorted strain names as key and core pairwise dS as value
+            core_dn_dict[tuple(sorted((strain1, strain2)))] = row['mean_dN'] #Use sorted strain names as key and core pairwise dN as value
         
 #Create a plot with two rows and six columns, where all columns in a row share y axis
-fig, axs = plt.subplots(2, 6, constrained_layout = False, sharey = 'row', 
-                        figsize=(18, 6))
+fig, axs = plt.subplots(5, 6, constrained_layout = False, sharey = 'row', 
+                        figsize=(18, 15))
 
-axs[0, 0].set_ylabel('Core ${d_S}$') #Add a title to the y axis of the first scatter plot
-axs[1, 0].set_ylabel('Count') #Add a title to the y axis of the first histogram 
-fig.text(0.5, 0.47, 'Pairwise ${d_S}$', ha = 'center') #Add title of the x axis of all scatter plots
-fig.text(0.5, 0.03, 'Difference to core ${d_S}$', ha = 'center') #Add title of the x axis of all histograms
+axs[0, 0].set_ylabel('Core ${d_S}$') #Add a title to the y axis of the dS scatter plot
+axs[1, 0].set_ylabel('Count') #Add a title to the y axis of the dS histogram
+axs[2, 0].set_ylabel('Core ${d_N}$') #Add a title to the y axis of the dN scatter plot
+axs[3, 0].set_ylabel('Count') #Add a title to the y axis of the dN histogram
+axs[4, 0].set_ylabel('${d_N}$') #Add a title to the y axis of the dN vs dS scatter plot
+fig.text(0.5, 0.727, 'Pairwise ${d_S}$', ha = 'center') #Add title of the x axis of dS scatter plots
+fig.text(0.5, 0.566, 'Difference to core ${d_S}$', ha = 'center') #Add title of the x axis of the dS histograms
+fig.text(0.5, 0.405, 'Pairwise ${d_N}$', ha = 'center') #Add title of the x axis of dN scatter plots
+fig.text(0.5, 0.245, 'Difference to core ${d_N}$', ha = 'center') #Add title of the x axis of the dN histograms
+fig.text(0.5, 0.08, '${d_S}$', ha = 'center') #Add title of the dN vs dS scatterplot
 plt.subplots_adjust(hspace = 0.3, wspace = 0.2) #Adjust horizontal and vertical padding between plots
 
 for i in range(len(GH_types)): #Loop through gene types
@@ -75,17 +84,24 @@ for i in range(len(GH_types)): #Loop through gene types
     x_list = [] #Create a list to store pairwise dS values
     y_list = [] #Create a list to store core pairwise dS values
     dif_list = [] #Create a list to store the difference between x and y
+    dN_list = []
+    dN_y_list = []
+    dN_dif_list = []
     
     with open(f'{pairwise_ds}/{GH}/dNdS.tsv') as gene: #Open file with dS values
         df2 = pd.read_csv(gene, sep = '\t') #Load file as a dataframe
         for index2, row2 in df2.iterrows(): #Loop through rows in the dataframe
             label = f'{row2["locus1"]}-{row2["locus2"]}' #Create a label with the locus tags in the comparison
             x = row2['dS'] #Get pairwise dS
+            dN = row2['dN']
             strain1 = replace_strain_name(row2['locus1']) #Get the name of the first strain
             strain2 = replace_strain_name(row2['locus2']) #Get the name of the second strain
             if strain1 == strain2: #If both genes are in the same strain
                 y = 0 #Core dS is 0
-            else: y = core_ds_dict[tuple(sorted((strain1, strain2)))] #Otherwise, store core dS in a dictionary
+                dN_y = 0
+            else: 
+                y = core_ds_dict[tuple(sorted((strain1, strain2)))] #Otherwise, store core dS in a dictionary
+                dN_y = core_dn_dict[tuple(sorted((strain1, strain2)))]
             
             #Set all dS values above 1.5 to 1.5
             if x > 1.5:
@@ -97,30 +113,63 @@ for i in range(len(GH_types)): #Loop through gene types
             x_list.append(x) #Add x to the pairwise dS list
             y_list.append(y) #Add y to the core pairwise dS list
             dif_list.append(x - y) #Store the difference between x and y in a list
+            dN_list.append(dN)
+            dN_y_list.append(dN_y)
+            dN_dif_list.append(dN - dN_y) #Store the difference between dN (pairwise) and dN (core) in a list
             
     #Retrieve values < core dS and values > core dS separately
     subx = [x_list[j] for j in range(len(y_list)) if x_list[j] <= y_list[j]]
     suby = [y_list[j] for j in range(len(y_list)) if x_list[j] <= y_list[j]]
     overx = [x_list[j] for j in range(len(y_list)) if x_list[j] > y_list[j]]
     overy = [y_list[j] for j in range(len(y_list)) if x_list[j] > y_list[j]]
+    
+    sub_dN = [dN_list[j] for j in range(len(dN_y_list)) if dN_list[j] <= dN_y_list[j]]
+    sub_dN_y = [dN_y_list[j] for j in range(len(dN_y_list)) if dN_list[j] <= dN_y_list[j]]
+    over_dN = [dN_list[j] for j in range(len(dN_y_list)) if dN_list[j] > dN_y_list[j]]
+    over_dN_y = [dN_y_list[j] for j in range(len(dN_y_list)) if dN_list[j] > dN_y_list[j]]
     #Plot values < core dS and values > core dS separately to color them differently
     axs[0, i].scatter(subx, suby)
     axs[0, i].scatter(overx, overy)
+    
+    axs[2, i].scatter(sub_dN, sub_dN_y)
+    axs[2, i].scatter(over_dN, over_dN_y)
+    
+    axs[4, i].scatter(x_list, dN_list)
     #Set the x axes limits of the scatter plots to 0-1.5 and the y axis lower limit to 0
     axs[0, i].set_xlim(0, 1.5)
     axs[0, i].set_ylim(0)
+    
+    axs[4, i].set_xlim(0, 1.5)
+    axs[4, i].set_ylim(0)
+    
+    if GH not in ['GS1', 'GS2', 'BRS']:
+        axs[2, i].set_xlim(0, 0.075)
+        axs[2, i].xaxis.set_major_formatter(FormatStrFormatter('%g'))
+    else: axs[2, i].set_xlim(0, 0.25)
+    axs[2, i].set_ylim(0)
+    
     #Plot a diagonal line where y = x
     axs[0, i].plot([0, 1], [0, 1], color = 'black')
+    axs[2, i].plot([0, 1], [0, 1], color = 'black')
+    # axs[4, i].plot([0, 1], [0, 1], color = 'black')
     #Plot the differences between x and y separately depending of if they are > 0
     sub_dif = [dif for dif in dif_list if dif <= 0]
     over_dif = [dif for dif in dif_list if dif > 0]
+    
+    sub_dN_dif = [dif for dif in dN_dif_list if dif <= 0]
+    over_dN_dif = [dif for dif in dN_dif_list if dif > 0]
+    
     #Set the limit of the x axis of the histogram plots
-    axs[1, i].set_xlim(-0.5, 1.5)
+    axs[1, i].set_xlim(-0.3, 1.5)
+    axs[3, i].set_xlim(-0.01, 0.24)
     #Plot values >0 and <0 separately, set number of bars in the histogram
     axs[1, i].hist(sorted(sub_dif), bins = int((max(sub_dif)-min(sub_dif))//0.0625))
     axs[1, i].hist(sorted(over_dif), bins = int((max(over_dif)-min(over_dif))//0.0625))
+    axs[3, i].hist(sorted(sub_dN_dif), bins = 1)
+    axs[3, i].hist(sorted(over_dN_dif), bins = int(((max(over_dN_dif)-min(over_dN_dif))*8)//0.0625))
     #Add a vertical line over 0
     axs[1, i].axvline(0, color = 'black')
+    axs[3, i].axvline(0, color = 'black')
     
 plt.savefig(outplot, bbox_inches = 'tight') #Save the image as PNG
 plt.savefig(outplot.replace('.png', '.tiff'), bbox_inches = 'tight') #Save the image as TIFF
