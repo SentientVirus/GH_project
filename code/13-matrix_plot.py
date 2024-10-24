@@ -7,55 +7,64 @@ This is a plot to create matrices for genes GS1-2, BRS and NGB, where
 the dS pairwise values are plotted on the top half and the dN pairwise
 values are plotted on the bottom half.
 
-@author: Marina Mota Merlo
+@author: Marina Mota-Merlo
 """
 
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
 import matplotlib as mpl
 from matplotlib.transforms import ScaledTranslation
 
-workdir = os.path.expanduser('~') + '/GH_project'
-outdir = f'{workdir}/plots/heatmaps'
-genes = ['GS1', 'GS2', 'BRS', 'NGB']
-outplot = f'{outdir}/GH70_dNdS_matrix.svg'
+# =============================================================================
+# 1. Set the name of input and output files and define input variables
+# =============================================================================
+workdir = os.path.expanduser('~') + '/GH_project' #Project directory
+outdir = f'{workdir}/plots/heatmaps' #Directory to save the outputs
+outplot = f'{outdir}/GH70_dNdS_matrix.svg' #Path to save output file
 
-gene_no = {'GS1':  33, 'GS2': 14, 'BRS': 17, 'NGB': 27}
+gene_no = {'GS1':  33, 'GS2': 14, 'BRS': 17, 'NGB': 27} #Number of pairs pergene
 
-    
-vmin = 0
-vmax = 1.5
-replace_str = {'K2W83_RS': 'DSM_', 'APS55_RS': 'MP2_', 'LDX55_': 'IBH001_'}
+vmin = 0 #Minimum dN or dS
+vmax = 1.5 #Maximum (saturated) dN or dS
+fig_width = 34 #Width of the output figure
+fig_height = 30 #Height of the output figure
 
-if not os.path.exists(outdir):
+replace_str = {'K2W83_RS': 'DSM_', 'APS55_RS': 'MP2_', 'LDX55_': 'IBH001_'} #Dictionary to edit the locus tags
+
+# =============================================================================
+# 2. Create output directory, output figure and colorbar
+# =============================================================================
+if not os.path.exists(outdir): #Create the output directory if it doesn't exist
     os.makedirs(outdir)
 
-fig_width = 34
-fig_height = 30
-
+# Create output figure (five plots, where the last is 14 times narrower)
 fig, ax = plt.subplot_mosaic([['A', 'B', ''], ['C', 'D', '']], 
                              figsize=(fig_width, fig_height),
                              gridspec_kw={'width_ratios': [14, 14, 1]})
 
-plt.style.use('seaborn-pastel')
-plt.subplots_adjust(hspace = 0.4, wspace = 0.1)
+plt.style.use('seaborn-pastel') #Add style to plot
+plt.subplots_adjust(hspace = 0.4, wspace = 0.1) #Adjust space between subplots
 
-cmap = mpl.cm.magma
-norm = mpl.colors.Normalize(vmin = 0, vmax = 1.5)
+cmap = mpl.cm.magma #Get the colormap for the plot
+norm = mpl.colors.Normalize(vmin = vmin, vmax = vmax) #Set the maximum and minimum of the colorbar 
 
-colbar = fig.colorbar(mpl.cm.ScalarMappable(norm = norm, cmap = cmap),
-             cax = ax[''], orientation = 'vertical', 
-             ticks = np.arange(0, 1.60, 0.1))
-ax[''].yaxis.set_label_position('left')
+colbar = fig.colorbar(mpl.cm.ScalarMappable(norm = norm, cmap = cmap), #Create a color bar
+             cax = ax[''], orientation = 'vertical', #Assign it to the narrow ax and make it vertical
+             ticks = np.arange(0, 1.60, 0.1)) #Add ticks at 0.1 intervals until 1.5
 
-colbar.ax.tick_params(labelsize = 24)
-colbar.set_label(r'$d_N$ and $d_S$ value', size = 24)
-colbar.outline.set_linewidth(4)
+ax[''].yaxis.set_label_position('left') #Write the label of the colorbar to the left
 
-for gene in genes:
+colbar.ax.tick_params(labelsize = 24) #Set the fontsize of the colorbar ticks
+colbar.set_label(r'$d_N$ and $d_S$ value', size = 24) #Set the fontsize of the colorbar label
+colbar.outline.set_linewidth(4) #Set the width of the colorbar borders
+
+# =============================================================================
+# 3. Loop through gene types and generate a heatmap for each type
+# =============================================================================
+for gene in gene_no.keys():
+    #Assign one of the suplots to each gene type
     if gene == 'GS1':
         axn = 'A'
     elif gene == 'GS2':
@@ -63,49 +72,48 @@ for gene in genes:
     elif gene == 'BRS':
         axn = 'C'
     else: axn = 'D'
-    file = f'{workdir}/results/{gene}/dNdS.tsv'
-    with open(file) as comp_file:
-        file_info = pd.read_csv(comp_file, sep = '\t')
-        file_info = file_info.sort_values(by=['locus1', 'locus2'])
-        file_info = file_info.reset_index()
-        for key in replace_str.keys():
-            file_info[['locus1', 'locus2']] = file_info[['locus1', 'locus2']].apply(lambda col: col.str.replace(key, replace_str[key]))
-        dim = gene_no[gene]
-        plot_matrix = np.full((dim, dim), np.nan)
-        # Extract unique loci
-        unique_loci = np.unique(file_info[['locus1', 'locus2']].values)
-        
-    for index, row in file_info.iterrows():
-        n = np.where(unique_loci == row['locus1'])[0] #[0]
-        m = np.where(unique_loci == row['locus2'])[0] #[0]
-        plot_matrix[n, m] = row['dS']
-        plot_matrix[m, n] = row['dN']
-    plot_matrix[plot_matrix > 1.5] = 1.5
     
-    num_rows, num_cols = plot_matrix.shape
-    for axis in ['top','bottom','left','right']:
-        ax[axn].spines[axis].set_linewidth(4)
+    file = f'{workdir}/results/{gene}/dNdS.tsv' #Get the file with input dN and dS values
+    with open(file) as comp_file: #Open input file
+        file_info = pd.read_csv(comp_file, sep = '\t') #Read the file as a dataframe
+        file_info = file_info.sort_values(by=['locus1', 'locus2']) #Sort pairs by locus tags
+        file_info = file_info.reset_index() #Reset the index of the dataframe to match the order
+        for key in replace_str.keys(): #Loop through text to replace in the locus tags
+            file_info[['locus1', 'locus2']] = file_info[['locus1', 'locus2']].apply(lambda col: col.str.replace(key, replace_str[key])) #Replace said text
+        dim = gene_no[gene] #Get the dimennsions of the substitution matrix
+        plot_matrix = np.full((dim, dim), np.nan) #Create an empty matrix of those dimensions
+        unique_loci = np.unique(file_info[['locus1', 'locus2']].values) #Extract unique loci from the input data
+        
+    for index, row in file_info.iterrows(): #Loop through the dictionary
+        n = np.where(unique_loci == row['locus1'])[0] #Find in which position of the matrix the first locus tag is
+        m = np.where(unique_loci == row['locus2'])[0] #Find the position in the matrix of the second locus tag
+        plot_matrix[n, m] = row['dS'] #Assign the dS value to the right pair
+        plot_matrix[m, n] = row['dN'] #Assign the dN value to the right pair
+    plot_matrix[plot_matrix > vmax] = vmax #If the value > 1.5, convert it to 1.5
+    
+    for axis in ['top','bottom','left','right']: #Loop through the four sides of the figure frame
+        ax[axn].spines[axis].set_linewidth(4) #Include the width of the border
 
-    ax[axn].imshow(plot_matrix, vmin=vmin, vmax=vmax, cmap='magma')
+    ax[axn].imshow(plot_matrix, vmin=vmin, vmax=vmax, cmap='magma') #Plot the data as a heatmap
 
-    ax[axn].set_xticks(np.arange(len(unique_loci)))
-    ax[axn].set_xticklabels(unique_loci, rotation = 90, fontsize = 16)
-    ax[axn].set_yticks(np.arange(len(unique_loci)))
-    ax[axn].set_yticklabels(unique_loci, fontsize = 16)
-    ax[axn].set_xlabel('Locus tag 1', size = 24)
-    ax[axn].set_ylabel('Locus tag 2', size = 24)
-    ax[axn].set_title(gene, size = 30)
-    ax[axn].text(0, 1.1, axn, transform=(
-           ax[axn].transAxes + ScaledTranslation(-20/72, +7/72, fig.dpi_scale_trans)),
-       fontsize = 36, va = 'top', ha = 'left', bbox = dict(facecolor='none', 
-                                                           edgecolor='black', 
-                                                           pad = 20))
+    ax[axn].set_xticks(np.arange(len(unique_loci))) #Use the unique loci as x axis ticks
+    ax[axn].set_xticklabels(unique_loci, rotation = 90, fontsize = 16) #Format the ticks (vertical position, increase font size)
+    ax[axn].set_yticks(np.arange(len(unique_loci))) #Use the unique loci as y axis ticks
+    ax[axn].set_yticklabels(unique_loci, fontsize = 16) #Format the ticks (increase font size)
+    ax[axn].set_xlabel('Locus tag 1', size = 24) #Set title of x axis
+    ax[axn].set_ylabel('Locus tag 2', size = 24) #Set title of y axis
+    ax[axn].set_title(gene, size = 30) #Set title of plot (gene type)
+    ax[axn].text(0, 1.1, axn, transform=( #Add plot letter (A-D)
+           ax[axn].transAxes + ScaledTranslation(-20/72, +7/72, fig.dpi_scale_trans)), #Convert position to figure scale
+       fontsize = 36, va = 'top', ha = 'left', bbox = dict(facecolor='none',  #Plot to the top left of the plot, add box around
+                                                           edgecolor='black', #Add a black edfe to the box
+                                                           pad = 20)) #Padding between the text and the box
 
-
-    mpl.rcParams.update(mpl.rcParamsDefault)
-
-plt.savefig(outplot, format = 'svg')
-plt.savefig(outplot.replace('svg', 'png'), format = 'png')
-plt.savefig(outplot.replace('svg', 'tiff'), format = 'tiff')
-plt.show()
+# =============================================================================
+# 4. Save the figure in different formats
+# =============================================================================
+plt.savefig(outplot, format = 'svg') #Save the figure to SVG format
+plt.savefig(outplot.replace('svg', 'png'), format = 'png') #Save the figure to PNG format
+plt.savefig(outplot.replace('svg', 'tiff'), format = 'tiff') #Save the figure to TIFF format
+plt.show() #Show the figure
         
