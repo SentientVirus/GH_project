@@ -17,8 +17,10 @@ workdir = os.path.expanduser('~') + '/GH_project' #Working directory
 pairwise_ds = f'{workdir}/results' #Directory with input pairwise dS data
 core_ds = f'{pairwise_ds}/core_genes/core_pairwise_metrics.tsv' #File with core dS data
 outplot = f'{workdir}/plots/scatter/GH_types_scatterplot.png' #Output file
+coredir = f'{workdir}/results/core_genes/GH_repr'
 
 GH_types = ['GS1', 'GS2', 'BRS', 'NGB', 'S2a', 'S3'] #Gene types to be plotted
+to_exclude = ['A1001', 'A1003', 'A1404']
 
 def replace_strain_name(locus_tag):
     """Function to change locus tags that do not correspond with strain names
@@ -61,19 +63,21 @@ with open(core_ds) as core: #Open the file with core dS values
             core_dn_dict[tuple(sorted((strain1, strain2)))] = row['mean_dN'] #Use sorted strain names as key and core pairwise dN as value
         
 #Create a plot with two rows and six columns, where all columns in a row share y axis
-fig, axs = plt.subplots(5, 6, constrained_layout = False, sharey = 'row', 
-                        figsize=(18, 15))
+fig, axs = plt.subplots(6, 6, constrained_layout = False, sharey = 'row', 
+                        figsize=(18, 18))
 
 axs[0, 0].set_ylabel('Core ${d_S}$') #Add a title to the y axis of the dS scatter plot
 axs[1, 0].set_ylabel('Count') #Add a title to the y axis of the dS histogram
 axs[2, 0].set_ylabel('Core ${d_N}$') #Add a title to the y axis of the dN scatter plot
 axs[3, 0].set_ylabel('Count') #Add a title to the y axis of the dN histogram
 axs[4, 0].set_ylabel('${d_N}$') #Add a title to the y axis of the dN vs dS scatter plot
-fig.text(0.5, 0.727, 'Pairwise ${d_S}$', ha = 'center') #Add title of the x axis of dS scatter plots
-fig.text(0.5, 0.566, 'Difference to core ${d_S}$', ha = 'center') #Add title of the x axis of the dS histograms
-fig.text(0.5, 0.405, 'Pairwise ${d_N}$', ha = 'center') #Add title of the x axis of dN scatter plots
-fig.text(0.5, 0.245, 'Difference to core ${d_N}$', ha = 'center') #Add title of the x axis of the dN histograms
-fig.text(0.5, 0.08, '${d_S}$', ha = 'center') #Add title of the dN vs dS scatterplot
+axs[5, 0].set_ylabel('Core ${d_N}$') #Add a title to the y axis of the dN vs dS scatter plot
+fig.text(0.5, 0.752, 'Pairwise ${d_S}$', ha = 'center') #Add title of the x axis of dS scatter plots
+fig.text(0.5, 0.62, 'Difference to core ${d_S}$', ha = 'center') #Add title of the x axis of the dS histograms
+fig.text(0.5, 0.49, 'Pairwise ${d_N}$', ha = 'center') #Add title of the x axis of dN scatter plots
+fig.text(0.5, 0.355, 'Difference to core ${d_N}$', ha = 'center') #Add title of the x axis of the dN histograms
+fig.text(0.5, 0.22, '${d_S}$', ha = 'center') #Add title of the dN vs dS scatterplot
+fig.text(0.5, 0.085, 'Core ${d_S}$', ha = 'center') #Add title of the core dN vs dS scatterplot
 plt.subplots_adjust(hspace = 0.3, wspace = 0.2) #Adjust horizontal and vertical padding between plots
 
 for i in range(len(GH_types)): #Loop through gene types
@@ -127,6 +131,12 @@ for i in range(len(GH_types)): #Loop through gene types
     sub_dN_y = [dN_y_list[j] for j in range(len(dN_y_list)) if dN_list[j] <= dN_y_list[j]]
     over_dN = [dN_list[j] for j in range(len(dN_y_list)) if dN_list[j] > dN_y_list[j]]
     over_dN_y = [dN_y_list[j] for j in range(len(dN_y_list)) if dN_list[j] > dN_y_list[j]]
+    
+    sub_x = [x_list[j] for j in range(len(dN_list)) if x_list[j] <= dN_list[j]]
+    sub_y = [dN_list[j] for j in range(len(dN_list)) if x_list[j] <= dN_list[j]]
+    over_x = [x_list[j] for j in range(len(dN_list)) if x_list[j] > dN_list[j]]
+    over_y = [dN_list[j] for j in range(len(dN_list)) if x_list[j] > dN_list[j]]
+    
     #Plot values < core dS and values > core dS separately to color them differently
     axs[0, i].scatter(subx, suby)
     axs[0, i].scatter(overx, overy)
@@ -134,13 +144,14 @@ for i in range(len(GH_types)): #Loop through gene types
     axs[2, i].scatter(sub_dN, sub_dN_y)
     axs[2, i].scatter(over_dN, over_dN_y)
     
-    axs[4, i].scatter(x_list, dN_list)
+    axs[4, i].scatter(sub_x, sub_y)
+    axs[4, i].scatter(over_x, over_y)
     #Set the x axes limits of the scatter plots to 0-1.5 and the y axis lower limit to 0
     axs[0, i].set_xlim(0, 1.5)
     axs[0, i].set_ylim(0)
     
     axs[4, i].set_xlim(0, 1.5)
-    axs[4, i].set_ylim(0)
+    axs[4, i].set_ylim(0, 0.45)
     
     if GH not in ['GS1', 'GS2', 'BRS']:
         axs[2, i].set_xlim(0, 0.075)
@@ -151,6 +162,7 @@ for i in range(len(GH_types)): #Loop through gene types
     #Plot a diagonal line where y = x
     axs[0, i].plot([0, 1], [0, 1], color = 'black')
     axs[2, i].plot([0, 1], [0, 1], color = 'black')
+    axs[4, i].plot([0, 1], [0, 1], color = 'black')
     # axs[4, i].plot([0, 1], [0, 1], color = 'black')
     #Plot the differences between x and y separately depending of if they are > 0
     sub_dif = [dif for dif in dif_list if dif <= 0]
@@ -170,6 +182,30 @@ for i in range(len(GH_types)): #Loop through gene types
     #Add a vertical line over 0
     axs[1, i].axvline(0, color = 'black')
     axs[3, i].axvline(0, color = 'black')
+    
+    dS_corelist = []
+    dN_corelist = []
+    for file in os.listdir(coredir):
+        if file.startswith(GH) and file.endswith('dNdS.tsv'):
+            df = pd.read_csv(f'{coredir}/{file}', sep = '\t')
+            for index, row in df.iterrows():
+                check = any(strain in row['locus1'] for strain in to_exclude) or any(strain in row['locus2'] for strain in to_exclude)
+                if not check:
+                    dS = min(1.5, row['dS'])
+                    dN = min(1.5, row['dN'])
+                    dS_corelist.append(dS)
+                    dN_corelist.append(dN)
+                    
+    axs[5, i].set_xlim(0, 1.5)
+    axs[5, i].set_ylim(0, 0.45)
+    
+    sub_xcore = [dS_corelist[j] for j in range(len(dN_corelist)) if dS_corelist[j] <= dN_corelist[j]]
+    sub_ycore = [dN_corelist[j] for j in range(len(dN_corelist)) if dS_corelist[j] <= dN_corelist[j]]
+    over_xcore = [dS_corelist[j] for j in range(len(dN_corelist)) if dS_corelist[j] > dN_corelist[j]]
+    over_ycore = [dN_corelist[j] for j in range(len(dN_corelist)) if dS_corelist[j] > dN_corelist[j]]
+    axs[5, i].scatter(sub_xcore, sub_ycore)
+    axs[5, i].scatter(over_xcore, over_ycore)
+    axs[5, i].plot([0, 1], [0, 1], color = 'black')
     
 plt.savefig(outplot, bbox_inches = 'tight') #Save the image as PNG
 plt.savefig(outplot.replace('.png', '.tiff'), bbox_inches = 'tight') #Save the image as TIFF
