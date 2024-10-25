@@ -9,6 +9,8 @@ import os
 import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
+import matplotlib.patches as mpatches
+from matplotlib.lines import Line2D
 
 # =============================================================================
 # 1. Define the paths to input and output files
@@ -20,7 +22,7 @@ outplot = f'{workdir}/plots/scatter/GH_types_scatterplot.png' #Output file
 coredir = f'{workdir}/results/core_genes/GH_repr'
 
 GH_types = ['GS1', 'GS2', 'BRS', 'NGB', 'S2a', 'S3'] #Gene types to be plotted
-to_exclude = ['A1001', 'A1003', 'A1404']
+to_exclude = ['A1001', 'A1404']
 
 def replace_strain_name(locus_tag):
     """Function to change locus tags that do not correspond with strain names
@@ -66,23 +68,23 @@ with open(core_ds) as core: #Open the file with core dS values
 fig, axs = plt.subplots(6, 6, constrained_layout = False, sharey = 'row', 
                         figsize=(18, 18))
 
-axs[0, 0].set_ylabel('Core ${d_S}$') #Add a title to the y axis of the dS scatter plot
-axs[1, 0].set_ylabel('Count') #Add a title to the y axis of the dS histogram
-axs[2, 0].set_ylabel('Core ${d_N}$') #Add a title to the y axis of the dN scatter plot
-axs[3, 0].set_ylabel('Count') #Add a title to the y axis of the dN histogram
-axs[4, 0].set_ylabel('${d_N}$') #Add a title to the y axis of the dN vs dS scatter plot
+axs[0, 0].set_ylabel('Core ${d_S}$', fontsize = 12) #Add a title to the y axis of the dS scatter plot
+axs[1, 0].set_ylabel('Count', fontsize = 12) #Add a title to the y axis of the dS histogram
+axs[2, 0].set_ylabel('Core ${d_N}$', fontsize = 12) #Add a title to the y axis of the dN scatter plot
+axs[3, 0].set_ylabel('Count', fontsize = 12) #Add a title to the y axis of the dN histogram
+axs[4, 0].set_ylabel('${d_N}$', fontsize = 12) #Add a title to the y axis of the dN vs dS scatter plot
 axs[5, 0].set_ylabel('Core ${d_N}$') #Add a title to the y axis of the dN vs dS scatter plot
-fig.text(0.5, 0.752, 'Pairwise ${d_S}$', ha = 'center') #Add title of the x axis of dS scatter plots
-fig.text(0.5, 0.62, 'Difference to core ${d_S}$', ha = 'center') #Add title of the x axis of the dS histograms
-fig.text(0.5, 0.49, 'Pairwise ${d_N}$', ha = 'center') #Add title of the x axis of dN scatter plots
-fig.text(0.5, 0.355, 'Difference to core ${d_N}$', ha = 'center') #Add title of the x axis of the dN histograms
-fig.text(0.5, 0.22, '${d_S}$', ha = 'center') #Add title of the dN vs dS scatterplot
-fig.text(0.5, 0.085, 'Core ${d_S}$', ha = 'center') #Add title of the core dN vs dS scatterplot
+fig.text(0.5, 0.754, 'Pairwise ${d_S}$', ha = 'center', fontsize = 12) #Add title of the x axis of dS scatter plots
+fig.text(0.5, 0.623, 'Difference to core ${d_S}$', ha = 'center', fontsize = 12) #Add title of the x axis of the dS histograms
+fig.text(0.5, 0.4925, 'Pairwise ${d_N}$', ha = 'center', fontsize = 12) #Add title of the x axis of dN scatter plots
+fig.text(0.5, 0.362, 'Difference to core ${d_N}$', ha = 'center', fontsize = 12) #Add title of the x axis of the dN histograms
+fig.text(0.5, 0.231, '${d_S}$', ha = 'center', fontsize = 12) #Add title of the dN vs dS scatterplot
+fig.text(0.5, 0.1, 'Core ${d_S}$', ha = 'center', fontsize = 12) #Add title of the core dN vs dS scatterplot
 plt.subplots_adjust(hspace = 0.3, wspace = 0.2) #Adjust horizontal and vertical padding between plots
 
 for i in range(len(GH_types)): #Loop through gene types
     GH = GH_types[i] #Name of the gene type
-    axs[0, i].set_title(GH) #Use the name of the gene as the title of the scatter plots
+    axs[0, i].set_title(GH, fontsize = 14) #Use the name of the gene as the title of the scatter plots
     
     label_list = [] #Create an empty list to store labels (not used)
     x_list = [] #Create a list to store pairwise dS values
@@ -138,14 +140,21 @@ for i in range(len(GH_types)): #Loop through gene types
     over_y = [dN_list[j] for j in range(len(dN_list)) if x_list[j] > dN_list[j]]
     
     #Plot values < core dS and values > core dS separately to color them differently
-    axs[0, i].scatter(subx, suby)
-    axs[0, i].scatter(overx, overy)
+    axs[0, i].scatter(subx, suby, alpha = 0.2)
+    axs[0, i].scatter(overx, overy, alpha = 0.2)
+    axs[0, i].xaxis.set_major_formatter(FormatStrFormatter('%g'))
     
-    axs[2, i].scatter(sub_dN, sub_dN_y)
-    axs[2, i].scatter(over_dN, over_dN_y)
+    axs[1, i].xaxis.set_major_formatter(FormatStrFormatter('%g'))
     
-    axs[4, i].scatter(sub_x, sub_y)
-    axs[4, i].scatter(over_x, over_y)
+    axs[2, i].scatter(sub_dN, sub_dN_y, alpha = 0.2)
+    axs[2, i].scatter(over_dN, over_dN_y, alpha = 0.2)
+    axs[2, i].xaxis.set_major_formatter(FormatStrFormatter('%g'))
+    
+    axs[3, i].xaxis.set_major_formatter(FormatStrFormatter('%g'))
+    
+    axs[4, i].scatter(sub_x, sub_y, alpha = 0.2)
+    axs[4, i].scatter(over_x, over_y, alpha = 0.2)
+    axs[4, i].xaxis.set_major_formatter(FormatStrFormatter('%g'))
     #Set the x axes limits of the scatter plots to 0-1.5 and the y axis lower limit to 0
     axs[0, i].set_xlim(0, 1.5)
     axs[0, i].set_ylim(0)
@@ -155,7 +164,7 @@ for i in range(len(GH_types)): #Loop through gene types
     
     if GH not in ['GS1', 'GS2', 'BRS']:
         axs[2, i].set_xlim(0, 0.075)
-        axs[2, i].xaxis.set_major_formatter(FormatStrFormatter('%g'))
+        # axs[2, i].xaxis.set_major_formatter(FormatStrFormatter('%g'))
     else: axs[2, i].set_xlim(0, 0.25)
     axs[2, i].set_ylim(0)
     
@@ -190,7 +199,7 @@ for i in range(len(GH_types)): #Loop through gene types
             df = pd.read_csv(f'{coredir}/{file}', sep = '\t')
             for index, row in df.iterrows():
                 check = any(strain in row['locus1'] for strain in to_exclude) or any(strain in row['locus2'] for strain in to_exclude)
-                if not check:
+                if not check and not (GH == 'GS1' and ('A1003' in row['locus1'] or 'A1003' in row['locus2'])):
                     dS = min(1.5, row['dS'])
                     dN = min(1.5, row['dN'])
                     dS_corelist.append(dS)
@@ -203,9 +212,37 @@ for i in range(len(GH_types)): #Loop through gene types
     sub_ycore = [dN_corelist[j] for j in range(len(dN_corelist)) if dS_corelist[j] <= dN_corelist[j]]
     over_xcore = [dS_corelist[j] for j in range(len(dN_corelist)) if dS_corelist[j] > dN_corelist[j]]
     over_ycore = [dN_corelist[j] for j in range(len(dN_corelist)) if dS_corelist[j] > dN_corelist[j]]
-    axs[5, i].scatter(sub_xcore, sub_ycore)
-    axs[5, i].scatter(over_xcore, over_ycore)
+    axs[5, i].scatter(sub_xcore, sub_ycore, alpha = 0.2, s = 15)
+    axs[5, i].scatter(over_xcore, over_ycore, alpha = 0.2, s = 15)
     axs[5, i].plot([0, 1], [0, 1], color = 'black')
+    axs[5, i].xaxis.set_major_formatter(FormatStrFormatter('%g'))
+    
+# Add global legend
+sub_patch = Line2D([0], [0], marker = 'o', color = '#1F77B4', label = 'x ≤ y',
+                        markerfacecolor = '#1F77B4', markersize = 10, 
+                        alpha = 0.2, linewidth = 0)
+
+rect_sub = mpatches.Patch(color = '#1F77B4', label = 'x - y ≤ 0', ec = 'white', 
+                          lw = 0)
+
+over_patch = Line2D([0], [0], marker = 'o', color = '#FF7F0E', label = 'x > y',
+                        markerfacecolor = '#FF7F0E', markersize = 10, 
+                        alpha = 0.2, linewidth = 0, markeredgewidth = 2)
+
+line_patch = Line2D([0, 1], [1, 0], marker = '|', color = 'black', label = 'x = y',
+                    markersize = 10, alpha = 1, linewidth = 0)
+
+rect_over = mpatches.Patch(color = '#FF7F0E', label = 'x - y > 0', ec = 'white', 
+                           lw = 0)
+
+patches = [sub_patch, over_patch, line_patch, rect_sub, rect_over]
+
+legend = plt.legend(handles = patches,  handlelength = 0.6, handleheight = 1.5, 
+                    title = 'Legend', loc = 'upper right', framealpha = 0, 
+                    frameon = False, fontsize = 12, bbox_to_anchor = (1.7, 7.71))
+           
+plt.setp(legend.get_title(),fontsize = 14)
+legend._legend_box.align = 'left'
     
 plt.savefig(outplot, bbox_inches = 'tight') #Save the image as PNG
 plt.savefig(outplot.replace('.png', '.tiff'), bbox_inches = 'tight') #Save the image as TIFF
