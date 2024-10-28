@@ -47,7 +47,7 @@ def GH_type_dict(GH_file, GH_dict):
             GH_dict[record.id] = GH_type
             
 GH_dict = {}
-GH70_subtypes = ['GS1', 'GS2', 'BRS', 'NGB', 'short']
+GH70_subtypes = ['GS1', 'GS2', 'GS3', 'GS4', 'BRS', 'NGB', 'short']
 GH32_subtypes = ['S1', 'S2a', 'S2b', 'S3']
 for subtype in GH70_subtypes:
     file = f'{pathname}/GH70/{subtype}_all.faa'
