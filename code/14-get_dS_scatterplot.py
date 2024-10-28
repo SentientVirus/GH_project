@@ -142,25 +142,22 @@ for i in range(len(GH_types)): #Loop through gene types
     #Plot values < core dS and values > core dS separately to color them differently
     axs[0, i].scatter(subx, suby, alpha = 0.2)
     axs[0, i].scatter(overx, overy, alpha = 0.2)
-    axs[0, i].xaxis.set_major_formatter(FormatStrFormatter('%g'))
-    
-    axs[1, i].xaxis.set_major_formatter(FormatStrFormatter('%g'))
     
     axs[2, i].scatter(sub_dN, sub_dN_y, alpha = 0.2)
     axs[2, i].scatter(over_dN, over_dN_y, alpha = 0.2)
-    axs[2, i].xaxis.set_major_formatter(FormatStrFormatter('%g'))
-    
-    axs[3, i].xaxis.set_major_formatter(FormatStrFormatter('%g'))
     
     axs[4, i].scatter(sub_x, sub_y, alpha = 0.2)
     axs[4, i].scatter(over_x, over_y, alpha = 0.2)
-    axs[4, i].xaxis.set_major_formatter(FormatStrFormatter('%g'))
+
     #Set the x axes limits of the scatter plots to 0-1.5 and the y axis lower limit to 0
     axs[0, i].set_xlim(0, 1.5)
     axs[0, i].set_ylim(0)
     
     axs[4, i].set_xlim(0, 1.5)
     axs[4, i].set_ylim(0, 0.45)
+    
+    axs[5, i].set_xlim(0, 1.5)
+    axs[5, i].set_ylim(0, 0.45)
     
     if GH not in ['GS1', 'GS2', 'BRS']:
         axs[2, i].set_xlim(0, 0.075)
@@ -192,57 +189,73 @@ for i in range(len(GH_types)): #Loop through gene types
     axs[1, i].axvline(0, color = 'black')
     axs[3, i].axvline(0, color = 'black')
     
-    dS_corelist = []
-    dN_corelist = []
-    for file in os.listdir(coredir):
-        if file.startswith(GH) and file.endswith('dNdS.tsv'):
-            df = pd.read_csv(f'{coredir}/{file}', sep = '\t')
-            for index, row in df.iterrows():
-                check = any(strain in row['locus1'] for strain in to_exclude) or any(strain in row['locus2'] for strain in to_exclude)
-                if not check and not (GH == 'GS1' and ('A1003' in row['locus1'] or 'A1003' in row['locus2'])):
-                    dS = min(1.5, row['dS'])
-                    dN = min(1.5, row['dN'])
-                    dS_corelist.append(dS)
-                    dN_corelist.append(dN)
-                    
-    axs[5, i].set_xlim(0, 1.5)
-    axs[5, i].set_ylim(0, 0.45)
+    dS_corelist = [] #Create an empty list to store core dS values
+    dN_corelist = [] #Create an empty list to store core dN values
+    for file in os.listdir(coredir): #Loop through files in the input directory
+        if file.startswith(GH) and file.endswith('dNdS.tsv'): #If the file includes dN and dS calues
+            df = pd.read_csv(f'{coredir}/{file}', sep = '\t') #Read the file as a dataframe
+            for index, row in df.iterrows(): #Loop through the dataframe
+                check = any(strain in row['locus1'] for strain in to_exclude) or any(strain in row['locus2'] for strain in to_exclude) #Check that basal strains are not present
+                if not check and not (GH == 'GS1' and ('A1003' in row['locus1'] or 'A1003' in row['locus2'])): #Check that gene GS4 is not present
+                    dS = min(1.5, row['dS']) #Get dS (set maximum of 1.5)
+                    dN = min(1.5, row['dN']) #Get dN (set maximum of 1.5)
+                    dS_corelist.append(dS) #Append dS to list
+                    dN_corelist.append(dN) #Append dN to list
     
+    #As for the other plots, get x and y when x <= y or x > y
     sub_xcore = [dS_corelist[j] for j in range(len(dN_corelist)) if dS_corelist[j] <= dN_corelist[j]]
     sub_ycore = [dN_corelist[j] for j in range(len(dN_corelist)) if dS_corelist[j] <= dN_corelist[j]]
     over_xcore = [dS_corelist[j] for j in range(len(dN_corelist)) if dS_corelist[j] > dN_corelist[j]]
     over_ycore = [dN_corelist[j] for j in range(len(dN_corelist)) if dS_corelist[j] > dN_corelist[j]]
+    
+    #Make scatterplots of core dN vs core dS
     axs[5, i].scatter(sub_xcore, sub_ycore, alpha = 0.2, s = 15)
     axs[5, i].scatter(over_xcore, over_ycore, alpha = 0.2, s = 15)
-    axs[5, i].plot([0, 1], [0, 1], color = 'black')
-    axs[5, i].xaxis.set_major_formatter(FormatStrFormatter('%g'))
+    axs[5, i].plot([0, 1], [0, 1], color = 'black') #Add line where x = y
+    
+    [axs[k, i].xaxis.set_major_formatter(FormatStrFormatter('%g')) for k in range(0,6)] #Remove decimals to the left
     
 # Add global legend
+subtitle1 = Line2D([], [], marker = '', color = 'black', label = 'Scatter plots', 
+                   ms = 0, ls = 'none') #Title of the scatter plot legends
+
 sub_patch = Line2D([0], [0], marker = 'o', color = '#1F77B4', label = 'x ≤ y',
                         markerfacecolor = '#1F77B4', markersize = 10, 
-                        alpha = 0.2, linewidth = 0)
-
-rect_sub = mpatches.Patch(color = '#1F77B4', label = 'x - y ≤ 0', ec = 'white', 
-                          lw = 0)
+                        alpha = 0.2, linewidth = 0) #Circular marker in blue
 
 over_patch = Line2D([0], [0], marker = 'o', color = '#FF7F0E', label = 'x > y',
                         markerfacecolor = '#FF7F0E', markersize = 10, 
-                        alpha = 0.2, linewidth = 0, markeredgewidth = 2)
+                        alpha = 0.2, linewidth = 0) #Circular marker in orange
 
-line_patch = Line2D([0, 1], [1, 0], marker = '|', color = 'black', label = 'x = y',
-                    markersize = 10, alpha = 1, linewidth = 0)
+line_patch = Line2D([0, 1], [1, 0], marker = '$/$', color = 'black', 
+                    label = 'x = y', markersize = 10, alpha = 1, linewidth = 0) #Diagonal line marker
 
-rect_over = mpatches.Patch(color = '#FF7F0E', label = 'x - y > 0', ec = 'white', 
-                           lw = 0)
+subtitle2 = Line2D([], [], marker = '', color = 'black', label = 'Histograms', 
+                   ms = 20, ls = 'none') #Title of the histogram legends
 
-patches = [sub_patch, over_patch, line_patch, rect_sub, rect_over]
+rect_sub = mpatches.Patch(color = '#1F77B4', label = 'x ≤ 0', ec = 'white', 
+                          lw = 0) #Blue rectange patch
+
+rect_over = mpatches.Patch(color = '#FF7F0E', label = 'x > 0', ec = 'white', 
+                           lw = 0) #Orange rectangle patch
+
+line_hist = Line2D([0, 1], [1, 0], marker = '$|$', color = 'black', 
+                   label = 'x = 0', markersize = 10, alpha = 1, linewidth = 0) #Vertical line
+
+patches = [subtitle1, sub_patch, over_patch, line_patch, subtitle2, rect_sub, rect_over, line_hist] #List with all elements of the legend
 
 legend = plt.legend(handles = patches,  handlelength = 0.6, handleheight = 1.5, 
-                    title = 'Legend', loc = 'upper right', framealpha = 0, 
-                    frameon = False, fontsize = 12, bbox_to_anchor = (1.7, 7.71))
+                    loc = 'upper right', framealpha = 0, 
+                    frameon = False, fontsize = 12, bbox_to_anchor = (2, 7.71)) #Add legend to plot
            
-plt.setp(legend.get_title(),fontsize = 14)
-legend._legend_box.align = 'left'
+#Set legend headers to bold
+legend.get_texts()[0].set_fontweight('bold')
+legend.get_texts()[0].set_fontsize(14)
+legend.get_texts()[0].set_position((-20, 0))
+legend.get_texts()[4].set_fontweight('bold')
+legend.get_texts()[4].set_fontsize(14)
+legend.get_texts()[4].set_position((-20, 0))
+legend._legend_box.align = 'left' #Align legend text to the left
     
 plt.savefig(outplot, bbox_inches = 'tight') #Save the image as PNG
 plt.savefig(outplot.replace('.png', '.tiff'), bbox_inches = 'tight') #Save the image as TIFF
