@@ -17,6 +17,7 @@ glycosyl hydrolase genes under study.
 from Bio import GenBank
 import logging, traceback
 import os
+import csv
 
 # =============================================================================
 # Logging
@@ -71,6 +72,7 @@ class gbk_entry:
         self.strand = strand
         self.start = start
         self.end = end
+        self.length = end - start
         self.representative = representative
     def update_repr(self, rep_list):
         if self.strain in rep_list:
@@ -80,6 +82,10 @@ class gbk_entry:
         self.end = int(location[1])
         self.strand = strand
         self.accession = accession
+    def update_domains(self, domain_list):
+        self.SP = domain_list[0]
+        self.GH = domain_list[1]
+        self.GB = f'{domain_list[2]}+{domain_list[3]}'
     def __str__(self):
         return f'<{self.ID} ({self.gene_name}) at {(self.start, self.end)} ({self.strand}) with accession {self.accession}>'
 
@@ -131,6 +137,7 @@ representatives = snakemake.params.representatives
 
 gbk_dir = os.path.expanduser('~') + '/Akunkeei_files/gbff'
 workdir = os.path.expanduser('~') + '/GH_project'
+interpro_dir = f'{workdir}/interproscan'
 
 # =============================================================================
 # Make strain names consistent with locus tags
@@ -167,7 +174,7 @@ for GH_type in type_list:
     var = myVars[GH_type]
     out_file = f'{workdir}/tables/{GH_type}_suppl.tab'
     with open(out_file, 'w') as out_tab:
-        out_tab.write('Strain\tGene_name\tLocus_tag\tLocus_id\tProtein_id\tStrand\tStart\tEnd\tRepresentative\n')
+        out_tab.write('Strain\tGene_name\tLocus_tag\tLocus_id\tProtein_id\tStrand\tStart\tEnd\tLength\tSignal_peptide\tGH70_domains\tGB_domains\tRepresentative\n')
     for locus_tag in var:
         gbk = gbk_entry(GH_type, locus_tag)
         print(gbk.ID)
@@ -175,8 +182,36 @@ for GH_type in type_list:
         location, strand, acc = search_gbk(f'{gbk.strain}_genomic.gbff', gbk.ID, gbk_dir)
         gbk.update_pos_acc(location, strand, acc)
         print(f'Get info for gene {gbk.ID}')
+        domain_dict = {}
+        with open(f'{interpro_dir}/{gbk.strain}.tsv') as interpro:
+            annot = csv.reader(interpro, delimiter ='\t')
+            for row in annot:
+                to_compare = row[0].upper().replace('-', '')
+                if to_compare == 'MP2_13360':
+                    to_compare = 'APS55_RS03845'
+                elif to_compare == 'MP2_13350':
+                    to_compare = 'APS55_RS03850'
+                elif to_compare == 'MP2_14250':
+                    to_compare = 'APS55_RS03400'
+                if to_compare == gbk.ID:
+                    if to_compare not in domain_dict.keys():
+                        domain_dict[to_compare] = [0, 0, 0, 0]
+                    if row[3] == 'Pfam':
+                        if 'Choline-binding' in row[5]:
+                            domain_dict[to_compare][2] += 1
+                        elif 'cell wall binding' in row[5]:
+                            domain_dict[to_compare][3] += 1
+                        elif 'Glycosyl hydrolase family 70' in row[5]:
+                            domain_dict[to_compare][1] += 1
+                    elif row[3] == 'TIGRFAM' and 'signal peptide' in row[5]:
+                        domain_dict[to_compare][0] += 1
+                    elif row[3] == 'SMART' and 'glyco_32' in row[5]:
+                        domain_dict[to_compare][1] += 1
+        gbk.update_domains(domain_dict[gbk.ID])
+                        
         with open(out_file, 'a') as out_tab:
             out_tab.write(f'{gbk.strain}\t{gbk.gene_name}\t{gbk.locus_tag}\t')
             out_tab.write(f'{gbk.ID}\t{gbk.accession}\t{gbk.strand}\t{gbk.start}\t')
-            out_tab.write(f'{gbk.end}\t{gbk.representative}\n')
+            out_tab.write(f'{gbk.end}\t{gbk.length}\t{gbk.SP}\t{gbk.GH}\t')
+            out_tab.write(f'{gbk.GB}\t{gbk.representative}\n')
             
