@@ -246,7 +246,7 @@ patches = [subtitle1, sub_patch, over_patch, line_patch, subtitle2, rect_sub, re
 
 legend = plt.legend(handles = patches,  handlelength = 0.6, handleheight = 1.5, 
                     loc = 'upper right', framealpha = 0, 
-                    frameon = False, fontsize = 12, bbox_to_anchor = (2, 7.71)) #Add legend to plot
+                    frameon = False, fontsize = 12, bbox_to_anchor = (2.1, 7.71)) #Add legend to plot
            
 #Set legend headers to bold
 legend.get_texts()[0].set_fontweight('bold')
