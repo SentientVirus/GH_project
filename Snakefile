@@ -445,11 +445,13 @@ rule presence_absence_tab:
     output: 
         file = "plots/counts/GH70_32_counts.tab"
     input: 
-        tree = "phylogeny.txt",
+        tree = "trees/phylogeny.txt",
         GH70 = "data/fasta/GH70/GH70.faa"
     params:
         GS1 = config["GS1"],
         GS2 = config["GS2"],
+        GS3 = config["GS3"],
+        GS4 = config["GS4"],
         BRS = config["BRS"],
         NGB = config["NGB"],
         short = config["short"], 
@@ -460,7 +462,7 @@ rule presence_absence_tab:
     conda: "envs/biopython_env.yml"
     log: "logs/python/presence_absence.log"
     script:
-        "code/14-gtf_CB_per_strain.py"
+        "code/04.8-count_GHs.py"
 
 rule plot_delregion:
     output: "plots/trees/phylogeny.png"
@@ -489,6 +491,8 @@ rule suppl_tab:
     params:
         GS1 = config["GS1"],
         GS2 = config["GS2"],
+        GS3 = config["GS3"],
+        GS4 = config["GS4"],
         BRS = config["BRS"],
         NGB = config["NGB"],
         short = config["short"],
@@ -499,7 +503,7 @@ rule suppl_tab:
         representatives = config["representatives"]
     conda: "envs/biopython_env.yml"
     log: "logs/python/suppl_tab.log"
-    script: "code/16-get_suppl_tabs.py"
+    script: "code/05.7-get_suppl_tabs.py"
 
 ##Add the remaining scripts
 rule retrieve_interpro:
