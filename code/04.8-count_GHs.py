@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-This is a script that can calculate the number of GH70/32 and glucan-binding
-domains in a protein and create a table with this information.
+This is a script that counts how many instances of each gene are in each genome.
+Needed to make the CDS plot of the dynamic region in ete3.
 
 @author: Marina Mota Merlo
 """
@@ -34,13 +34,15 @@ sys.stdout = open(snakemake.log[0], 'a')
 # =============================================================================
 
 output_file = snakemake.output.file
-outdir =  'plots/counts'
+outdir = os.path.expanduser('~') + '/GH_project/plots/counts'
 if not os.path.exists(outdir):
     os.makedirs(outdir) #Create output directory if it doesn't exist
 
 #Read list of locus tags per type
 GS1 = snakemake.params.GS1
 GS2 = snakemake.params.GS2
+GS3 = snakemake.params.GS3
+GS4 = snakemake.params.GS4
 BRS = snakemake.params.BRS
 short = snakemake.params.short
 NGB = snakemake.params.NGB
@@ -62,7 +64,7 @@ with open(GH70) as lengths:
             value_dict[record.id] = 0.5
 
 
-all_GH70 = GS1 + GS2 + BRS + short + NGB
+all_GH70 = GS1 + GS2 + GS3 + GS4 + BRS + short + NGB
 
 all_GH32 = S1 + S2a + S2b + S3
 
@@ -77,19 +79,20 @@ with open(phylo) as phy: #Order by phylogeny
         strain = strain.strip()
         if len(strain) > 0:
             strain = strain.replace('-', '')
-            count[0] = sum(value_dict[s] for s in GS1 if (strain.upper() in s) or ('55_' in s and strain == 'MP2')) #Account for locus tags with a different format for MP2
-            count[1] = sum(value_dict[s] for s in GS2 if (strain.upper() in s) or ('55_' in s and strain == 'MP2'))
-            count[2] = sum(value_dict[s] for s in BRS if (strain.upper() in s) or ('55_' in s and strain == 'MP2'))
-            count[3] = sum([1 for s in NGB if (strain.upper() in s) or ('55_' in s and strain == 'MP2')])
-            count[4] = sum([1 for s in short if (strain.upper() in s) or ('55_' in s and strain == 'MP2')])
+            #Fix this part...
+            count[0] = sum(value_dict[s] for s in GS1 if (strain.upper() in s) or ('APS55' in s and strain == 'MP2') or ('LDX55' in s and strain == 'IBH001') or ('K2W83' in s and strain == 'DSMZ12361')) #Account for locus tags with a different format for MP2
+            count[1] = sum(value_dict[s] for s in GS2 if (strain.upper() in s) or ('APS55' in s and strain == 'MP2') or ('LDX55' in s and strain == 'IBH001') or ('K2W83' in s and strain == 'DSMZ12361'))
+            count[2] = sum(value_dict[s] for s in BRS if (strain.upper() in s) or ('APS55' in s and strain == 'MP2') or ('LDX55' in s and strain == 'IBH001') or ('K2W83' in s and strain == 'DSMZ12361'))
+            count[3] = sum([1 for s in NGB if (strain.upper() in s) or ('APS55' in s and strain == 'MP2') or ('LDX55' in s and strain == 'IBH001') or ('K2W83' in s and strain == 'DSMZ12361')])
+            count[4] = sum([1 for s in short if (strain.upper() in s) or ('APS55' in s and strain == 'MP2') or ('LDX55' in s and strain == 'IBH001') or ('K2W83' in s and strain == 'DSMZ12361')])
             count = [int(num) for num in count] #Convert floats to ints
             total = sum(count)
             for GH70 in all_GH70: #Add loci names
-                if strain.upper() in GH70 or ('55_' in GH70 and strain == 'MP2'):
+                if strain.upper() in GH70 or ('APS55' in GH70 and strain == 'MP2') or ('LDX55' in GH70 and strain == 'IBH001') or ('K2W83' in GH70 and strain == 'DSMZ12361'):
                     loci += f'{GH70}, '
-            count[5] = sum([1 for s in S1 if strain in s])
-            count[6] = sum([1 for s in S2 if strain in s])
-            count[7] = sum([1 for s in S3 if strain in s])
+            count[5] = sum([1 for s in S1 if strain in s or ('K2W83' in s and strain == 'DSMZ12361')])
+            count[6] = sum([1 for s in S2 if strain in s or ('K2W83' in s and strain == 'DSMZ12361')])
+            count[7] = sum([1 for s in S3 if strain in s or ('K2W83' in s and strain == 'DSMZ12361')])
             total2 = sum(count[5:8])
             #Add also cell wall-binding domains
             '''with open(f'../Alignment/interproscan/{strain}.tsv') as interpro:
