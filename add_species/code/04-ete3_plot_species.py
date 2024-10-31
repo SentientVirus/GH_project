@@ -63,7 +63,7 @@ if not os.path.exists(outdir):
 
 
 t = Tree(treefile, format = 0)
-outnode = t.get_common_ancestor('AOR73699.1_4,3_gtf_L_fermentum', 'AAU08014.2_4,6_gtf_L_reuteri')
+outnode = t.get_common_ancestor('AOR73699.1_4_3_gtf_L_fermentum', 'AAU08014.2_4_6_gtf_L_reuteri')
 t.set_outgroup(outnode)
 
 ts = TreeStyle()
@@ -121,6 +121,8 @@ for leaf in leaves:
         nleaf = nleaf.replace('APS55_RS', 'MP2_')
     elif 'K2W83' in leaf.name:
         nleaf = nleaf.replace('K2W83_RS', 'DSM_')
+    if '4_' in nleaf:
+        nleaf = nleaf.replace('4_', '4,')
     if nleaf[-2:] == '_2':
         mleaf = nleaf[:-2]
     else:
@@ -134,3 +136,5 @@ for leaf in leaves:
 t.ladderize(1)
 # t.convert_to_ultrametric()
 t.render(outfile, tree_style = ts)
+t.render(outfile.replace('png', 'svg'), tree_style = ts)
+t.render(outfile.replace('png', 'pdf'), tree_style = ts)

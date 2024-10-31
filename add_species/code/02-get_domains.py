@@ -28,15 +28,17 @@ with open(in_file) as interpro:
         if line[5] == GH70_text:
             if line[0] not in domain_dict.keys():
                 domain_dict[line[0]] = (line[6], line[7])
-            elif 'P_kribbensis' in line[0] or 'E_undae' in line[0] or 'Exiguobacterium' in line[0]:
-                domain_dict[line[0]] = [domain_dict[line[0]], (line[6], line[7])] #(max(domain_dict[line[0]][0], line[6]), 
-                                        #max(domain_dict[line[0]][1], line[7]))#[domain_dict[line[0]], (line[6], line[7])]
             else:
-                domain_dict[line[0]+'_2'] = (line[6], line[7])
+                domain_dict[line[0]+'_1'] = (line[6], line[7])
+                domain_dict[line[0]+'_2'] =  domain_dict[line[0]]
+                del domain_dict[line[0]]
                 
 my_prots = []                
 with open(fasta_file) as prots:
     for prot in SeqIO.parse(prots, 'fasta'):
+        if f'{prot.id}_1' in domain_dict.keys():
+            prot.id = prot.id + '_1'
+            prot.description = prot.description + '_1'
         new_prot = seqr(prot.seq, id = prot.id, name = prot.name, description = prot.description)
         if type(domain_dict[prot.id]) != list:
             pos = domain_dict[prot.id]
@@ -47,10 +49,12 @@ with open(fasta_file) as prots:
             pos2 = (max(domain_dict[prot.id][0][0], domain_dict[prot.id][1][0]),
                     max(domain_dict[prot.id][0][1], domain_dict[prot.id][1][1]))
             new_prot.seq = prot.seq[pos2[0]:pos2[1]+1]+prot.seq[pos1[0]:pos1[1]+1]
+        if f'{prot.id}_2' in domain_dict.keys():
+            new_prot.id = f'{prot.id}_2'
         my_prots.append(new_prot)
         print(f'{new_prot.id} will be added to {outfile}')
-        if prot.id + '_2' in domain_dict.keys():
-            new_prot2 = seqr(prot.seq, id = prot.id + '_2', name = prot.name, description = prot.description + '_2')
+        if prot.id.endswith('_1'):
+            new_prot2 = seqr(prot.seq, id = prot.id[:-2] + '_2', name = prot.name, description = prot.description[:-2] + '_2')
             pos2 =  domain_dict[new_prot2.id]
             new_prot2.seq = prot.seq[pos2[0]:pos2[1]+1]
             my_prots.append(new_prot2)
