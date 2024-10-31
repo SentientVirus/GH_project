@@ -82,10 +82,13 @@ class gbk_entry:
         self.end = int(location[1])
         self.strand = strand
         self.accession = accession
+        self.length = self.end-self.start
     def update_domains(self, domain_list):
         self.SP = domain_list[0]
         self.GH = domain_list[1]
-        self.GB = f'{domain_list[2]}+{domain_list[3]}'
+        if domain_list[3] > 0:
+            self.GB = f'{domain_list[2]}+{domain_list[3]}'
+        else: self.GB = domain_list[2]
     def __str__(self):
         return f'<{self.ID} ({self.gene_name}) at {(self.start, self.end)} ({self.strand}) with accession {self.accession}>'
 
@@ -195,7 +198,7 @@ for GH_type in type_list:
                     to_compare = 'APS55_RS03400'
                 if to_compare == gbk.ID:
                     if to_compare not in domain_dict.keys():
-                        domain_dict[to_compare] = [0, 0, 0, 0]
+                        domain_dict[to_compare] = [False, 0, 0, 0]
                     if row[3] == 'Pfam':
                         if 'Choline-binding' in row[5]:
                             domain_dict[to_compare][2] += 1
@@ -203,11 +206,17 @@ for GH_type in type_list:
                             domain_dict[to_compare][3] += 1
                         elif 'Glycosyl hydrolase family 70' in row[5]:
                             domain_dict[to_compare][1] += 1
-                    elif row[3] == 'TIGRFAM' and 'signal peptide' in row[5]:
-                        domain_dict[to_compare][0] += 1
                     elif row[3] == 'SMART' and 'glyco_32' in row[5]:
                         domain_dict[to_compare][1] += 1
+                    if 'signal peptide' in row[5] and domain_dict[to_compare][0] == False:
+                        domain_dict[to_compare][0] = True
         gbk.update_domains(domain_dict[gbk.ID])
+        
+        if gbk.strain in ['DSMZ12361', 'IBH001', 'MP2']:
+            locus_tag = gbk.ID
+            locus_ID = gbk.locus_tag
+            gbk.locus_tag = locus_tag
+            gbk.ID = locus_ID
                         
         with open(out_file, 'a') as out_tab:
             out_tab.write(f'{gbk.strain}\t{gbk.gene_name}\t{gbk.locus_tag}\t')
