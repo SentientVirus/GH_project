@@ -107,7 +107,7 @@ def parse_codeml_output(infile, outfile1, outfile2):
         outno2.write(f'Median_w\t{median(filtered_dnds):.4f}\n') #Write median dN/dS to file
 
 # =============================================================================
-# 3. ´Run function in list comprehension
+# 3. Run function in list comprehension
 # =============================================================================
 
 [parse_codeml_output(infile[i], outfile1[i], outfile2[i]) for i in range(len(infile))]
