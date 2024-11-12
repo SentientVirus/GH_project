@@ -18,7 +18,7 @@ import re, logging, traceback
 from numpy import mean, median
 
 # =============================================================================
-# Logging
+# 0. Logging
 # =============================================================================
 
 logging.basicConfig(filename = snakemake.log[0], level = logging.INFO,
@@ -39,100 +39,75 @@ sys.excepthook = handle_exception
 sys.stdout = open(snakemake.log[0], 'a')
 
 # =============================================================================
-# Load inputs from Snakefile
+# 1. Load inputs from Snakefile
 # =============================================================================
 
-infile = snakemake.input['txt'] #'codeml_out/a_kunkeei_GH70/a_kunkeei_GH70.txt'
-outfile1 = snakemake.output['dNdS'] #'codeml_out/a_kunkeei_GH70/new_dNdS.tsv'
-outfile2 = snakemake.output['stats'] #'codeml_out/a_kunkeei_GH70/new_stats.tsv'
-basal_strains = ['A1001', 'A1404']
+infile = snakemake.input['txt'] #Text files with CodeML results
+outfile1 = snakemake.output['dNdS'] #Output tabs file with all pairwise comparisons
+outfile2 = snakemake.output['stats'] #Output files with general statistics
+basal_strains = ['A1001', 'A1404'] #Strains to exclude
 
 # =============================================================================
-# Define function to parse CodeML output
+# 2. Define function to parse CodeML output
 # =============================================================================
 
 def parse_codeml_output(infile, outfile1, outfile2):
 
-    dn_list = []
-    ds_list = []
-    dnds_list = []
+    dn_list = [] #Empty list to store dN values
+    ds_list = [] #Empty list to store dS values
+    dnds_list = [] #Empty list to store dN/dS values
 
-    status = 0
+    status = False #Boolean to indicate when to start parsing the file
 
-
-
-    outfile = open(outfile1, 'w')
+    outfile = open(outfile1, 'w') #Overwrite output file
 
     outfile.write('locus1\tlocus2\tdN\tdS\tw\n') #Add header to output file
 
-    results = open(infile, 'r')
+    results = open(infile, 'r') #Open input file in read-only mode
     
     for i in results:
-
         if i.startswith('pairwise comparison, codon frequencies'):
+            status = True #Start parsing the file
 
-            status = 1
+        if status: #If status is set to True
 
+            if i[0].isdigit(): #If the first character in the line is a digit
+                line = i.rstrip() #Remove spaces at the end of the line
+                line2 = re.sub('\(', '', line) #Remove opening parentheses
+                line3 = re.sub('\)', '', line2) #Remove closing parentheses
+                spaces = line3.split(' ') #Separate the line string by spaces to create a list
+                first = spaces[1] #First locus tag (second element of the list)
+                second = spaces[4] #Second locus tag (fifth element of the list)
 
-
-        if status == 1:
-
-            if i[0].isdigit():
-
-                line = i.rstrip()
-
-                line2 = re.sub('\(', '', line)
-
-                line3 = re.sub('\)', '', line2)
-
-                spaces = line3.split(" ")
-
-                first = spaces[1]
-
-                second = spaces[4]
-
-
-            if i.startswith('t='):
-
-                line = i.rstrip()
-
-                line1 = re.sub('=', '', line)
-
-                line2 = re.sub('\s+', '\t', line1)
-
-                tabs = line2.split('\t')
-
-                dnds = float(tabs[7])
-                dnds_list.append(dnds)
-
-                dn = float(tabs[9])
-                dn_list.append(dn)
-
-                ds = float(tabs[11])
-                ds_list.append(ds)
-
-
+            if i.startswith('t='): #If the line starts with t=
+                line = i.rstrip() #Remove spaces at the end of the line
+                line0 = re.sub('=', '', line) #Remove equal signs from the line
+                line1 = re.sub('\s+', '\t', line0) #Remove any non-numerican characters
+                tabs = line1.split('\t') #Create a list by splitting the line by tabulations
+                dnds = float(tabs[7]) #dN/dS is the eigth element of the list
+                dn = float(tabs[9]) #dN is the tenth element of the list
+                ds = float(tabs[11]) #dS is the twelfth element of the list
 
 #                if ds < 50 and ds > 0.01 and dnds < 99:
-
 #                    outfile.write(f'{first}\t{second}\t{dn}\t{ds}\t{dnds}\n')
-                if not any(basal in loctag.split('_')[0] for basal in basal_strains for loctag in [first, second]):
-                    outfile.write(f'{second}\t{first}\t{dn}\t{ds}\t{dnds}\n')
-                    print(f'Added dN, dS and w for pair {first} vs {second}.')
+
+                if not any(basal in loctag.split('_')[0] for basal in basal_strains for loctag in [first, second]): #Filter out pairs that include basal strains
+                    outfile.write(f'{second}\t{first}\t{dn}\t{ds}\t{dnds}\n') #Write pairwise metrics to file
+                    print(f'Added dN, dS and w for pair {first} vs {second}.') #Print progress
     
-    with open(outfile2, 'w') as outno2:
-        filtered_ds = [ds for ds in ds_list if ds >= 0]
-        filtered_dn = [dn_list[i] for i in range(len(ds_list)) if ds_list[i] >= 0]
-        filtered_dnds = [dnds_list[j] for j in range(len(ds_list)) if ds_list[j] >= 0]                
-        outno2.write(f'Mean_dN\t{mean(filtered_dn):.4f}\n')
-        outno2.write(f'Median_dN\t{median(filtered_dn):.4f}\n')
-        outno2.write(f'Mean_dS\t{mean(filtered_ds):.4f}\n')
-        outno2.write(f'Median_dS\t{median(filtered_ds):.4f}\n')
-        outno2.write(f'Mean_w\t{mean(filtered_dnds):.4f}\n')
-        outno2.write(f'Median_w\t{median(filtered_dnds):.4f}\n')
+    with open(outfile2, 'w') as outno2: #Open the other output file in write mode (overwrites the file)
+        filtered_ds = [ds for ds in ds_list if ds >= 0] #Create a list of dS values
+        filtered_dn = [dn_list[i] for i in range(len(ds_list)) if ds_list[i] >= 0] #Create a list of dN values
+        filtered_dnds = [dnds_list[j] for j in range(len(ds_list)) if ds_list[j] >= 0] #Create a list of dN/dS values
+        outno2.write(f'Mean_dN\t{mean(filtered_dn):.4f}\n') #Write mean dN to file
+        outno2.write(f'Median_dN\t{median(filtered_dn):.4f}\n') #Write median dN to file
+        outno2.write(f'Mean_dS\t{mean(filtered_ds):.4f}\n') #Write mean dS to file
+        outno2.write(f'Median_dS\t{median(filtered_ds):.4f}\n') #Write median dS to file
+        outno2.write(f'Mean_w\t{mean(filtered_dnds):.4f}\n') #Write mean dN/dS to file
+        outno2.write(f'Median_w\t{median(filtered_dnds):.4f}\n') #Write median dN/dS to file
 
 # =============================================================================
-# Run function in list comprehension
+# 3. Run function in list comprehension
 # =============================================================================
 
 [parse_codeml_output(infile[i], outfile1[i], outfile2[i]) for i in range(len(infile))]
