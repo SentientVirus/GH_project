@@ -315,12 +315,13 @@ rule pal2nal:
 
 rule pal2nal_fna:
     output:
-        expand("data/codons/{types}_codon.fna", types = ["GH70", "GS1", "GS2", "BRS", "NGB", "GH32", "S1", "S2a", "S2b", "S3"])
+        expand("data/codons/{types}_codon.fna", types = ["GH70", "GS1", "GS2", "GS3", "GS4", "BRS", "NGB", "GH32", "S1", "S2a", "S2b", "S3"])
     input:
-        aln1_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.faa", type = ["GH70_functional", "GS1", "GS2", "BRS", "NGB"]),
+        aln1_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.faa", type = ["GH70_functional", "GS1", "GS2", "GS3", "BRS", "NGB"]),
         aln1_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.faa", type = ["GH32", "S1", "S2a", "S2b", "S3"]),
-        aln2_GH70 = expand("data/fasta/GH70/{type}_repset.fna", type = ["GH70_functional", "GS1", "GS2", "BRS", "NGB"]),
-        aln2_GH32 = expand("data/fasta/GH32/{type}_repset.fna", type = ["GH32", "S1", "S2a", "S2b", "S3"])
+        aln2_GH70 = expand("data/fasta/GH70/{type}_repset.fna", type = ["GH70_functional", "GS1", "GS2", "GS3", "BRS", "NGB"]),
+        aln2_GH32 = expand("data/fasta/GH32/{type}_repset.fna", type = ["GH32", "S1", "S2a", "S2b", "S3"]),
+        aln3_GH70 = "data/fasta/GH70/GS4_repset.fna"
     log: "logs/pal2nal/repset_fna_codons.log"
     shell:
         """
@@ -342,6 +343,7 @@ rule pal2nal_fna:
         output=data/codons/$(echo $output_base | cut -d'/' -f 4 | cut -d'.' -f 1)_codon.fna
         pal2nal.v14/pal2nal.pl $input $fna -output fasta > $output 2>> {log};
         done
+        cat {input.aln3_GH70} > data/codons/GS4_codon.fna
         """
 
 
