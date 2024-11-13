@@ -7,7 +7,7 @@ Created on Thu Nov 17 2022
 This is a script to retrieve the Interproscan annotations of those genes that
 have a GH70 or GH32 domain in the A. kunkeei genomes.
 
-author: Julia Pedersen and Marina Mota
+author: Marina Mota-Merlo
 
 """
 # =============================================================================
@@ -71,13 +71,13 @@ def get_GH70(directory, strains, domain_annot):
                 if domain_annot in line: #If it is a GH70 domain
                     loctag = line[0].replace('-', '')
                     loctag = loctag.replace('fhon2', 'FHON2')
-                    if filename == 'MP2':
-                        if loctag == 'MP2_13350':
-                            loctag = 'APS55_RS03850'
-                        elif loctag == 'MP2_13360':
-                            loctag = 'APS55_RS03845'
-                        elif loctag == 'MP2_14250':
-                            loctag = 'APS55_RS03400'
+                    # if filename == 'MP2':
+                    #     if loctag == 'MP2_13350':
+                    #         loctag = 'APS55_RS03850'
+                    #     elif loctag == 'MP2_13360':
+                    #         loctag = 'APS55_RS03845'
+                    #     elif loctag == 'MP2_14250':
+                    #         loctag = 'APS55_RS03400'
                     
                     
                     print(loctag)
@@ -125,11 +125,33 @@ def save_annot(directory, strains, outdir, gene_names, prefix = 'GH70'):
             file = csv.reader(annot) #Read file
             # check = False
             for line in file: #Loop through file
+                MP2_check = False
                 loctag = line[0].split('\t')[0].replace('-', '')
+                if loctag.startswith('H') or loctag.startswith('A') or loctag.startswith('G'):
+                    full_loctag = 'AKU' + loctag
+                elif 'LDX55' in loctag:
+                    full_loctag = loctag
+                    loctag = full_loctag.replace('LDX55', 'IBH001')
+                elif 'K2W83_RS' in loctag:
+                    full_loctag = loctag
+                    loctag = full_loctag.replace('K2W83_RS', 'DSM_')
+                elif loctag == 'MP2_13350':
+                    print("MP2's GS1 retrieved")
+                    full_loctag = 'APS55_RS03850'
+                    loctag = full_loctag.replace('APS55_RS', 'MP2_')
+                    MP2_check = True
+                elif loctag == 'MP2_13360':
+                    full_loctag = 'APS55_RS03845'
+                    loctag = full_loctag.replace('APS55_RS', 'MP2_')
+                    MP2_check = True
+                elif loctag == 'MP2_14250':
+                    full_loctag = 'APS55_RS03400'
+                    loctag = full_loctag.replace('APS55_RS', 'MP2_')
+                    MP2_check = True
                 line_text = line[0].split('\t')[1:]
-                line_text = [loctag] + line_text
+                line_text = [loctag, full_loctag] + line_text
                 line_text = '\t'.join(line_text)
-                if loctag in gene_names:
+                if loctag in gene_names or full_loctag in gene_names or MP2_check:
                     with open(outfile, 'a') as handle:
                         handle.write(f'{line_text}\n')
                 # elif check == False:
