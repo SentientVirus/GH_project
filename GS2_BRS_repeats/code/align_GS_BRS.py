@@ -119,5 +119,5 @@ with open(out_faa) as fasta_seqs:
 # =============================================================================
 mv = MsaViz(out_mafft, wrap_length=120, show_count=True)
 mv.savefig(out_aln_fig)
-mv.savefig(out_aln_fig.replace('png', 'svg')
-mv.savefig(out_aln_fig.replace('png', 'tiff')
+mv.savefig(out_aln_fig.replace('png', 'svg'))
+mv.savefig(out_aln_fig.replace('png', 'tiff'))
