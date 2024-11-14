@@ -8,19 +8,18 @@ Script to create a phylogenetic network.
 @author: Marina Mota-Merlo
 """
 
+# =============================================================================
+# 0. Import required libraries and modules
+# =============================================================================
+
 from matplotlib import pyplot as plt
-
-# A = 'H3B2-03M_GS1'
-# B = 'A1001_GS1'
-# C = 'MP2_GS1'
-
-# dsAB = 2
-# dsBC = 5
-# dsAC = 0.85
-
 import networkx as nx
 import os
 import pandas as pd
+
+# =============================================================================
+# 1. Define gene types
+# =============================================================================
 
 GS1 = ['A1001_12310', 'A1202_13520', 'A1401_12750', 'A1805_12820', 
        'FHON2_13540', 'G0101_12800', 'G0403_13100', 'H1B104J_13010', 
@@ -67,115 +66,107 @@ S2b = ['A1805_12800', 'H1B104J_12990', 'H4B412M_13220']
 S3 = ['A0901_13360', 'A1001_12360', 'A1404_13450', 'H3B203M_12520',
       'H4B206J_13490', 'H4B402J_12660', 'H4B412M_13310', 'H4B503X_12760']
 
-# =============================================================================
-# 1. Here I define the paths to input and output files
-# =============================================================================
-home = os.path.expanduser('~')
-
-outdir = f'{home}/GH_project/plots/network'
-
-if not os.path.exists(outdir):
-    os.makedirs(outdir)
-
 GH_types = ['GH70', 'GH32']
 
-# OBS! I want to switch to sequence identities instead of dS values, use the percentage identity repset file in tables/
+# =============================================================================
+# 2. Define the paths to input and output files
+# =============================================================================
+workdir = os.path.expanduser('~') + '/GH_project' #Working directory
+outdir = f'{workdir}/plots/network' #Output directory
 
-infile = f'{home}/GH_project/tables/percentage_identity_repset.tab' #f'{home}/GH_project/results/GH70/dNdS.tsv'
+if not os.path.exists(outdir): #If the output directory does not exist
+    os.makedirs(outdir) #Create it
 
-# outfile = f'{home}/GH_project/plots/network/GH70_identity_network.svg'
-ident = 70 #(2/3)*100
+infile = f'{workdir}/tables/percentage_identity_repset.tab' #Input file with % of identity
+
+ident = 70 #Threshold percentage of identity
 
 # =============================================================================
-# 2. Here I open the file with dS values and store each locus tag as a node
-# label (perhaps assigning random node colors or coloring by phylogroup), and 
-# each pairwise dS value as an edge value.
+# 3. Open the file with dS values and store each locus tag as a node
+# label and each pairwise dS value as an edge value.
 # =============================================================================
+
 color_dict = {'GS3': '#FF7594', 'GS4': '#FF8A75', 'GS1': '#FF7575', 
               'BRS': '#E875FF', 'GS2': '#FF75B6', 'NGB': '#C475FF', 
               'S1': '#FFA175', 'S2a': '#FFB875', 'S2b': '#FFD775', 
-              'S3': '#FFF575'}
-color_edge_dict = {'GS3': '#C96279', 'GS4': '#C96D5C', 'GS1': '#C95E5E',  #'#ff0036'
+              'S3': '#FFF575'} #Dictionary to color nodes by gene type
+
+color_edge_dict = {'GS3': '#C96279', 'GS4': '#C96D5C', 'GS1': '#C95E5E',  
                    'GS2': '#C95F91', 'BRS': '#B95ECB', 'NGB': '#995CC6', 
                    'S1': '#C97F5D', 'S2a': '#C9925E', 'S2b': '#C9A95C', 
-                   'S3': '#C9C15C'}
-for GH_type in GH_types:
-    outfile = f'{home}/GH_project/plots/network/{GH_type}_{int(ident)}identity_network.svg'
-    if GH_type == 'GH70':
+                   'S3': '#C9C15C'} #Dictionary to color edges by gene type
+
+for GH_type in GH_types: #Loop through GH families (GH70/32)
+    outfile = f'{workdir}/plots/network/{GH_type}_{int(ident)}identity_network.svg' #Set the name of the output file
+    
+    if GH_type == 'GH70': #Set the subtypes of GH70 genes
         GH_list = ['/GS1', '/GS2', '/GS3', '/GS4', '/BRS', '/NGB']
-    else:
+    else: #Set the subtypes of GH32 genes
         GH_list = ['/S1', '/S2', '/S3']
 
-    with open(infile) as reader:
-        df = pd.read_csv(reader, sep = '\t')
-        node_names = []
-        edge_list = []
-        tag_dict = {}
-        # node_names = list(set(list(df['locus1'])+list(df['locus2'])))
-        # edge_list = [(row['locus1'], row['locus2'], row['dS']) for index, row in df.iterrows()]
-        for index, row in df.iterrows():
-            if any(GH in row['GH_type'] for GH in GH_list):
-                node_names += [row[0], row[1]]
-                edge_list.append((row[0], row[1], row[3]))
-                tag_dict[row[0]] = row[2].split('/')[0]
-                tag_dict[row[1]] = row[2].split('/')[1]
-    
-    node_names = set(node_names)
+    with open(infile) as reader: #Open input file
+        df = pd.read_csv(reader, sep = '\t') #Load file contents as a dataframe
+        node_names = [] #Empty list to store node information (pairs of nodes)
+        edge_list = [] #Empty list to store edge information (pairs of nodes and identity)
+        tag_dict = {} #Dictionary to assign a gene type to each node
 
-    G = nx.Graph()
-    G.add_nodes_from(node_names)
-    G.add_weighted_edges_from(edge_list)
+        for index, row in df.iterrows(): #Loop trough rows in the dataframe
+            if any(GH in row['GH_type'] for GH in GH_list): #If the GH belongs to the right family
+                node_names += [row[0], row[1]] #Add node information
+                edge_list.append((row[0], row[1], row[3])) #Add edge information
+                tag_dict[row[0]] = row[2].split('/')[0] #Add gene type to first locus tag
+                tag_dict[row[1]] = row[2].split('/')[1] #Add gene type to second locus tag
     
-    # subset_edges = [edge for edge in edge_list if edge[2] <= 2]
+    node_names = set(node_names) #Convert list to set
+
+    G = nx.Graph() #Create the network graph
+    G.add_nodes_from(node_names) #Add nodes to graph
+    G.add_weighted_edges_from(edge_list) #Add edges to graph, considering weights (% identity)
     
-    colors = [color_dict[tag_dict[loctag]] for loctag in node_names]
+    colors = [color_dict[tag_dict[loctag]] for loctag in node_names] #Get the colors of each node
     
-    edge_colors = ['#d1d1d1' if tag_dict[edge[0]] != tag_dict[edge[1]] else color_edge_dict[tag_dict[edge[0]]] for edge in list(G.edges())]
+    edge_colors = ['#d1d1d1' if tag_dict[edge[0]] != tag_dict[edge[1]] else color_edge_dict[tag_dict[edge[0]]] for edge in list(G.edges())] #Get edge colors (grey if the genes belong to different subtypes)
     
     # =============================================================================
-    # 3. Here I plot everything as a network (using the code above)
+    # 3.Plot everything as a network (using the code above)
     # =============================================================================
     
-    fig, ax = plt.subplots()
-    ax.margins(0.1)
-    ax.axis('off')
-    fig.set_size_inches(48, 32)
-    #colors = [value['color'] for value in list(G.nodes.values())]
-    weights = [pos_w[2]['weight']/10 if pos_w[2]['weight'] > ident else 0 for pos_w in list(G.edges.data())]
-    #final_weights = [21/(w*10+1) if w <= 2 else 0 for w in weights]
+    fig, ax = plt.subplots() #Create plot
+    ax.margins(0.1) #Set plot margins
+    ax.axis('off') #Remove the plot axis
+    fig.set_size_inches(48, 32) #Set figure size
+
+    weights = [pos_w[2]['weight']/10 if pos_w[2]['weight'] > ident else 0 for pos_w in list(G.edges.data())] #Adjust the weights of the edges and remove edges with identity < 70%
+    distances = dict(nx.shortest_path_length(G, weight='weight')) #Convert the weights to distances
+    for k, v in distances.items(): #Loop through node names (k = node 1, v = node 2 and distance)
+        for k2, v2 in v.items(): #Loop through node names and distances (k2 = node 2, v2 = distance)
+            print(k, k2) #Print the name of both nodes
+            if distances[k][k2] != 0: #If the distance is not 0
+                distances[k][k2] = 1/distances[k][k2] #Reverse the distance (so that the higher the % identity, the lower the distance)
     
-    # This part is needed to specify that I want sequences that are have a high
-    # percentage of identity to cluster together, not the opposite
-    distances = dict(nx.shortest_path_length(G, weight='weight'))
-    for k, v in distances.items():
-        for k2, v2 in v.items():
-            print(k, k2)
-            if distances[k][k2] != 0:
-                distances[k][k2] = 1/distances[k][k2]
-    
-    net_pos = nx.kamada_kawai_layout(G, dist = distances)#, dist = {('A1202_05350', 'FHON2_04830'): 1})
+    net_pos = nx.kamada_kawai_layout(G, dist = distances) #Generate network
     
     # Divide this into a command to plot edges with lower alpha and a command to plot
     # nodes with higher alpha
     
     nx.draw_networkx_edges(G, pos = net_pos, edgelist = G.edges(), alpha = 0.5,
-                            edge_color = edge_colors, width = weights, ax = ax)
+                            edge_color = edge_colors, width = weights, ax = ax) #Plot edges
     
-    nx.draw_networkx_nodes(G, pos = net_pos, nodelist = G.nodes(), alpha = 1, node_color = colors,
-                            node_shape = '*', node_size = 1200, ax = ax)
-    # nx.draw(G, pos=net_pos, with_labels = False, alpha = 0.8, font_size = 20,
-    #         edge_color = edge_colors, width = final_weights, node_color = colors, 
-    #         node_shape = '*', node_size = 1200, ax = ax)
+    nx.draw_networkx_nodes(G, pos = net_pos, nodelist = G.nodes(), alpha = 1, 
+                           node_color = colors, node_shape = '*', 
+                           node_size = 1200, ax = ax) #Plot nodes
     
     nx.draw_networkx_labels(G, pos=net_pos, font_size = 20, font_weight='bold',
                             verticalalignment = 'baseline', ax = ax,
-                            horizontalalignment = 'center')
+                            horizontalalignment = 'center') #Add labels to nodes
     
     
     # =============================================================================
-    # 4. Here I save the network to .svg and .tiff or similar
+    # 4. Here I save the network to files
     # =============================================================================
     
-    fig.savefig(outfile, format='svg', dpi=800, pad_inches = 0)
-    fig.savefig(outfile.replace('.svg', '.png'), format='png', dpi=800, pad_inches = 0)
-    fig.savefig(outfile.replace('.svg', '.tiff'), format='tiff', dpi=800, pad_inches = 0)
+    fig.savefig(outfile, format='svg', dpi=800, pad_inches = 0) #Save network to SVG
+    fig.savefig(outfile.replace('.svg', '.png'), format='png', dpi=800, 
+                pad_inches = 0) #Save network to PNG
+    fig.savefig(outfile.replace('.svg', '.tiff'), format='tiff', dpi=800, 
+                pad_inches = 0) #Save netwoek to TIFF
