@@ -5,7 +5,7 @@ Created on Thu Jun 29 13:44:38 2023
 
 Script to create a phylogenetic network.
 
-@author: Marina Mota Merlo
+@author: Marina Mota-Merlo
 """
 
 from matplotlib import pyplot as plt
@@ -22,27 +22,30 @@ import networkx as nx
 import os
 import pandas as pd
 
-GS1 = ['A1001_12310', 'A1003_12540', 'A1202_13520', 'A1401_12750', 
-       'A1805_12820', 'FHON2_13540', 'G0101_12800', 'G0403_13100', 
-       'H1B104J_13010', 'H1B105A_12300', 'H1B302M_12880', 'H3B101A_13240', 
-       'H3B104J_12990', 'H3B104X_13200', 'H3B111M_12560', 'H3B202X_12850', 
-       'H3B203J_13370', 'H3B203M_12480', 'H3B206M_12830', 'H3B206M_12840',
-       'H3B209X_13340', 'H4B111J_13560', 'H4B111J_13570', 'H4B202J_12880', 
-       'H4B204J_13330', 'H4B205J_12990', 'H4B211M_13000', 'H4B402J_12600', 
-       'H4B405J_13350', 'H4B405J_13360', 'H4B406M_13450', 'H4B406M_13460',
-       'H4B412M_13240', 'H4B501J_12890', 'H4B503X_12670', 'H4B504J_13460',
-       'H4B505J_12880', 'APS55_RS03850', 'LDX55_06325', 'K2W83_RS06180']
+GS1 = ['A1001_12310', 'A1202_13520', 'A1401_12750', 'A1805_12820', 
+       'FHON2_13540', 'G0101_12800', 'G0403_13100', 'H1B104J_13010', 
+       'H1B105A_12300', 'H1B302M_12880', 'H3B101A_13240', 'H3B104J_12990',
+       'H3B104X_13200', 'H3B111M_12560', 'H3B202X_12850', 'H3B203J_13370', 
+       'H3B203M_12480', 'H3B206M_12840', 'H3B209X_13340', 'H4B111J_13570', 
+       'H4B202J_12880', 'H4B204J_13330', 'H4B205J_12990', 'H4B211M_13000', 
+       'H4B402J_12600', 'H4B405J_13360', 'H4B406M_13460', 'H4B412M_13240', 
+       'H4B501J_12890', 'H4B503X_12670', 'H4B504J_13460', 'H4B505J_12880', 
+       'APS55_RS03850', 'LDX55_06325', 'K2W83_RS06180']
 
 GS2 = ['G0403_13120', 'H1B302M_12900', 'H3B101A_13260', 'H3B104J_13020_2',
        'H3B104X_13220', 'H3B111M_12590', 'H3B202X_12860', 'H3B203J_13390', 
        'H4B202J_12890_2','H4B204J_13350_2', 'H4B504J_13480', 'H4B505J_12900', 
        'APS55_RS03845', 'LDX55_06335_2', 'K2W83_RS06185']
 
+GS3 = ['H3B206M_12830', 'H4B111J_13560', 'H4B405J_13350', 'H4B406M_13450']
+
+GS4 = ['A1003_12540']
+
 BRS = ['A1401_12760', 'FHON2_13550', 'G0403_13110', 'H1B302M_12890',
-       'H3B101A_13250', 'H3B104J_13020', 'H3B104X_13210', 'H3B203J_13380',
-       'H3B209X_13350', 'H4B202J_12890', 'H4B204J_13340', 'H4B204J_13350',
-       'H4B504J_13470', 'H4B505J_12890', 'LDX55_06330', 'LDX55_06335',
-       'K2W83_RS06185_2']
+       'H3B101A_13250', 'H3B104J_13020_1', 'H3B104X_13210', 'H3B203J_13380',
+       'H3B209X_13350', 'H4B202J_12890_1', 'H4B204J_13340', 'H4B204J_13350_1',
+       'H4B504J_13470', 'H4B505J_12890', 'LDX55_06330', 'LDX55_06335_1',
+       'K2W83_RS06185_1']
 
 NGB = ['A0901_05380', 'A1003_04750', 'A1202_05530', 'A1401_04720', 
        'A1805_04920', 'FHON2_04830', 'G0101_04800', 'G0102_04760', 
@@ -88,11 +91,18 @@ ident = 70 #(2/3)*100
 # label (perhaps assigning random node colors or coloring by phylogroup), and 
 # each pairwise dS value as an edge value.
 # =============================================================================
-
+color_dict = {'GS3': '#FF7594', 'GS4': '#FF8A75', 'GS1': '#FF7575', 
+              'BRS': '#E875FF', 'GS2': '#FF75B6', 'NGB': '#C475FF', 
+              'S1': '#FFA175', 'S2a': '#FFB875', 'S2b': '#FFD775', 
+              'S3': '#FFF575'}
+color_edge_dict = {'GS3': '#C96279', 'GS4': '#C96D5C', 'GS1': '#C95E5E',  #'#ff0036'
+                   'GS2': '#C95F91', 'BRS': '#B95ECB', 'NGB': '#995CC6', 
+                   'S1': '#C97F5D', 'S2a': '#C9925E', 'S2b': '#C9A95C', 
+                   'S3': '#C9C15C'}
 for GH_type in GH_types:
     outfile = f'{home}/GH_project/plots/network/{GH_type}_{int(ident)}identity_network.svg'
     if GH_type == 'GH70':
-        GH_list = ['/GS1', '/GS2', '/BRS', '/NGB']
+        GH_list = ['/GS1', '/GS2', '/GS3', '/GS4', '/BRS', '/NGB']
     else:
         GH_list = ['/S1', '/S2', '/S3']
 
@@ -111,12 +121,7 @@ for GH_type in GH_types:
                 tag_dict[row[1]] = row[2].split('/')[1]
     
     node_names = set(node_names)
-    color_dict = {'GS1': '#ff0025', 'BRS': '#da00ff', 'GS2': '#ff00a4', 
-                  'NGB': '#5a00ff', 'S1': '#ff6d00', 'S2a': '#ffb900', 
-                  'S2b': '#ecce23', 'S3': '#d5dd2d'}
-    color_edge_dict = {'GS1': '#da707e', 'GS2': '#da70b3', 'BRS': '#cc70da',
-                       'NGB': '#9770da', 'S1': '#b59274', 'S2a': '#b5a274', 
-                       'S2b': '#b5ac74', 'S3': '#b2b574'}
+
     G = nx.Graph()
     G.add_nodes_from(node_names)
     G.add_weighted_edges_from(edge_list)
