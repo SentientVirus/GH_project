@@ -8,7 +8,7 @@ is identical, synonymous or non-synonymous between genes, and then plots
 each codon position, which results in a big matrix. The types of genes in
 each pairwise comparison are also specified.
 
-@author: Marina Mota Merlo
+@author: Marina Mota-Merlo
 """
 # Make the y axis ticks appear only on the ohrR plot, with higher fontsize
 import os, subprocess
@@ -20,6 +20,7 @@ import matplotlib.patches as mpatches
 from Bio import SeqIO
 from Bio.Seq import Seq
 import matplotlib.gridspec as gridspec
+from matplotlib.lines import Line2D
 # =============================================================================
 # 0. Logging
 # =============================================================================
@@ -314,6 +315,7 @@ for comparison in group_names.values():
                 
             ax = fig.add_subplot(spec[count, gene_no-1]) # Set the right row and column
             ax.set_ylim(0, 1)
+            ax.set_xlim(0, 100)
             T_no = int(gene[-1])
                 
             for l in range(0, len(df_aln.columns)):
@@ -345,7 +347,7 @@ for comparison in group_names.values():
                     else: # Otherwise, plot the arrows facing toward the right
                         startx = 0
                         dx = 100
-                    ax.arrow(startx, 1.2, dx, 0, width = 0.06, head_width = 0.06, 
+                    ax.arrow(startx, 1.165, dx, 0, width = 0.068, head_width = 0.068, 
                              head_length = 30, length_includes_head = True, 
                              clip_on = False, linewidth = 5, linestyle = '--',
                              edgecolor = 'black', facecolor = color)
@@ -356,11 +358,8 @@ for comparison in group_names.values():
                     circle_col = '#BBBBBB'
                 else: circle_col = '#F8F9F9'
                 
-                if comparison != 0:
-                    x_pos = 0.5
-                else: x_pos = 0.75
                 # circle1 = plt.Circle((0.5, (2-l)/2), 0.2, color = circle_col)
-                ax.scatter([.5], [y_list[l]], s = 5000, edgecolor = 'black', 
+                ax.scatter([50], [y_list[l]], s = 5000, edgecolor = 'black', 
                            facecolor = circle_col)
                 ax.set_axis_off()
                     
@@ -523,11 +522,20 @@ S_patch = mpatches.Patch(color = '#80C4E9', label = 'Synonymous sites',
 NS_patch = mpatches.Patch(color = '#FF7F3E', label = 'Non-synonymous sites', 
                           ec = 'black', lw = 2)
 
-patches = [gap_patch, identity_patch, S_patch, NS_patch]
+t2_patch = Line2D([], [], markeredgecolor = 'black', marker = 'o', markerfacecolor = 'black',
+                  color = 'white', ms = 50, label = 'Transposons in both strains')
+
+t1_patch = Line2D([], [], markeredgecolor = 'black', marker = 'o', markerfacecolor = '#BBBBBB', 
+           color = 'white', ms = 50, label = 'Transposons in one strain')
+
+t0_patch = Line2D([], [], markeredgecolor = 'black', marker = 'o', markerfacecolor = '#F8F9F9', 
+           color = 'white', ms = 50, label = 'No transposons')
+
+patches = [gap_patch, identity_patch, S_patch, NS_patch, t2_patch, t1_patch, t0_patch]
 
 legend = plt.legend(handles = patches,  handlelength = 1, handleheight = 3, 
                     title = 'Site color', loc = 'upper right', framealpha = 0, 
-                    frameon = False, fontsize = 36, bbox_to_anchor = (6.8, 3.38))
+                    frameon = False, fontsize = 36, bbox_to_anchor = (7.2, 3.38))
            
 plt.setp(legend.get_title(),fontsize = 48)
 legend._legend_box.align = 'left'
