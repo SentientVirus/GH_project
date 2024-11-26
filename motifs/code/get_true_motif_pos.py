@@ -4,10 +4,10 @@ Created on Wed Dec  1 16:39:34 2021
 
 @author: usuario
 """
-import re
+import re, os
 from Bio import SeqIO
 
-GH_types = ['GS1', 'GS2', 'BRS', 'NGB']
+GH_types = ['GS1', 'GS2', 'GS3', 'GS4', 'BRS', 'NGB']
 
 class motif:
     def __init__(self, num, seq, start, end): #Define motif class
@@ -60,9 +60,10 @@ def search_motif(seq_str, num): #Function to search for any motif
         motifs.append([num, motif_seq, start, end])
     return motifs
 
-infolder = '../data/fasta/GH70'
-output_file = 'GH70_motif_presence_pos.tsv' #'GH70_motif_presence.tsv' #'motif_presence.tsv'
-output_file2 = 'GH70_motifs_pos.tsv' #'GH70_motifs.tsv' #'gtf_motifs.tsv'
+infolder = os.path.expanduser('~') + '/GH_project/data/fasta/GH70'
+workdir = os.path.expanduser('~') + '/GH_project/motifs'
+output_file = f'{workdir}/GH70_motif_presence_pos.tsv'
+output_file2 = f'{workdir}/GH70_motifs_pos.tsv'
 prot_list = []
 
 with open(output_file, 'w') as out_file, open(output_file2, 'w') as out_file2:
@@ -74,61 +75,36 @@ for GH_type in GH_types:
     with open(f'{infolder}/{GH_type}_repset.fna') as handle:
         aa_seqs = SeqIO.parse(handle, 'fasta')
         for fasta in aa_seqs:
-            if fasta.id not in tag_type.keys():
-                tag_type[fasta.id] = GH_type
-            else: tag_type[fasta.id + '_2'] = GH_type
-        tag_type['A1003_12540'] = 'GS'
+            # if fasta.id not in tag_type.keys():
+            tag_type[fasta.id] = GH_type
+            # else: tag_type[fasta.id + '_2'] = GH_type
 
-with open(f'{infolder}/complete_GH70_functional_repset.fna') as handle:
+with open(f'{infolder}/complete_GH70_repset.fna') as handle:
     codon_seqs = SeqIO.parse(handle, 'fasta')
     check = False
     for fasta in codon_seqs:
-        name, sequence = fasta.id, str(fasta.seq.translate())
-        if 'K2W83' in name:
-            name = name.replace('K2W83_RS', 'DSM_')
-        elif 'LDX55' in name:
-            name = name.replace('LDX55', 'IBH001')
-        elif 'APS55' in name:
-            name = name.replace('APS55_RS', 'MP2_')
-        category = tag_type[fasta.id]
-        motif_list = ['']
-        for i in range(1, 8):
-            motif_matches = search_motif(sequence, i)
-            motif_list.append(motif_matches)
-            for mot in motif_matches:
-                mot = motif(*mot)
-                if len(mot.seq) > 0:
-                    if len(motif_list[1]) > 1:
-                        category = 'GS2_BRS'
-                    with open(output_file2, 'a') as out_file2:
-                        out_file2.write(f'{name}\t{category}\t{mot.num}\t{mot.seq}\t{mot.start}\t{mot.end}\t{len(sequence)}\n')
-        prot = prot_sequence(name, motif_list[1], motif_list[2], motif_list[3], motif_list[4], motif_list[5], motif_list[6], motif_list[7])
-        prot.calculate_n_motifs()
-        prot_list.append(prot)
-        bool_list = list(map(int, prot.bool_list))
-        with open(output_file, 'a') as out_file:
-            out_file.write(f'{prot.locus}\t{category}\t{bool_list[1]}\t{bool_list[2]}\t'+
-                           f'{bool_list[3]}\t{bool_list[4]}\t{bool_list[5]}\t'+
-                           f'{bool_list[6]}\t{bool_list[7]}\n')
-        # if fasta.id + '_2' in tag_type.keys():
-        #     category = tag_type[fasta.id + '_2']
-        #     start = motif_list[5]
-        #     new_seq = sequence[start:]
-        #     motif_list = ['']
-        #     for i in range(1, 8):
-        #         motif_matches = search_motif(new_seq, i)
-        #         motif_list.append(motif_matches)
-        #         for mot in motif_matches:
-        #             mot = motif(*mot)
-        #             if len(mot.seq) > 0:
-        #                 with open(output_file2, 'a') as out_file2:
-        #                     out_file2.write(f'{name}\t{category}\t{mot.num}\t{mot.seq}\t{mot.start}\t{mot.end}\t{len(sequence)}\n')
-        #     prot = prot_sequence(name, motif_list[1], motif_list[2], motif_list[3], motif_list[4], motif_list[5], motif_list[6], motif_list[7])
-        #     prot.calculate_n_motifs()
-        #     prot_list.append(prot)
-        #     bool_list = list(map(int, prot.bool_list))
-        #     with open(output_file, 'a') as out_file:
-        #         out_file.write(f'{prot.locus}\t{category}\t{bool_list[1]}\t{bool_list[2]}\t'+
-        #                        f'{bool_list[3]}\t{bool_list[4]}\t{bool_list[5]}\t'+
-        #                        f'{bool_list[6]}\t{bool_list[7]}\n')
-        
+        if fasta.id in tag_type.keys() or f'{fasta.id}_1' in tag_type.keys():
+            name, sequence = fasta.id, str(fasta.seq.translate())
+            name = name.replace('K2W83_RS', 'DSM_').replace('LDX55', 'IBH001').replace('APS55_RS', 'MP2_')
+            if f'{fasta.id}_1' in tag_type.keys():
+                category = 'GS2_BRS'
+            else: category = tag_type[fasta.id]
+            motif_list = ['']
+            for i in range(1, 8):
+                motif_matches = search_motif(sequence, i)
+                motif_list.append(motif_matches)
+                for mot in motif_matches:
+                    mot = motif(*mot)
+                    if len(mot.seq) > 0:
+                        # if len(motif_list[1]) > 1:
+                        #     category = 'GS2_BRS'
+                        with open(output_file2, 'a') as out_file2:
+                            out_file2.write(f'{name}\t{category}\t{mot.num}\t{mot.seq}\t{mot.start}\t{mot.end}\t{len(sequence)}\n')
+            prot = prot_sequence(name, motif_list[1], motif_list[2], motif_list[3], motif_list[4], motif_list[5], motif_list[6], motif_list[7])
+            prot.calculate_n_motifs()
+            prot_list.append(prot)
+            bool_list = list(map(int, prot.bool_list))
+            with open(output_file, 'a') as out_file:
+                out_file.write(f'{prot.locus}\t{category}\t{bool_list[1]}\t{bool_list[2]}\t'+
+                               f'{bool_list[3]}\t{bool_list[4]}\t{bool_list[5]}\t'+
+                               f'{bool_list[6]}\t{bool_list[7]}\n')

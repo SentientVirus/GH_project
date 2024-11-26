@@ -4,7 +4,7 @@ Created on Wed Dec  1 16:39:34 2021
 
 @author: usuario
 """
-import re
+import re, os
 from Bio import SeqIO
 
 GH_types = ['S1', 'S2a', 'S2b', 'S3']
@@ -62,9 +62,10 @@ def search_motif(seq_str, num): #Function to search for any motif
         motifs.append([num, motif_seq, start, end])
     return motifs
 
-infolder = '../data/codons'
-output_file = 'GH32_motif_presence.tsv' #'GH70_motif_presence.tsv' #'motif_presence.tsv'
-output_file2 = 'GH32_motifs.tsv' #'GH70_motifs.tsv' #'gtf_motifs.tsv'
+workdir = os.path.expanduser('~') + '/GH_project/motifs'
+infolder = os.path.expanduser('~') + '/GH_project/data/codons'
+output_file = f'{workdir}/GH32_motif_presence.tsv'
+output_file2 = f'{workdir}/GH32_motifs.tsv'
 prot_list = []
 
 with open(output_file, 'w') as out_file, open(output_file2, 'w') as out_file2:

@@ -4,7 +4,7 @@ Created on Wed Dec  1 16:39:34 2021
 
 @author: usuario
 """
-import re
+import re, os
 from Bio import SeqIO
 
 GH_types = ['S1', 'S2a', 'S2b', 'S3']
@@ -62,9 +62,10 @@ def search_motif(seq_str, num): #Function to search for any motif
         motifs.append([num, motif_seq, start, end])
     return motifs
 
-infolder = '../data/fasta/GH32'
-output_file = 'GH32_motif_presence_pos.tsv' #'GH70_motif_presence.tsv' #'motif_presence.tsv'
-output_file2 = 'GH32_motifs_pos.tsv' #'GH70_motifs.tsv' #'gtf_motifs.tsv'
+infolder = os.path.expanduser('~') + '/GH_project/data/fasta/GH32'
+workdir = os.path.expanduser('~') + '/GH_project/motifs'
+output_file = f'{workdir}/GH32_motif_presence_pos.tsv'
+output_file2 = f'{workdir}/GH32_motifs_pos.tsv'
 prot_list = []
 
 with open(output_file, 'w') as out_file, open(output_file2, 'w') as out_file2:
@@ -78,7 +79,7 @@ for GH_type in GH_types:
         for fasta in aa_seqs:
             tag_type[fasta.id] = GH_type
 
-with open(f'{infolder}/GH32_repset.fna') as handle:
+with open(f'{infolder}/complete_GH32_repset.fna') as handle:
     codon_seqs = SeqIO.parse(handle, 'fasta')
     for fasta in codon_seqs:
         name, sequence = fasta.id, str(fasta.seq.translate())

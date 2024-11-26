@@ -4,10 +4,10 @@ Created on Wed Dec  1 16:39:34 2021
 
 @author: usuario
 """
-import re
+import re, os
 from Bio import SeqIO
 
-GH_types = ['GS1', 'GS2', 'BRS', 'NGB']
+GH_types = ['GS1', 'GS2', 'GS3', 'GS4', 'BRS', 'NGB']
 
 class motif:
     def __init__(self, num, seq, start, end): #Define motif class
@@ -60,9 +60,10 @@ def search_motif(seq_str, num): #Function to search for any motif
         motifs.append([num, motif_seq, start, end])
     return motifs
 
-infolder = '../data/codons'
-output_file = 'GH70_motif_presence.tsv' #'GH70_motif_presence.tsv' #'motif_presence.tsv'
-output_file2 = 'GH70_motifs.tsv' #'GH70_motifs.tsv' #'gtf_motifs.tsv'
+workdir = os.path.expanduser('~') + '/GH_project/motifs'
+infolder = os.path.expanduser('~') + '/GH_project/data/codons'
+output_file = f'{workdir}/GH70_motif_presence.tsv' #'GH70_motif_presence.tsv' #'motif_presence.tsv'
+output_file2 = f'{workdir}/GH70_motifs.tsv' #'GH70_motifs.tsv' #'gtf_motifs.tsv'
 prot_list = []
 
 with open(output_file, 'w') as out_file, open(output_file2, 'w') as out_file2:
@@ -75,7 +76,6 @@ for GH_type in GH_types:
         aa_seqs = SeqIO.parse(handle, 'fasta')
         for fasta in aa_seqs:
             tag_type[fasta.id] = GH_type
-        tag_type['A1003_12540'] = 'GS'
 
 with open(f'{infolder}/GH70_codon.fna') as handle:
     codon_seqs = SeqIO.parse(handle, 'fasta')
@@ -89,6 +89,7 @@ with open(f'{infolder}/GH70_codon.fna') as handle:
             for mot in motif_matches:
                 mot = motif(*mot)
                 if len(mot.seq) > 0:
+                    name = name.replace('K2W83_RS', 'DSM_').replace('LDX55', 'IBH001').replace('APS55_RS', 'MP2_')
                     with open(output_file2, 'a') as out_file2:
                         out_file2.write(f'{name}\t{category}\t{mot.num}\t{mot.seq}\t{mot.start}\t{mot.end}\t{len(sequence)}\n')
         prot = prot_sequence(name, motif_list[1], motif_list[2], motif_list[3], motif_list[4], motif_list[5], motif_list[6], motif_list[7])
