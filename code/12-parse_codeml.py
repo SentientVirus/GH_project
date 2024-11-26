@@ -94,11 +94,16 @@ def parse_codeml_output(infile, outfile1, outfile2):
                 if not any(basal in loctag.split('_')[0] for basal in basal_strains for loctag in [first, second]): #Filter out pairs that include basal strains
                     outfile.write(f'{second}\t{first}\t{dn}\t{ds}\t{dnds}\n') #Write pairwise metrics to file
                     print(f'Added dN, dS and w for pair {first} vs {second}.') #Print progress
+                    
+                    ds_list.append(ds)
+                    dn_list.append(dn)
+                    dnds_list.append(dnds)
     
     with open(outfile2, 'w') as outno2: #Open the other output file in write mode (overwrites the file)
         filtered_ds = [ds for ds in ds_list if ds >= 0] #Create a list of dS values
         filtered_dn = [dn_list[i] for i in range(len(ds_list)) if ds_list[i] >= 0] #Create a list of dN values
         filtered_dnds = [dnds_list[j] for j in range(len(ds_list)) if ds_list[j] >= 0] #Create a list of dN/dS values
+        print(f'Filtered dS:\n{filtered_ds}')
         outno2.write(f'Mean_dN\t{mean(filtered_dn):.4f}\n') #Write mean dN to file
         outno2.write(f'Median_dN\t{median(filtered_dn):.4f}\n') #Write median dN to file
         outno2.write(f'Mean_dS\t{mean(filtered_ds):.4f}\n') #Write mean dS to file
