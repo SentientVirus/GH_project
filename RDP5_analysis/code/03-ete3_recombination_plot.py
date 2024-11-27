@@ -169,7 +169,7 @@ ts.legend.add_face(TextFace('\t'*5, fsize = 15), column = 4) #Add gap between th
 
 #Add color legend for the phylogroups
 ts.legend.add_face(TextFace('Phylogroup', fsize = 15, bold = True), 
-                   column = 5) #Title of the phylogroup legend
+                    column = 5) #Title of the phylogroup legend
 ts.legend.add_face(TextFace(' ', fsize = 12), column = 6) #Empty legend next to title
 ts.legend.add_face(TextFace('   Phylogroup A', fsize = 12), column = 5) #Legend label
 ts.legend.add_face(RectFace(45, 15, fgcolor = 'lightgrey', bgcolor = '#0072B2',
@@ -288,7 +288,8 @@ with open(in_tab) as tabfile: #Open the file with positional information
 
 segment_count = 0 #Set the segment count to 0
 motif_dict = {} #Create an empty dictionary to store the motifs
-seq = 'A'*aln_len #Create the tract (OBS! Divide into 2)
+seq = 'A'*middle_point #Create the tract (OBS! Divide into 2)
+seq2 = 'A'*(aln_len-middle_point)
 miniseq = 'A'*10 #Create a smaller sequence
 for leaf in leaves: #Loop through the leaves in the tree
     color = leaf_color.get(leaf.name.replace('-', '').upper(), None) #Color leaves according to strain phylogroup
@@ -298,7 +299,11 @@ for leaf in leaves: #Loop through the leaves in the tree
         leaf_name = '**' + leaf.name #Add two asterisks before
     else: leaf_name = leaf.name #Otherwise, store the leaf name as it is
     name_face = TextFace(leaf_name, fgcolor = color, fsize = 16) #Create a TextFace with the gene name
-    leaf.add_face(name_face, column=0, position='branch-right') #Add formatted leaf names to the tree
+    leaf.add_face(name_face, column = 0, position='branch-right') #Add formatted leaf names to the tree
+    seqFace = SeqMotifFace(miniseq, height = 20, seq_format = 'blank', gap_format = 'blank') #Add strain number
+    (t & f'{leaf.name}').add_face(seqFace, 0, 'aligned') #The number represents the column
+    (t & f'{leaf.name}').add_face(seqFace, 2, 'aligned') #The number represents the column
+
     
     if leaf.name in recomb_tracts.keys(): #If there are recombination tracts for that leaf
         recomb_tract = recomb_tracts[leaf.name] #Retrieve the recombination tracts
@@ -326,9 +331,9 @@ for leaf in leaves: #Loop through the leaves in the tree
                     color = '#F7CFC1' 
                     color2 = 'black'
                     check = True
-                # elif float(tract[5]) < 0.05:
-                #     color, color2 = 'linen', 'black'
-                #     check = True
+                elif float(tract[5]) < 0.05:
+                    color, color2 = 'linen', 'black'
+                    check = True
                 else: check = False #Filter out tracts with p-values > 0.05
             if 'Unknown' in tract[1]: #If the minor parent includes "Unknown"
                 tract[1] = tract[1].replace('Unknown (', '').replace(')', '?') #Replace it with a question mark
@@ -355,7 +360,14 @@ for leaf in leaves: #Loop through the leaves in the tree
                         else: check.append(True) #Otherwise, add a True check to the list
                         
                     if sum(check) != 0: #If there is at least one true value
-                        seqFace = SeqMotifFace(seq, motifs = to_add, #Create a SeqMotifFace to plot the tract
+                        to_add1 = [mot for mot in to_add if mot[1] <= middle_point]
+                        to_add2 = []
+                        for mot in to_add:
+                            if mot[1] > middle_point:
+                                mot[0] -= middle_point
+                                mot[1] -= middle_point
+                                to_add2.append(mot)
+                        seqFace = SeqMotifFace(seq, motifs = to_add1, #Create a SeqMotifFace to plot the tract
                                                height = 20, seq_format = '[]', 
                                                gap_format = 'blank', 
                                                scale_factor = 0.04, 
@@ -363,25 +375,62 @@ for leaf in leaves: #Loop through the leaves in the tree
                                                fgcolor = 'lightgrey')
                         (t & f'{leaf.name}').add_face(seqFace, 1, 'aligned') #Add the SeqMotifFace to the plot
                         
+                        seqFace2 = SeqMotifFace(seq2, motifs = to_add2, #Create a SeqMotifFace to plot the tract
+                                               height = 20, seq_format = '[]', 
+                                               gap_format = 'blank', 
+                                               scale_factor = 0.04, 
+                                               bgcolor = 'lightgrey', 
+                                               fgcolor = 'lightgrey')
+                        (t & f'{leaf.name}').add_face(seqFace2, 3, 'aligned') #Add the SeqMotifFace to the plot
+                        
                         segment_count += 1
                         to_add = [motifs[i]]
                     else: to_add.append(motifs[i])     
                 else: to_add.append(motifs[i])
                 
         if to_add != []:
-            seqFace = SeqMotifFace(seq, motifs = to_add, height = 20, seq_format = '[]', gap_format = 'blank', scale_factor = 0.04, bgcolor = 'lightgrey', fgcolor = 'lightgrey') #Add presence/absence info to node
+            to_add1 = [mot for mot in to_add if mot[1] <= middle_point]
+            to_add2 = []
+            for mot in to_add:
+                if mot[1] > middle_point:
+                    mot[0] -= middle_point
+                    mot[1] -= middle_point
+                    to_add2.append(mot)
+            seqFace = SeqMotifFace(seq, motifs = to_add1, height = 20, 
+                                   seq_format = '[]', gap_format = 'blank', 
+                                   scale_factor = 0.04, bgcolor = 'lightgrey', 
+                                   fgcolor = 'lightgrey') #Add presence/absence info to node
             (t & f'{leaf.name}').add_face(seqFace, 1, 'aligned') #The number represents the column
-            text_face = TextFace('|', fsize = 40, fgcolor = 'white')
-            text_face.margin_top = -45.6
-            text_face.margin_left = 626
-            (t & f'{leaf.name}').add_face(text_face, 1, 'aligned')
+            seqFace2 = SeqMotifFace(seq2, motifs = to_add2, height = 20, 
+                                   seq_format = '[]', gap_format = 'blank', 
+                                   scale_factor = 0.04, bgcolor = 'lightgrey', 
+                                   fgcolor = 'lightgrey') #Add presence/absence info to node
+            (t & f'{leaf.name}').add_face(seqFace2, 3, 'aligned') #The number represents the column
+            # text_face = TextFace('|', fsize = 40, fgcolor = 'white')
+            # text_face.margin_top = -45.6
+            # text_face.margin_left = 626
+            # (t & f'{leaf.name}').add_face(text_face, 1, 'aligned')
             segment_count += 1
         elif leaf.name == 'A1001':
-            seqFace = SeqMotifFace(seq, motifs = loci, height = 20, seq_format = 'blank', gap_format = 'blank', scale_factor = 0.04, bgcolor = 'lightgrey', fgcolor = 'lightgrey')
+            loci1 = [locus for locus in loci if locus[1] <= middle_point]
+            loci2 = []
+            for locus in loci:
+                if locus[1] > middle_point:
+                    locus[0] -= middle_point - len(miniseq)
+                    locus[1] -= middle_point - len(miniseq)
+                    loci2.append(locus)
+            seqFace = SeqMotifFace(seq, motifs = loci1, height = 20, 
+                                    seq_format = 'blank', gap_format = 'blank', 
+                                    scale_factor = 0.04, bgcolor = 'lightgrey', 
+                                    fgcolor = 'lightgrey')
             (t & f'{leaf.name}').add_face(seqFace, 1, 'aligned') #The number represents the column
             
-        seqFace = SeqMotifFace(miniseq, height = 20, seq_format = 'blank', gap_format = 'blank') #Add strain number
-        (t & f'{leaf.name}').add_face(seqFace, 0, 'aligned') #The number represents the column
+            seqFace2 = SeqMotifFace(seq2, motifs = loci2, height = 20, 
+                                    seq_format = 'blank', gap_format = 'blank', 
+                                    scale_factor = 0.04, bgcolor = 'lightgrey', 
+                                    fgcolor = 'lightgrey')
+            (t & f'{leaf.name}').add_face(seqFace2, 3, 'aligned') #The number represents the column
+            
     motif_dict[leaf.name] = motifs
     
 # =============================================================================
