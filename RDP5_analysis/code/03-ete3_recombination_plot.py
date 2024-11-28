@@ -351,9 +351,9 @@ for leaf in leaves: #Loop through the leaves in the tree
                     color = '#F7CFC1' 
                     color2 = 'black'
                     check = True
-                elif float(tract[5]) < 0.05:
-                    color, color2 = 'linen', 'black'
-                    check = False
+                # elif float(tract[5]) < 0.05:
+                #     color, color2 = 'linen', 'black'
+                #     check = False
                 else: 
                     # color, color2 = 'white', 'black'
                     check = False #Filter out tracts with p-values > 0.05
