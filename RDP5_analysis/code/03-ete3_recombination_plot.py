@@ -3,10 +3,13 @@
 """
 Created on Mon Dec 20 11:06:54 2021
 
-@author: marmo435
+Code to plot a representation of the predicted recombination tracts in RDP5
+next to the strain phylogeny, using a subset of 36 representative strains,
+from which basal strains have been excluded.
+
+@author: Marina Mota-Merlo
 """
 
-#OBS! Modify this code to plot two different segments
 # =============================================================================
 # 0. Load the packages that are needed
 # =============================================================================
@@ -19,7 +22,7 @@ import pandas as pd
 # 1. Create a cladd to store recombination segment information
 # =============================================================================
 
-#OBS! Update to show also major parent and fix support values
+#OBS! Update to show also major parent 
 class recomb_obj: #Object with recombination tract information
     def __init__(self, recombinant, minor, major, start, end, RDPvalue): #Input values
         self.recombinant = recombinant #Recombinant strain
@@ -155,13 +158,13 @@ ts.legend.add_face(RectFace(45, 15, fgcolor = 'lightgrey', bgcolor = '#DB8484',
 #Plot half of the p-values on separate columns
 ts.legend.add_face(TextFace('', fsize = 15), column = 2) #Empty label column
 ts.legend.add_face(TextFace('', fsize = 12), column = 3) #Empty legend rectangle column
-ts.legend.add_face(TextFace('  <1E-25 ', fsize = 12), column = 2) #Legend label
+ts.legend.add_face(TextFace('  <1E-25  ', fsize = 12), column = 2) #Legend label
 ts.legend.add_face(RectFace(45, 15, fgcolor = 'lightgrey', bgcolor = '#F7B9B0', 
                             label = None), column = 3) #Legend rectangle
-ts.legend.add_face(TextFace('  <1E-10 ', fsize = 12), column = 2)
+ts.legend.add_face(TextFace('  <1E-10  ', fsize = 12), column = 2)
 ts.legend.add_face(RectFace(45, 15, fgcolor = 'lightgrey', bgcolor = '#F7CFC1', 
                             label = None), column = 3)
-ts.legend.add_face(TextFace('  <0.05 ', fsize = 12), column = 2)
+ts.legend.add_face(TextFace('  <0.05  ', fsize = 12), column = 2)
 ts.legend.add_face(RectFace(45, 15, fgcolor = 'lightgrey', bgcolor = 'linen', 
                             label = None), column = 3)
 
@@ -171,13 +174,13 @@ ts.legend.add_face(TextFace('\t'*5, fsize = 15), column = 4) #Add gap between th
 ts.legend.add_face(TextFace('Phylogroup', fsize = 15, bold = True), 
                     column = 5) #Title of the phylogroup legend
 ts.legend.add_face(TextFace(' ', fsize = 12), column = 6) #Empty legend next to title
-ts.legend.add_face(TextFace('   Phylogroup A', fsize = 12), column = 5) #Legend label
+ts.legend.add_face(TextFace('  Phylogroup A', fsize = 12), column = 5) #Legend label
 ts.legend.add_face(RectFace(45, 15, fgcolor = 'lightgrey', bgcolor = '#0072B2',
                             label = None), column = 6) #Legend rectangle
-ts.legend.add_face(TextFace('   Phylogroup B', fsize = 12), column = 5)
+ts.legend.add_face(TextFace('  Phylogroup B', fsize = 12), column = 5)
 ts.legend.add_face(RectFace(45, 15, fgcolor = 'lightgrey', bgcolor = '#33B18F', 
                             label = None), column = 6)
-ts.legend.add_face(TextFace('   Phylogroup C', fsize = 12), column = 5)
+ts.legend.add_face(TextFace('  Phylogroup C', fsize = 12), column = 5)
 ts.legend.add_face(RectFace(45, 15, fgcolor = 'lightgrey', bgcolor = '#D55E00', 
                             label = None), column = 6)
 
@@ -261,7 +264,6 @@ with open(recomb) as rectracts: #Open RDP5 output
 # 6. Retrieve gene information to plot at the bottom of the figure
 # =============================================================================
 
-#OBS! Add proper gene names to CDS1-8
 loci = [] #Create an empty list to append gene information
 labels = {} #Create an empty dictionary with gene labels
 countvar = 0 #Create a count variable
@@ -282,14 +284,21 @@ with open(in_tab) as tabfile: #Open the file with positional information
                 locus[0] += 1 #Increase the start position by 1 (so that it doesn't overlap with the previous gene)
             loci.append(locus) #Append the locus to the list
 
+#Annotate the CDS of hypothetical proteins manually
+loci[7][7] = loci[7][7].replace('unk.', 'CDS1')
+loci[9][7] = loci[9][7].replace('unk.', 'CDS2')
+loci[10][7] = loci[10][7].replace('unk.', 'CDS3')
+loci[11][7] = loci[11][7].replace('unk.', 'CDS4')
+loci[13][7] = loci[13][7].replace('unk.', 'CDS5')
+loci[14][7] = loci[14][7].replace('unk.', 'CDS7')
+loci[16][7] = loci[16][7].replace('unk.', 'CDS8')
+
 # =============================================================================
 # 7. Add the recombination tract and gene information to the tree
 # =============================================================================
 
-segment_count = 0 #Set the segment count to 0
-motif_dict = {} #Create an empty dictionary to store the motifs
-seq = 'A'*middle_point #Create the tract (OBS! Divide into 2)
-seq2 = 'A'*(aln_len-middle_point)
+seq = 'A'*middle_point #Create the first half of the segment to be plotted
+seq2 = 'A'*(aln_len-middle_point) #Create the second half of the segment
 miniseq = 'A'*10 #Create a smaller sequence
 for leaf in leaves: #Loop through the leaves in the tree
     color = leaf_color.get(leaf.name.replace('-', '').upper(), None) #Color leaves according to strain phylogroup
@@ -298,11 +307,13 @@ for leaf in leaves: #Loop through the leaves in the tree
     elif 'IBH001' in leaf.name: #If the leaf name is IBH001
         leaf_name = '**' + leaf.name #Add two asterisks before
     else: leaf_name = leaf.name #Otherwise, store the leaf name as it is
+    
     name_face = TextFace(leaf_name, fgcolor = color, fsize = 16) #Create a TextFace with the gene name
     leaf.add_face(name_face, column = 0, position='branch-right') #Add formatted leaf names to the tree
-    seqFace = SeqMotifFace(miniseq, height = 20, seq_format = 'blank', gap_format = 'blank') #Add strain number
-    (t & f'{leaf.name}').add_face(seqFace, 0, 'aligned') #The number represents the column
-    (t & f'{leaf.name}').add_face(seqFace, 2, 'aligned') #The number represents the column
+    
+    seqFace = SeqMotifFace(miniseq, height = 20, seq_format = 'blank', gap_format = 'blank') #Add separator between segments
+    (t & f'{leaf.name}').add_face(seqFace, 0, 'aligned') #Add the SeqMotifFace to column 0 of the plot
+    (t & f'{leaf.name}').add_face(seqFace, 2, 'aligned') #Add the SeqMotifFace to column 2 of the plot
 
     
     if leaf.name in recomb_tracts.keys(): #If there are recombination tracts for that leaf
@@ -348,8 +359,6 @@ for leaf in leaves: #Loop through the leaves in the tree
         tract_list = recomb_tracts[leaf.name] #Load the list of recombination tracts associated to the leaf
         
         to_add = [] #Create an empty list
-        if len(motifs) > 0:
-            variabe = motifs
         for i in range(len(motifs)): #Loop through the motifs to plot
             if motifs[i][1] - motifs[i][0] > 500: #If the distance between the motifs is at least 500 nt long
                 if len(to_add) > 0: #If the to_add list is not empty
@@ -359,79 +368,75 @@ for leaf in leaves: #Loop through the leaves in the tree
                             check.append(False) #Add a False value to the check list
                         else: check.append(True) #Otherwise, add a True check to the list
                         
-                    if sum(check) != 0: #If there is at least one true value
-                        to_add1 = [mot for mot in to_add if mot[1] <= middle_point]
-                        to_add2 = []
-                        for mot in to_add:
-                            if mot[1] > middle_point:
-                                mot[0] -= middle_point
-                                mot[1] -= middle_point
-                                to_add2.append(mot)
-                        seqFace = SeqMotifFace(seq, motifs = to_add1, #Create a SeqMotifFace to plot the tract
+                    if sum(check) != 0: #If there are overlapping segments
+                        to_add1 = [mot for mot in to_add if mot[1] <= middle_point] #Retrieve the motifs on the first half of the segment
+                        to_add2 = [] #Create an empty list to retrieve the motifs in the second half of the segment
+                        for mot in to_add: #Loop through all the tracts in to_add
+                            if mot[1] > middle_point: #If the end of the tract is after the middle point
+                                mot[0] -= middle_point #Substract the middle point from the start position
+                                mot[1] -= middle_point #Substract the middle point from the end position
+                                to_add2.append(mot) #Append the motif to the list
+                        seqFace = SeqMotifFace(seq, motifs = to_add1, #Create a SeqMotifFace to plot the tracts
+                                               height = 20, seq_format = '[]', #Represent the segment as a horizontal bar of height 20
+                                               gap_format = 'blank', #Show gaps as blank spaces
+                                               scale_factor = 0.04, #Scale the segment
+                                               bgcolor = 'lightgrey', #Background color of the segment
+                                               fgcolor = 'lightgrey') #Color of the border of the segment
+                        (t & f'{leaf.name}').add_face(seqFace, 1, 'aligned') #Add the SeqMotifFace to column 1 of the plot
+                        
+                        seqFace2 = SeqMotifFace(seq2, motifs = to_add2, #Create a SeqMotifFace to plot the tracts
                                                height = 20, seq_format = '[]', 
                                                gap_format = 'blank', 
                                                scale_factor = 0.04, 
                                                bgcolor = 'lightgrey', 
                                                fgcolor = 'lightgrey')
-                        (t & f'{leaf.name}').add_face(seqFace, 1, 'aligned') #Add the SeqMotifFace to the plot
+                        (t & f'{leaf.name}').add_face(seqFace2, 3, 'aligned') #Add the SeqMotifFace to column 3 of the plot
                         
-                        seqFace2 = SeqMotifFace(seq2, motifs = to_add2, #Create a SeqMotifFace to plot the tract
-                                               height = 20, seq_format = '[]', 
-                                               gap_format = 'blank', 
-                                               scale_factor = 0.04, 
-                                               bgcolor = 'lightgrey', 
-                                               fgcolor = 'lightgrey')
-                        (t & f'{leaf.name}').add_face(seqFace2, 3, 'aligned') #Add the SeqMotifFace to the plot
-                        
-                        segment_count += 1
-                        to_add = [motifs[i]]
-                    else: to_add.append(motifs[i])     
-                else: to_add.append(motifs[i])
+                        to_add = [motifs[i]] #Re-start the to_add list
+                    else: to_add.append(motifs[i]) #Else, append the motif to the list
+                else: to_add.append(motifs[i]) #Else (if the list is empty), append the motif to the list
                 
-        if to_add != []:
-            to_add1 = [mot for mot in to_add if mot[1] <= middle_point]
-            to_add2 = []
-            for mot in to_add:
-                if mot[1] > middle_point:
-                    mot[0] -= middle_point
-                    mot[1] -= middle_point
-                    to_add2.append(mot)
-            seqFace = SeqMotifFace(seq, motifs = to_add1, height = 20, 
+        if to_add != []: #If the motif list is not empty
+            to_add1 = [mot for mot in to_add if mot[1] <= middle_point] #Retrieve the motifs on the first half of the segment
+            to_add2 = [] #Create an empty list to retrieve the motifs in the second half of the segment
+            for mot in to_add: #Loop through all the tracts in to_add
+                if mot[1] > middle_point: #If the end of the tract is after the middle point
+                    mot[0] -= middle_point #Substract the middle point from the start position
+                    mot[1] -= middle_point #Substract the middle point from the end position
+                    to_add2.append(mot) #Append the motif to the list
+                    
+            seqFace = SeqMotifFace(seq, motifs = to_add1, height = 20, #Create a SeqMotifFace to plot the tract
                                    seq_format = '[]', gap_format = 'blank', 
                                    scale_factor = 0.04, bgcolor = 'lightgrey', 
-                                   fgcolor = 'lightgrey') #Add presence/absence info to node
-            (t & f'{leaf.name}').add_face(seqFace, 1, 'aligned') #The number represents the column
-            seqFace2 = SeqMotifFace(seq2, motifs = to_add2, height = 20, 
+                                   fgcolor = 'lightgrey')
+            (t & f'{leaf.name}').add_face(seqFace, 1, 'aligned') #Add the SeqMotifFace to column 1 of the plot
+            
+            seqFace2 = SeqMotifFace(seq2, motifs = to_add2, height = 20, #Create a SeqMotifFace to plot the tract
                                    seq_format = '[]', gap_format = 'blank', 
                                    scale_factor = 0.04, bgcolor = 'lightgrey', 
-                                   fgcolor = 'lightgrey') #Add presence/absence info to node
-            (t & f'{leaf.name}').add_face(seqFace2, 3, 'aligned') #The number represents the column
-            # text_face = TextFace('|', fsize = 40, fgcolor = 'white')
-            # text_face.margin_top = -45.6
-            # text_face.margin_left = 626
-            # (t & f'{leaf.name}').add_face(text_face, 1, 'aligned')
-            segment_count += 1
-        elif leaf.name == 'A1001':
-            loci1 = [locus for locus in loci if locus[1] <= middle_point]
-            loci2 = []
-            for locus in loci:
-                if locus[1] > middle_point:
-                    locus[0] -= middle_point - len(miniseq)
-                    locus[1] -= middle_point - len(miniseq)
+                                   fgcolor = 'lightgrey')
+            (t & f'{leaf.name}').add_face(seqFace2, 3, 'aligned') #Add the SeqMotifFace to column 3 of the plot
+            
+        elif leaf.name == 'A1001': #If the leaf is the root leaf
+            loci1 = [locus for locus in loci if locus[1] <= middle_point] #Retrieve the CDS on the first half of the segment
+            loci2 = [] #Create an empty list to retrieve the CDS in the second half of the segment
+            for locus in loci: #Loop through all the CDS
+                if locus[1] > middle_point: #If the end of the CDS is after the middle point
+                    locus[0] -= middle_point - len(miniseq) #Substract the middle point and the separator length from the start position
+                    locus[1] -= middle_point - len(miniseq) #Substract the middle point and the separator length from the start position
                     loci2.append(locus)
+                    
             seqFace = SeqMotifFace(seq, motifs = loci1, height = 20, 
                                     seq_format = 'blank', gap_format = 'blank', 
                                     scale_factor = 0.04, bgcolor = 'lightgrey', 
                                     fgcolor = 'lightgrey')
-            (t & f'{leaf.name}').add_face(seqFace, 1, 'aligned') #The number represents the column
+            (t & f'{leaf.name}').add_face(seqFace, 1, 'aligned') #Add the CDS to column 1 of the plot
             
             seqFace2 = SeqMotifFace(seq2, motifs = loci2, height = 20, 
                                     seq_format = 'blank', gap_format = 'blank', 
                                     scale_factor = 0.04, bgcolor = 'lightgrey', 
                                     fgcolor = 'lightgrey')
-            (t & f'{leaf.name}').add_face(seqFace2, 3, 'aligned') #The number represents the column
-            
-    motif_dict[leaf.name] = motifs
+            (t & f'{leaf.name}').add_face(seqFace2, 3, 'aligned') #Add the CDS to column 3 of the plot
     
 # =============================================================================
 # 8. Apply the style to the tree and save it to a file
