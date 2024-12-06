@@ -83,12 +83,14 @@ leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
 
 #Highlighted gene colors for GS1-2 and BRS, faint colors for the rest
 gene_colors = {'GS1': '#FF7575', 'GS2': '#FF75B6', 'BRS': '#E875FF',
-               'S1': '#FFD3BD', 'S2a': '#FFE0C3', 'S2b': '#FFF0CB', 
-               'S3': '#FFFCD0', 'mhpD': '#CCCCCC', 'hpcG': '#CCCCCC', 
+               'S1': '#FFA175', 'S2': '#FFB875', 'S2a': '#FFB875', 'S2b': '#FFD775', 
+               'S3': '#FFF575', 'mhpD': '#CCCCCC', 'hpcG': '#CCCCCC', 
                'oppA': '#CCCCCC', 'GS3': '#FFC2D0', 'GS4': '#FF8A75'}
 
 #Faint colors for GS1-2 and BRS
-alt_colors = {'GS1': '#FFC0C0', 'GS2': '#FFC0DE', 'BRS': '#F4C0FF'}
+alt_colors = {'GS1': '#FFC0C0', 'GS2': '#FFC0DE', 'BRS': '#F4C0FF', 
+              'S1': '#FFD3BD', 'S2': '#FFE0C3', 'S2a': '#FFE0C3', 'S2b': '#FFF0CB', 
+              'S3': '#FFFCD0'}
 
 # =============================================================================
 # Set target region and load input files
@@ -101,7 +103,9 @@ padding = 500 #Padding on the horizontal line with the CDS
 config_file = os.path.expanduser('~') + '/GH_project/config.yml' #File with gene groups
 indir =  os.path.expanduser('~') + '/GH_project/plots/tabfiles' #Directory with input tabs
 outdir =  os.path.expanduser('~') + '/GH_project/plots/trees' #Directory to store output plots
-GH_types = ['BRS', 'GS1', 'GS2'] #Types of GH to plot
+GH70_types = ['BRS', 'GS1', 'GS2'] #Types of GH to plot
+GH32_types = ['S1', 'S2', 'S3'] #Types of GH to plot
+
 domain_path =  os.path.expanduser('~') + '/interproscan' #Path to domain annotations
 
 #Create output directory if it doesn't exist
@@ -179,6 +183,8 @@ with open(config_file) as conf: #Open config file with dataset informatin
     S3 = py_config['S3'] #Retrieve the S3 locus tags
     BRS = ['A1401_12770'] + py_config['BRS'] #Retrieve the BRS locus tags
     GH70_doms = GS1 + GS2 + BRS #Put the GS1-2 and BRS locus tags together
+    GH32_doms = S1 + S2a + S2b + S3
+    GH_doms = GH70_doms + GH32_doms
     strains = py_config['representatives'] #Get all representative strains
     s_nominus = remove_minus(strains) #Remove minus symbol from strain names
     GS2_BRS =  [GH_gene.replace('_2', '') for GH_gene in GS2 if GH_gene.replace('_2', '_1') in BRS] # Retrieve BRS domains of the GS2_BRS proteins
@@ -187,13 +193,17 @@ with open(config_file) as conf: #Open config file with dataset informatin
 # Load tree file and save gene types to dictionary
 # =============================================================================
 domain_dict = {} #Create empty dictionary
-for GH in GH_types: #Loop through gene types
-    print(f'\n\nGH70 {GH} genes...', end = '\n') #Print gene type
-    treefile =  os.path.expanduser('~') + f'/GH_project/data/fasta/GH70/trees/{GH}_repset.mafft.faa.treefile' #Load tree file
+for GH in GH70_types + GH32_types: #Loop through gene types
+    if GH in GH70_types:
+        print(f'\n\nGH70 {GH} genes...', end = '\n') #Print gene type
+        treefile =  os.path.expanduser('~') + f'/GH_project/data/fasta/GH70/trees/{GH}_repset.mafft.faa.treefile' #Load tree file
+    else:
+        print(f'\n\nGH32 {GH} genes...', end = '\n') #Print gene type
+        treefile =  os.path.expanduser('~') + f'/GH_project/data/fasta/GH32/trees/{GH}_repset.mafft.faa.treefile' #Load tree file
     outplot = f'{GH}_CDS_phylogeny.png' #Specify name of the output plot
 
     gene_types = {} # Create dictionary to assign gene types
-    for gene_dom in GH70_doms: #Loop through locus tags
+    for gene_dom in GH_doms: #Loop through locus tags
         gene = replace_strain_name(gene_dom) #Change locus tag
         if gene_dom in GS1: #If the locus tag is in GS1
             gene_types[gene] = 'GS1' #Assign it to type GS1
@@ -205,6 +215,12 @@ for GH in GH_types: #Loop through gene types
             gene_types[gene] = 'BRS' #Assign the gene to BRS
         elif gene_dom in GS3: #If the locus tag is in GS3
             gene_types[gene] = 'GS3' #Assign the gene to GS3
+        elif gene_dom in S1:
+            gene_types[gene] = 'S1'
+        elif gene_dom in S2a+S2b:
+            gene_types[gene] = 'S2'
+        elif gene_dom in S3:
+            gene_types[gene] = 'S3'
         else: print('Something is VERY wrong here...') #Otherwise, print an error message
             
     tabs = [file for file in os.listdir(indir) if any(list(strain in file for strain in strains))] #snakemake.input.tabs #Maybe I should regenerate the tabs adding locus tag and annotation separately...
@@ -219,7 +235,7 @@ for GH in GH_types: #Loop through gene types
             freader = csv.reader(dfile, delimiter = '\t') #Read the file contents
             for line in freader: #Loop through the lines in the file
                 gene_locus = replace_strain_name(line[0]).replace('-', '').replace('fhon2', 'Fhon2') #Get the locus tag in each line
-                if ((line[0] in GH70_doms) or (gene_locus.upper() in GH70_doms) or (f'{gene_locus.upper()}_1' in GH70_doms) or (f'{line[0]}_1' in GH70_doms) or ('MP2' in domain_file and int(gene_locus.split('_')[1]) < 14000)) and 'Glycosyl hydrolase family 70' in line[5]: #Get the locus tags of interest
+                if ((line[0] in GH_doms) or (gene_locus.upper() in GH_doms) or (f'{gene_locus.upper()}_1' in GH_doms) or (f'{line[0]}_1' in GH_doms) or ('MP2' in domain_file and int(gene_locus.split('_')[1]) < 14000)) and ('Glycosyl hydrolase family 70' in line[5] or 'glyco_32' in line[5]): #Get the locus tags of interest
                     if 'MP2' in domain_file: #If the strain is MP2
                         gene_locus = gene_locus.replace('_13350', '_03850').replace('_13360', '_03845') #Make extra changes to the locus tags
                     pos = (int(line[6])*3, int(line[7])*3) #Get the position of the domains
@@ -244,8 +260,14 @@ for GH in GH_types: #Loop through gene types
         outnode = 'A1001_12310' #Root of GS1
     elif GH == 'GS2':
         outnode = t.get_common_ancestor('H3B104X_13220', 'H4B505J_12900') #Root of GS2
-    else:
+    elif GH == 'BRS':
         outnode = t.get_common_ancestor('LDX55_06330', 'H4B204J_13340') #Root of BRS
+    elif GH == 'S1':
+        outnode = t.search_nodes(name = 'K2W83_RS06175')[0]
+    elif GH == 'S2':
+        outnode = t.get_common_ancestor('H4B412M_13220', 'A1805_12800')
+    elif GH == 'S3':
+        outnode = t.search_nodes(name = 'A1404_13450')[0]
     t.set_outgroup(outnode) #Set the root
     
 # =============================================================================
@@ -375,6 +397,8 @@ for GH in GH_types: #Loop through gene types
                             
                             else: #If it is other gene of interest
                                 print(gene[0], 'is other')
+                                if gene[0] == 'hpcG':
+                                    gene[0] = 'mhpD'
 
 
                             format_str = f'Arial|14|black|{gene[0]}' #Text on the CDS to be plotted
@@ -390,6 +414,13 @@ for GH in GH_types: #Loop through gene types
                             else: #Otherwise
                                 gene_dict[leaf].append(info_list) #Append the information to the dictionary
             
+        if 'oppA' in gene_dict[leaf][-1][7] and 'S3' in gene_dict[leaf][-2][7]:
+            gene_dict[leaf] = gene_dict[leaf][:-1]
+            decrease = gene_dict[leaf][0][0]
+            for element in gene_dict[leaf]:
+                element[0] -= decrease
+                element[1] -= decrease
+            
     #Code to adjust the positions of CDS in the plots for each gene
     if GH == 'BRS':
         length_dict = {key:segment_length for key in gene_dict}
@@ -397,6 +428,8 @@ for GH in GH_types: #Loop through gene types
         length_dict = {key:segment_length+2000 for key in gene_dict}
     elif GH == 'GS2':
         length_dict = {key:segment_length-5500 for key in gene_dict}
+    else:
+        length_dict = {key:segment_length for key in gene_dict}
     
     #Reverse the plots in all strains except for MP2
     [fix_strand(gene_dict[key]) for key in gene_dict if 'MP2' not in key]
@@ -425,6 +458,17 @@ for GH in GH_types: #Loop through gene types
             elif GH == 'GS1' and f'|{GH}' in element[7]: #If the plot is for GS1 and the domain is a GS1
                 divide = True
                 print(key, GH, 'Domain GS1')
+            elif GH == 'S1' and f'|{GH}' in element[7]:
+                divide = True
+                print(key, GH, f'Domain {GH}')
+            elif GH == 'S2' and f'|{GH}' in element[7]:
+                if (key in S2a and 'S2a' in element[7]) or (key in S2b and 'S2b' in element[7]):
+                    divide = True
+                print(key, GH, f'Domain {GH}')
+            elif GH == 'S3' and f'|{GH}' in element[7]:
+                divide = True
+                print(key, GH, f'Domain {GH}')
+                
                 
             if divide: #If the gene should be divided
                 new_domain = element.copy() #Clone CDS to be plotted
@@ -432,13 +476,18 @@ for GH in GH_types: #Loop through gene types
                 new_domain[1] = element[0] + domain_dict[key][1] - 1 #Modify end of segment to end of the domain
                 new_domain[7] = new_domain[7].replace('GS2_BRS', GH) #Modify text of segment if it is a GS2_BRS gene
                 new_domain[5] = 'black' #Modify edge color
-                for GH_typ in GH_types: #Loop through GH types and change the domain colors to brighter colors
-                    if GH_typ in element[7] and 'GS2_BRS' not in element[7]:
+                for GH_typ in GH70_types+GH32_types: #Loop through GH types and change the domain colors to brighter colors
+                    if f'|{GH_typ}' in element[7] and 'GS2_BRS' not in element[7]:
                         element[6] = alt_colors[GH_typ]
+                        if 'S2b' in element[7]:
+                            element[6] = alt_colors['S2b']
                     else:
                         element[6] = element[6].replace(gene_colors[GH_typ], alt_colors[GH_typ])
+
                 if 'GS2_BRS' not in element[7]: #Remove the name of the gene from the segments of the gene beyond the domain if the gene is not a GS2_BRS
                     element[7] = element[7].replace(gene_types[key], '')
+                    element[7] = element[7].replace('|a', '|')
+                    element[7] = element[7].replace('k|b', 'k|')
                 next_domain = element.copy() #Clone CDS to be plotted
                 if GH == 'GS2' and 'GS2_BRS' in element[7]: #If the gene is GS2_BRS, remove the gene name from the shorter segment to be plotted
                     element[7] = element[7].replace('GS2_BRS', '')
@@ -450,11 +499,13 @@ for GH in GH_types: #Loop through gene types
                 new_domains.append(next_domain)
                 new_domains.append(new_domain)
             else: #If the gene shouldn't be divided, change the colors to less bright colors
-                for GH_typ2 in GH_types:
-                    if GH_typ2 in element[7] and 'GS2_BRS' not in element[7]:
+                for GH_typ2 in GH70_types+GH32_types:
+                    if f'|{GH_typ2}' in element[7] and 'GS2_BRS' not in element[7]:
                         element[6] = alt_colors[GH_typ2]
                     elif GH_typ2 in element[7]:
                         element[6] = element[6].replace(gene_colors[GH_typ2], alt_colors[GH_typ2])
+                    if 'S2b' in element[7]:
+                        element[6] = alt_colors['S2b']
                 new_domains.append(element)
         gene_dict[key] = new_domains # I need to add some kind of check where I check that the key gene type is the same as the gene type to add domains, and then I need to check that it is the right domain when there are two genes that are classified as the same
 
@@ -464,10 +515,12 @@ for GH in GH_types: #Loop through gene types
     sum_dict = {} #Create an empty dictionary
     for key, value in gene_dict.items(): #Loop through information in the dictionary
         for entry in gene_dict[key]: #Loop through CDS to be plotted for a specific leaf of the phylogeny
-            if GH in entry[7] and any(color in entry[6] for color in gene_colors.values()): #If the type of a gene matches the gene type that should be highlighted on the tree
+            if f'|{GH}' in entry[7] and (any(color in entry[6] for color in gene_colors.values()) or (any(color in entry[6] for color in alt_colors.values())) and GH != 'BRS'): #If the type of a gene matches the gene type that should be highlighted on the tree
                 sum_dict[key] = entry[0] #Store the start position of the gene
+
     max_value = max(sum_dict.values()) #Get the highest starting position
     sub_dict = {k: max_value - v for k, v in sum_dict.items()} #Calculate the difference to the start position for all remaining genes that belong to the category of interest
+
     
     for key in gene_dict.keys(): #Loop through leaves in the phylogeny
         for element in gene_dict[key]: #Loop through CDS/CDS segments to be plotted
@@ -486,8 +539,8 @@ for GH in GH_types: #Loop through gene types
         leaf.add_face(name_face, column=0, position='branch-right') #Add formatted leaf names
 
         seqFace = SeqMotifFace(seq_dict[lname], motifs = gene_dict[lname], 
-                               seq_format = 'line', gap_format = 'blank', 
-                               scale_factor = 0.03) #Create variable storing the CDS to plot
+                                seq_format = 'line', gap_format = 'blank', 
+                                scale_factor = 0.03) #Create variable storing the CDS to plot
         (t & f'{leaf.name}').add_face(seqFace, 2, 'aligned') #Add CDS representation to leaf
         
 # =============================================================================
