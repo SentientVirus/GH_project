@@ -64,12 +64,27 @@ types = {'SP': ['Signal peptide', 'DI', '#00197F'], #Dictionary with formatting 
          'CB': ['Choline-binding', 'RE', '#FFAB00'], 
          'CWB': ['Cell-wall binding', 'RE', '#FF8900']}
 
+short_genes = ['A0901_14250', 'A1001_13210', 'A1003_13400', 'A1202_14500',
+               'A1401_13710', 'A1404_14290', 'A1805_13670', 'K2W83_RS06625',
+               'FHON2_14510', 'G0101_13740', 'G0403_13980', 'H1B104J_13940',
+               'H1B105A_13110', 'H1B302M_13810', 'H3B101A_14180', 
+               'H3B104J_13910', 'H3B104X_14110', 'H3B202X_13780', 
+               'H3B203J_14310', 'H3B203M_13420', 'H3B206M_13730', 
+               'H3B209X_14340', 'H4B111J_14460', 'H4B202J_13700', 
+               'H4B204J_14250', 'H4B205J_13920', 'H4B206J_14400', 
+               'H4B211M_13940', 'H4B402J_13530', 'H4B405J_14150',
+               'H4B406M_14380', 'H4B412M_14170', 'H4B501J_13790 ',
+               'H4B503X_13610', 'H4B504J_14270', 'H4B505J_13820', 
+               'LDX55_06780', 'APS55_RS03400']
+
 workdir = os.path.expanduser('~') + '/GH_project' #Working directory
 indir = f'{workdir}/interproscan' #Directory with inputs
 outdir = f'{workdir}/data/tabs'
 
 GS3 = ['H3B206M_12830', 'H4B111J_13560', 'H4B405J_13350', 'H4B406M_13450'] #List of GS3 genes
 GH_types = ['GH70', 'GH32'] #List of glycosyl hydrolase domains
+
+short_tree = f'{workdir}/data/fasta/GH70/trees/complete_short_repset.mafft.faa.treefile'
 
 if not os.path.exists(outdir): #If the output directory doesn't exist
     os.makedirs(outdir) #Create it
@@ -100,8 +115,10 @@ for GH_type in GH_types: #Loop through GH types
                     locus = 'APS55_RS03845' #Manually assign the right locus tag to it
                 elif locus == 'MP2_13350': #If the locus is the GS1 from MP2
                     locus = 'APS55_RS03850' #Do the same
+                elif locus == 'MP2_14250':
+                    locus = 'APS55_RS03400'
                 
-                if locus in ref_text: #If the locus tag is in the reference tree
+                if locus in ref_text or locus in short_genes: #If the locus tag is in the reference tree
                     print(locus) #Print the locus
                     add = False #Boolean to check if the domain should be retrieved
                     #Condition to get any of the domains of interest
@@ -117,6 +134,9 @@ for GH_type in GH_types: #Loop through GH types
                             if 'Choline' in line[5]: #If it is a choline-binding domain
                                 dom_type = 'CB' #Set the gene type to CB
                                 add = True
+                            elif 'cell wall' in line[5]:
+                                dom_type = 'CWB'
+                                add = True
                             else: #If no signal peptide has been retrieved
                                 dom_type = 'SP' #Retrieve the signal peptide
                                 sig_pep = True 
@@ -127,7 +147,7 @@ for GH_type in GH_types: #Loop through GH types
                             add = True
                             
                     #Condition to get the domains of interest
-                    elif ('GH70' in ref_tree) and (line[3] == 'Pfam' or (line[3] == 'TIGRFAM' and 'signal peptide' in line[5]) or (locus in GS3 and line[3] == 'Phobius' and line[4] == 'SIGNAL_PEPTIDE')):
+                    elif ('GH70' in ref_tree or locus in short_genes) and (line[3] == 'Pfam' or (line[3] == 'TIGRFAM' and 'signal peptide' in line[5]) or (locus in GS3 and line[3] == 'Phobius' and line[4] == 'SIGNAL_PEPTIDE')):
                         #Condition to retrieve signal peptides (prioritize TIGRFAM)
                         if (line[3] == 'TIGRFAM' or ('LDX55' not in locus and 'K2W83' not in locus and line[3] == 'Pfam' and 'signal peptide' in line[5]) or (locus in GS3 and line[3] == 'Phobius' and line[4] == 'SIGNAL_PEPTIDE')) and sig_pep == False:
                             dom_type = 'SP'

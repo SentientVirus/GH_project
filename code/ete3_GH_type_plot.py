@@ -83,7 +83,7 @@ leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
 
 #Highlighted gene colors for GS1-2 and BRS, faint colors for the rest
 gene_colors = {'GS1': '#FF7575', 'GS2': '#FF75B6', 'BRS': '#E875FF',
-               'S1': '#FFE0C3', 'S2a': '#FFF0CB', 'S2b': '#FFF0CB', 
+               'S1': '#FFD3BD', 'S2a': '#FFE0C3', 'S2b': '#FFF0CB', 
                'S3': '#FFFCD0', 'mhpD': '#CCCCCC', 'hpcG': '#CCCCCC', 
                'oppA': '#CCCCCC', 'GS3': '#FFC2D0', 'GS4': '#FF8A75'}
 
@@ -253,11 +253,11 @@ for GH in GH_types: #Loop through gene types
 # =============================================================================
     ts = TreeStyle() #Create default tree style
     ts.show_branch_length = False # Hide support values
-    ts.scale =  500 #General tree scale
+    ts.scale =  2000 #General tree scale
     ts.branch_vertical_margin = 5 # Space between branches
     ts.show_branch_support = False
     ts.show_leaf_name = False # Hide unformatted leaf names
-    ts.show_scale = False # Hide tree scale
+    ts.show_scale = True # Hide tree scale
     
     #Add legend
     ts.legend_position = 3 #Bottom left
@@ -493,6 +493,7 @@ for GH in GH_types: #Loop through gene types
 # =============================================================================
 # Print tree
 # =============================================================================
+    t.ladderize(1)
     t.render(f'{outdir}/{outplot}', tree_style = ts) #Render tree in PNG format
     t.render(f'{outdir}/{outplot.replace(".png", ".tiff")}', tree_style = ts) #Render tree in TIFF format
     t.render(f'{outdir}/{outplot.replace(".png", ".svg")}', tree_style = ts) #Render tree in SVG format

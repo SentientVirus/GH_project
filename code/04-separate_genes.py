@@ -56,6 +56,7 @@ BRS_clade = snakemake.params.BRS_clade
 short = snakemake.params.short
 NGB = snakemake.params.NGB
 S1 = snakemake.params.S1
+S2 = snakemake.params.S2
 S2a = snakemake.params.S2a
 S2b = snakemake.params.S2b
 S3 = snakemake.params.S3

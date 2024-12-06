@@ -2,15 +2,34 @@
 """
 Created on Wed Dec  1 16:39:34 2021
 
-@author: usuario
+Script to retrieve the sequence motifs in GH70 genes and the positions of the
+motifs in the complete genes. The code generates two output files, one with
+motif sequence and position and another one with motif presence/absence.
+
+@author: Marina Mota-Merlo
 """
+
+# =============================================================================
+# 0. Import required Python modules
+# =============================================================================
+
 import re, os
 from Bio import SeqIO
 
-GH_types = ['GS1', 'GS2', 'GS3', 'GS4', 'BRS', 'NGB']
+# =============================================================================
+# 1. Define classes to store motif information
+# =============================================================================
 
 class motif:
+    '''
+    Class to store the motif number, sequence and position.
+    '''
     def __init__(self, num, seq, start, end): #Define motif class
+        '''Requires:
+            - num: motif number (1-7)
+            - seq: motif sequence (amino acids)
+            - start: start position of the motif in the gene (in amino acids)
+            - end: end position of the motif in the complete gene (in amino acids)'''
         self.num = num #Motif number (1-7)
         self.seq = seq #Motif sequence
         self.start = start #Start position of the motif in a protein sequence
@@ -18,7 +37,9 @@ class motif:
     def __str__(self): #What print(class) returns
         return f'<Motif {self.num} from position {self.start} to {self.end}>'
 
-class prot_sequence: #All motifs associated to protein (1 sequence/position per motif)
+class prot_sequence:
+    '''
+    '''
     def __init__(self, locus, I, II, III, IV, V, VI, VII):
         self.locus = locus #Locus tag
         self.I = I #Domain 1
@@ -60,6 +81,7 @@ def search_motif(seq_str, num): #Function to search for any motif
         motifs.append([num, motif_seq, start, end])
     return motifs
 
+GH_types = ['GS1', 'GS2', 'GS3', 'GS4', 'BRS', 'NGB']
 infolder = os.path.expanduser('~') + '/GH_project/data/fasta/GH70'
 workdir = os.path.expanduser('~') + '/GH_project/motifs'
 output_file = f'{workdir}/GH70_motif_presence_pos.tsv'

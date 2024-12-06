@@ -57,7 +57,7 @@ rule separate_GHs:
         expand("data/fasta/{GH}/{add}{GH}_{sufix}.{ext}", add = ["", "complete_"], GH = config["GHs"], ext = ["faa", "fna"], sufix = ["repset", "subset", "all"]),
         expand("data/fasta/GH70/{add}{type}_{sufix}.{ext}", add = ["", "complete_"], type = ["GS1", "GS2", "GS3", "GS4", "BRS", "BRS2", "BRS3", "BRS_clade", "short", "NGB"], sufix = ["repset", "all"], ext = ["faa", "fna"]),
         expand("data/fasta/GH70/{add}{type}_subset.{ext}", add = ["", "complete_"], type = ["GS1", "GS2", "BRS", "short", "NGB"], ext = ["faa", "fna"]),
-        expand("data/fasta/GH32/{add}{type}_{suffix}.{ext}", add = ["", "complete_"], type = ["S1", "S2a", "S2b", "S3"], suffix = ["repset", "subset", "all"], ext = ["faa", "fna"])
+        expand("data/fasta/GH32/{add}{type}_{suffix}.{ext}", add = ["", "complete_"], type = ["S1", "S2", "S2a", "S2b", "S3"], suffix = ["repset", "subset", "all"], ext = ["faa", "fna"])
     input:
         expand("data/fasta/{GH}/{GH}.{ext}", GH = config["GHs"], ext = ["faa", "fna"]),
         expand("data/fasta/{GH}/complete_{GH}.{ext}", GH = config["GHs"], ext = ["faa", "fna"])
@@ -73,13 +73,14 @@ rule separate_GHs:
         short = config["short"],
         NGB = config["NGB"],
         S1 = config["S1"],
+        S2 = config["S2a"] + config["S2b"],
         S2a = config["S2a"],
         S2b = config["S2b"],
         S3 = config["S3"],
         repr = config["representatives"],
         subset = config["subset"],
         GH70s = ["GS1", "GS2", "GS3", "GS4", "BRS", "BRS2", "BRS3", "BRS_clade", "NGB", "short"],
-        GH32s = ["S1", "S2a", "S2b", "S3"]
+        GH32s = ["S1", "S2", "S2a", "S2b", "S3"]
     log: "logs/python/subtypes.log"
     conda: "envs/biopython_env.yml"
     script:
@@ -161,14 +162,14 @@ rule create_GH70_functional_all:
 #The conda environment files provide all required packages except for pal2nal (v14).
 rule msa_gtf:
     output:
-        GH70 = expand("data/fasta/GH70/{type}_repset.mafft.{ext}", type = ["GH70_functional", "GS1", "BRS", "BRS2", "BRS3", "BRS_clade", "GS2", "NGB"], ext = ["faa", "fna"]),
-        GH32 = expand("data/fasta/GH32/{type}_repset.mafft.{ext}", type = ["GH32", "S1", "S2a", "S2b", "S3"], ext = ["faa", "fna"]),
+        GH70 = expand("data/fasta/GH70/{type}_repset.mafft.{ext}", type = ["GH70_functional", "GS1", "BRS", "BRS2", "BRS3", "BRS_clade", "GS2", "NGB", "complete_short"], ext = ["faa", "fna"]),
+        GH32 = expand("data/fasta/GH32/{type}_repset.mafft.{ext}", type = ["GH32", "S1", "S2", "S2a", "S2b", "S3"], ext = ["faa", "fna"]),
         GH70_all = expand("data/fasta/GH70/GH70_functional_all.mafft.{ext}", ext = ["faa", "fna"]),
         GH32_all = expand("data/fasta/GH32/GH32_all.mafft.{ext}", ext = ["faa", "fna"]),
         GH70_out = "data/fasta/GH70/GH70_functional_outgroup_repset.mafft.faa"
     input:
-        GH70 = expand("data/fasta/GH70/{type}_repset.{ext}", type = ["GH70_functional", "GS1", "BRS", "BRS2", "BRS3", "BRS_clade", "GS2", "NGB"], ext = ["faa", "fna"]),
-        GH32 = expand("data/fasta/GH32/{type}_repset.{ext}", type = ["GH32", "S1", "S2a", "S2b", "S3"], ext = ["faa", "fna"]),
+        GH70 = expand("data/fasta/GH70/{type}_repset.{ext}", type = ["GH70_functional", "GS1", "BRS", "BRS2", "BRS3", "BRS_clade", "GS2", "NGB", "complete_short"], ext = ["faa", "fna"]),
+        GH32 = expand("data/fasta/GH32/{type}_repset.{ext}", type = ["GH32", "S1", "S2", "S2a", "S2b", "S3"], ext = ["faa", "fna"]),
         GH70_all = expand("data/fasta/GH70/GH70_functional_all.{ext}", ext = ["faa", "fna"]),
         GH32_all = expand("data/fasta/GH32/GH32_all.{ext}", ext = ["faa", "fna"]),
         GH70_out = "data/fasta/GH70/GH70_functional_outgroup_repset.faa"
@@ -219,16 +220,16 @@ rule msa_other:
 
 rule iqtree_gtf:
     output:
-        prot_GH70 = expand("data/fasta/GH70/trees/{type}_repset.mafft.faa.treefile", type = ["GH70_functional", "GS1", "BRS", "BRS2", "BRS3", "BRS_clade", "GS2", "NGB"]),
-        gene_GH70 = expand("data/fasta/GH70/trees/{type}_repset.mafft.fna.treefile", type = ["GH70_functional", "GS1", "BRS", "GS2", "NGB"]),
-        prot_GH32 = expand("data/fasta/GH32/trees/{type}_repset.mafft.faa.treefile", type = ["GH32", "S1", "S2a", "S3"]),
-        gene_GH32 = expand("data/fasta/GH32/trees/{type}_repset.mafft.fna.treefile", type = ["GH32", "S1", "S2a", "S3"]),
+        prot_GH70 = expand("data/fasta/GH70/trees/{type}_repset.mafft.faa.treefile", type = ["GH70_functional", "GS1", "BRS", "BRS2", "BRS3", "BRS_clade", "GS2", "NGB", "complete_short"]),
+        gene_GH70 = expand("data/fasta/GH70/trees/{type}_repset.mafft.fna.treefile", type = ["GH70_functional", "GS1", "BRS", "GS2", "NGB", "complete_short"]),
+        prot_GH32 = expand("data/fasta/GH32/trees/{type}_repset.mafft.faa.treefile", type = ["GH32", "S1", "S2", "S2a", "S3"]),
+        gene_GH32 = expand("data/fasta/GH32/trees/{type}_repset.mafft.fna.treefile", type = ["GH32", "S1", "S2", "S2a", "S3"]),
         out_GH70 = "data/fasta/GH70/trees/GH70_functional_outgroup_repset.mafft.faa.treefile"
     input:
-        prot_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.faa", type = ["GH70_functional", "GS1", "BRS", "BRS2", "BRS3", "BRS_clade", "GS2", "NGB"]),
-        gene_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.fna", type = ["GH70_functional", "GS1", "BRS", "BRS2", "BRS3", "BRS_clade", "GS2", "NGB"]),
-        prot_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.faa", type = ["GH32", "S1", "S2a", "S3"]),
-        gene_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.fna", type = ["GH32", "S1", "S2a", "S3"]),
+        prot_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.faa", type = ["GH70_functional", "GS1", "BRS", "BRS2", "BRS3", "BRS_clade", "GS2", "NGB", "complete_short"]),
+        gene_GH70 = expand("data/fasta/GH70/{type}_repset.mafft.fna", type = ["GH70_functional", "GS1", "BRS", "BRS2", "BRS3", "BRS_clade", "GS2", "NGB", "complete_short"]),
+        prot_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.faa", type = ["GH32", "S1", "S2", "S2a", "S3"]),
+        gene_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.fna", type = ["GH32", "S1", "S2", "S2a", "S3"]),
         out_GH70 = "data/fasta/GH70/GH70_functional_outgroup_repset.mafft.faa"
     threads: 12
     conda: "envs/environment.yml"

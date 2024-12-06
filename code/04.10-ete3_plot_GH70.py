@@ -6,9 +6,12 @@ Created on Mon Dec 20 11:06:54 2021
 This script creates a plot of the GH70 phylogeny, including
 outgroups.
 
-@author: Marina Mota Merlo
+@author: Marina Mota-Merlo
 """
 
+# =============================================================================
+# 
+# =============================================================================
 from ete3 import Tree, TreeStyle, NodeStyle, SeqMotifFace, TextFace
 import re
 import os

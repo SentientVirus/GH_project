@@ -59,7 +59,9 @@ leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
 shapes = {'RE': '[]', 'EL': '()', 'DI': '<>', 'TR': 'o'}
 
 #Glycosyl hydrolase types to make graphical representations from
-GH_types = ['GH32', 'GH70']
+GH_types = ['GH32', 'GH70', 'GS1', 'GS2', 'BRS', 'NGB', 'complete_short', 'S1', 'S2', 'S3']
+
+GH70_list = ['GH70', 'GS1', 'GS2', 'BRS', 'NGB', 'complete_short']
 
 workdir = os.path.expanduser('~') + '/GH_project' #Work directory
 
@@ -67,22 +69,45 @@ workdir = os.path.expanduser('~') + '/GH_project' #Work directory
 # 2. Create the plot
 # =============================================================================
 for GH_type in GH_types: #Loop through GH types
-
-    domain_file = f'{workdir}/data/tabs/{GH_type}_domain_file.txt' #File with domain information
+    if GH_type in GH70_list:
+        domain_file = f'{workdir}/data/tabs/GH70_domain_file.txt' #File with domain information
+    elif GH_type not in GH70_list:
+        domain_file = f'{workdir}/data/tabs/GH32_domain_file.txt' #File with domain information
     treefile = f'{workdir}/data/fasta/{GH_type}/trees/{GH_type}_functional_outgroup_repset.mafft.faa.treefile' #Tree file
     outfile = f'{workdir}/plots/trees/{GH_type}_domains.png' #Output file
     
     if GH_type == 'GH70': #If the gene type is GH70
         t = Tree(treefile, format = 0) #Read the tree file
         outnode = t.get_common_ancestor('AAU08014.2_L_reuteri', 'AOR73699.1_L_fermentum') #Get the root of the tree
-    elif GH_type == 'GH32': #If the gene type is GH32
+    else: #If the gene type is GH32
+        if not GH_type.startswith('GH') and not GH_type.startswith('S'):
+            treefile = treefile.replace(f'/{GH_type}/', '/GH70/')
+        elif not GH_type.startswith('GH'):
+            treefile = treefile.replace(f'/{GH_type}/', '/GH32/')
         t = Tree(treefile.replace('functional_outgroup_', ''), format = 0) #Read the tree file
-        outnode = t.get_common_ancestor('H3B203M_12520', 'A1404_13450') #Get the root of the tree
+        
+        if GH_type == 'GH32':
+            outnode = t.get_common_ancestor('H3B203M_12520', 'A1404_13450') #Get the root of the tree
+        elif GH_type == 'S1':
+            outnode = t.search_nodes(name = 'K2W83_RS06175')[0]
+        elif GH_type == 'S2':
+            outnode = t.get_common_ancestor('H4B412M_13220', 'A1805_12800')
+        elif GH_type == 'S3':
+            outnode = t.search_nodes(name = 'A1404_13450')[0]
+        elif GH_type == 'GS1':
+            outnode = t.search_nodes(name = 'A1001_12310')[0]
+        elif GH_type == 'GS2':
+            outnode = t.get_common_ancestor('H3B104X_13220', 'H4B505J_12900')
+        elif GH_type == 'BRS':
+            outnode = t.get_common_ancestor('H4B204J_13340', 'LDX55_06330')
+        elif GH_type == 'NGB':
+            outnode = t.get_common_ancestor('H3B203J_04720', 'K2W83_RS02365')
+        else: outnode = t.search_nodes(name = 'A1001_13210')[0]
 
     t.set_outgroup(outnode) #Set the root of the tree
     
     ts = TreeStyle() #Create a tree style
-    ts.scale = 500 #Set scale of the tree
+    ts.scale = 2000 #Set scale of the tree
     ts.show_branch_length = False #Remove branch length numbers
     ts.show_branch_support = False #Remove support values
     ts.show_leaf_name = False #Remove leaf names
@@ -126,9 +151,9 @@ for GH_type in GH_types: #Loop through GH types
                         domain[i] = 'TR'
                         domain[i+3] = '#9975ff'
                     elif domain[i+4] == 'GH70':
-                        domain[i+3] = '#FF7575'
+                        domain[i+3] = '#FF7254' #'#FF7575'
                     elif domain[i+4] == 'GH32':
-                        domain[i+3] = '#FFB875'
+                        domain[i+3] = '#F4AA62' #'#FFB875'
                     elif domain[i+4] == 'CB':
                         domain[i+4] = 'GB'
                         domain[i+3] = '#75cd5e'
@@ -182,30 +207,34 @@ for GH_type in GH_types: #Loop through GH types
     elif GH_type == 'GH32':
         no_blank = 10
     
-    #Add legend patches (rectangles or circles) in the same color as domain representations
-    ts.legend.add_face(RectFace(60, 40, fgcolor = None, bgcolor = '#75cd5e', label = ''), column=0)
-    #Add text with domain name next to the legend patch
-    ts.legend.add_face(TextFace(' Glucan-binding domain', fsize = 32), column = 1)
-    #Add padding at the right margin
-    ts.legend.add_face(TextFace(' '*no_blank, fsize = 32), column = 2)
-    #Add different domaint types to the legend depending on gene type
-    if GH_type == 'GH70':
-        ts.legend.add_face(RectFace(60, 40, fgcolor = None, bgcolor = '#cce769', label = ''), column=0)
-        ts.legend.add_face(TextFace(' Cell wall-binding domain', fsize = 32), column = 1)
+    if GH_type != 'complete_short':
+        #Add legend patches (rectangles or circles) in the same color as domain representations
+        ts.legend.add_face(RectFace(60, 40, fgcolor = None, bgcolor = '#75cd5e', label = ''), column=0)
+        #Add text with domain name next to the legend patch
+        ts.legend.add_face(TextFace(' Glucan-binding domain PF19127', fsize = 32), column = 1)
+        #Add padding at the right margin
         ts.legend.add_face(TextFace(' '*no_blank, fsize = 32), column = 2)
-        ts.legend.add_face(RectFace(60, 40, fgcolor = None, bgcolor = '#FF7575', label = ''), column=0)
+        #Add different domaint types to the legend depending on gene type
+        if GH_type in GH70_list:
+            ts.legend.add_face(RectFace(60, 40, fgcolor = None, bgcolor = '#cce769', label = ''), column=0)
+            ts.legend.add_face(TextFace(' Glucan-binding domain PF01473', fsize = 32), column = 1)
+            ts.legend.add_face(TextFace(' '*no_blank, fsize = 32), column = 2)
+            ts.legend.add_face(RectFace(60, 40, fgcolor = None, bgcolor = '#FF7254', label = ''), column=0)
+            ts.legend.add_face(TextFace(' GH70 domain', fsize = 32), column = 1)
+            ts.legend.add_face(TextFace(' '*no_blank, fsize = 32), column = 2)
+            ts.legend.add_face(CircleFace(30, color = '#e875ff', label = ''), column=0)
+            ts.legend.add_face(TextFace(' DUF5776', fsize = 32), column = 1)
+            ts.legend.add_face(TextFace(' '*no_blank, fsize = 32), column = 2)
+        else:
+            ts.legend.add_face(RectFace(60, 40, fgcolor = None, bgcolor = '#F4AA62', label = ''), column=0)
+            ts.legend.add_face(TextFace(' GH32 domain', fsize = 32), column = 1)
+            ts.legend.add_face(TextFace(' '*no_blank, fsize = 32), column = 2)
+        ts.legend.add_face(CircleFace(30, color = '#9975ff', label = ''), column=0)
+        ts.legend.add_face(TextFace(' Signal peptide', fsize = 32), column = 1)
+        ts.legend.add_face(TextFace(' '*no_blank, fsize = 32), column = 2)
+    else:
+        ts.legend.add_face(RectFace(60, 40, fgcolor = None, bgcolor = '#FF7254', label = ''), column=0)
         ts.legend.add_face(TextFace(' GH70 domain', fsize = 32), column = 1)
-        ts.legend.add_face(TextFace(' '*no_blank, fsize = 32), column = 2)
-        ts.legend.add_face(CircleFace(30, color = '#e875ff', label = ''), column=0)
-        ts.legend.add_face(TextFace(' DUF5776', fsize = 32), column = 1)
-        ts.legend.add_face(TextFace(' '*no_blank, fsize = 32), column = 2)
-    elif GH_type == 'GH32':
-        ts.legend.add_face(RectFace(60, 40, fgcolor = None, bgcolor = '#FFB875', label = ''), column=0)
-        ts.legend.add_face(TextFace(' GH32 domain', fsize = 32), column = 1)
-        ts.legend.add_face(TextFace(' '*no_blank, fsize = 32), column = 2)
-    ts.legend.add_face(CircleFace(30, color = '#9975ff', label = ''), column=0)
-    ts.legend.add_face(TextFace(' Signal peptide', fsize = 32), column = 1)
-    ts.legend.add_face(TextFace(' '*no_blank, fsize = 32), column = 2)
     
     ts.legend_position = 2 #Position the legend at the top right corner
     t.ladderize(1) #Reverse the order of the leaves in the tree so that the outgroup appears at the bottom

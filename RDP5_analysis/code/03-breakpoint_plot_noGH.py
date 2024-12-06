@@ -77,6 +77,8 @@ f.subplots_adjust(wspace=0, hspace=0) # Remove space between subplots´
 ax.margins(x=0.01) # Decrease ax margins
 ax.set_xlim(0, max(x)) # Set x axis limits
 
+ax.set_ylim(bottom = 0, top = max(max(y), max(conf99)) + 0.5) # Set y axis limits
+
 ax.plot(x, conf99, color = '#FAD4C0', alpha = 0.6, zorder = 5) # Plot 99% CI
 ax.fill_between(x, conf99, 0, color = '#FEE9E1', alpha = 0.5, zorder = 0) # Fill the CI
 
@@ -85,6 +87,33 @@ ax.fill_between(x, conf95, 0, color = '#E0937A', alpha = 0.6, zorder = 10) # Fil
 ax.set_ylim(bottom = 0, top = max(max(y), max(conf99)) + 0.5) # Set y axis limits
 
 ax.plot(x, y, color = 'black', zorder = 25) # Plot breakpoint curve
+
+# const = 500
+# ax.set_xlim(0, max(x)+const) # Set x axis limits
+# x1 = [xn for xn in x if xn <= vline]
+# x2 = [xn+const for xn in x if xn > vline]
+
+# conf99_1 = [conf99[i] for i in range(0, len(x)) if x[i] <= vline]
+# conf99_2 = [conf99[i] for i in range(0, len(x)) if x[i] > vline]
+
+# conf95_1 = [conf95[i] for i in range(0, len(x)) if x[i] <= vline]
+# conf95_2 = [conf95[i] for i in range(0, len(x)) if x[i] > vline]
+
+# y1 = [y[i] for i in range(0, len(x)) if x[i] <= vline]
+# y2 = [y[i] for i in range(0, len(x)) if x[i] > vline]
+
+# ax.plot(x1, conf99_1, color = '#FAD4C0', alpha = 0.6, zorder = 5) # Plot 99% CI
+# ax.fill_between(x1, conf99_1, 0, color = '#FEE9E1', alpha = 0.5, zorder = 0) # Fill the CI
+# ax.plot(x2, conf99_2, color = '#FAD4C0', alpha = 0.6, zorder = 5) # Plot 99% CI
+# ax.fill_between(x2, conf99_2, 0, color = '#FEE9E1', alpha = 0.5, zorder = 0) # Fill the CI
+
+# ax.plot(x1, conf95_1, color = '#D58870', zorder = 15) # Plot 99% CI
+# ax.fill_between(x1, conf95_1, 0, color = '#E0937A', alpha = 0.6, zorder = 0) # Fill the CI
+# ax.plot(x2, conf95_2, color = '#D58870', zorder = 15) # Plot 99% CI
+# ax.fill_between(x2, conf95_2, 0, color = '#E0937A', alpha = 0.6, zorder = 0) # Fill the CI
+
+# ax.plot(x1, y1, color = 'black', zorder = 25) # Plot breakpoint curve
+# ax.plot(x2, y2, color = 'black', zorder = 25) # Plot breakpoint curve
 
 # Add triangles pointing to potential recombination hotspots
 y_maxima = find_peaks(y, distance = 50)[0]

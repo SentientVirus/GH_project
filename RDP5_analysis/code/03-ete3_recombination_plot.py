@@ -85,6 +85,9 @@ to_include = ['A0901', 'A1001', 'A1003', 'A1202', 'A1401', 'A1805',
               'H4B4-02J', 'H4B4-05J', 'H4B4-06M', 'H4B4-12M', 'H4B5-01J', 
               'H4B5-03X', 'H4B5-04J', 'H4B5-05J', 'IBH001', 'MP2']
 
+colors = ['#9DAAB7', '#6586A3', '#647D88', '#626D75', '#B1BFD4'] #Colors for the CDS
+colors = colors[::-1] #Reverse the color list to make the colors consistent with the breakpoint plot
+
 aln_len = 31420 #Total length of the alignment
 middle_point = 15970 #Point where the two consecutive segments are joined
 treefile = os.path.expanduser('~') + '/GH_project/trees/kunkeei_nonclosed.tree' #Path to the treefile
@@ -131,8 +134,8 @@ ts.scale = 12000 #General tree scale, original 4000
 ts.branch_vertical_margin = 10 #Space between branches
 ts.show_leaf_name = False #Hide unformatted leaf names
 ts.show_scale = False #Hide tree scale
-segment_scale = 0.1 #Scale of the segments compared to the tree
-segment_height = 40 #Height of the segments and tracts
+segment_scale = 0.04 #Scale of the segments compared to the tree
+segment_height = 20 #Height of the segments and tracts
 
 # =============================================================================
 # 3. Add legend to the tree
@@ -142,57 +145,57 @@ ts.legend_position = 2 #Place the legend at the upper right corner of the plot
 # ts.legend.margin_right = 0 #-100
 
 #Add color legend for the p-values to the tree
-ts.legend.add_face(TextFace('p-value', fsize = 15, fstyle = 'italic', 
+ts.legend.add_face(TextFace('p-value', fsize = 18, fstyle = 'italic', 
                             bold = True), column = 0) #Legend title
 ts.legend.add_face(TextFace('', fsize = 13), column = 1) #Empty legend next to title
-ts.legend.add_face(TextFace('<1E-150', fsize = 13), column = 0) #Legend label
+ts.legend.add_face(TextFace('<1E-150', fsize = 16), column = 0) #Legend label
 ts.legend.add_face(RectFace(45, 15, fgcolor = 'lightgrey', bgcolor = '#944654', 
                             label = None), column = 1) #Legend rectangle
-ts.legend.add_face(TextFace('<1E-100', fsize = 13), column = 0)
+ts.legend.add_face(TextFace('<1E-100', fsize = 16), column = 0)
 ts.legend.add_face(RectFace(45, 15, fgcolor = 'lightgrey', bgcolor = '#C46877', 
                             label = None), column = 1)
-ts.legend.add_face(TextFace('<1E-50', fsize = 13), column = 0)
+ts.legend.add_face(TextFace('<1E-50', fsize = 16), column = 0)
 ts.legend.add_face(RectFace(45, 15, fgcolor = 'lightgrey', bgcolor = '#DB8484', 
                             label = None), column = 1)
 #Plot half of the p-values on separate columns
-ts.legend.add_face(TextFace('', fsize = 15), column = 2) #Empty label column
-ts.legend.add_face(TextFace('', fsize = 13), column = 3) #Empty legend rectangle column
-ts.legend.add_face(TextFace('  <1E-25  ', fsize = 13), column = 2) #Legend label
+ts.legend.add_face(TextFace('', fsize = 18), column = 2) #Empty label column
+ts.legend.add_face(TextFace('', fsize = 18), column = 3) #Empty legend rectangle column
+ts.legend.add_face(TextFace('  <1E-25  ', fsize = 16), column = 2) #Legend label
 ts.legend.add_face(RectFace(45, 15, fgcolor = 'lightgrey', bgcolor = '#F7B9B0', 
                             label = None), column = 3) #Legend rectangle
-ts.legend.add_face(TextFace('  <1E-10  ', fsize = 13), column = 2)
+ts.legend.add_face(TextFace('  <1E-10  ', fsize = 16), column = 2)
 ts.legend.add_face(RectFace(45, 15, fgcolor = 'lightgrey', bgcolor = '#F7CFC1', 
                             label = None), column = 3)
 # ts.legend.add_face(TextFace('  <0.05  ', fsize = 12), column = 2)
 # ts.legend.add_face(RectFace(45, 35, fgcolor = 'lightgrey', bgcolor = 'linen', 
 #                             label = None), column = 3)
 
-ts.legend.add_face(TextFace('\t'*5, fsize = 15), column = 4) #Add gap between the two legends
+ts.legend.add_face(TextFace('\t'*5, fsize = 18), column = 4) #Add gap between the two legends
 
 #Add color legend for the phylogroups
-ts.legend.add_face(TextFace('Phylogroup', fsize = 15, bold = True), 
+ts.legend.add_face(TextFace('Phylogroup', fsize = 18, bold = True), 
                     column = 5) #Title of the phylogroup legend
-ts.legend.add_face(TextFace(' ', fsize = 13), column = 6) #Empty legend next to title
-ts.legend.add_face(TextFace('  Phylogroup A', fsize = 13), column = 5) #Legend label
+ts.legend.add_face(TextFace(' ', fsize = 16), column = 6) #Empty legend next to title
+ts.legend.add_face(TextFace('  Phylogroup A', fsize = 16), column = 5) #Legend label
 ts.legend.add_face(RectFace(45, 15, fgcolor = 'lightgrey', bgcolor = '#0072B2',
                             label = None), column = 6) #Legend rectangle
-ts.legend.add_face(TextFace('  Phylogroup B', fsize = 13), column = 5)
+ts.legend.add_face(TextFace('  Phylogroup B', fsize = 16), column = 5)
 ts.legend.add_face(RectFace(45, 15, fgcolor = 'lightgrey', bgcolor = '#33B18F', 
                             label = None), column = 6)
-ts.legend.add_face(TextFace('  Phylogroup C', fsize = 13), column = 5)
+ts.legend.add_face(TextFace('  Phylogroup C', fsize = 16), column = 5)
 ts.legend.add_face(RectFace(45, 15, fgcolor = 'lightgrey', bgcolor = '#D55E00', 
                             label = None), column = 6)
 
 ts.legend.add_face(TextFace('\t'*5, fsize = 15), column = 7) #Add gap between the two legends
 
-#Add text legend for major and minor parents
-ts.legend.add_face(TextFace('Parents', fsize = 15, bold = True), 
-                    column = 8) #Title of the parent legend
-ts.legend.add_face(TextFace(' ', fsize = 13), column = 9) #Empty legend next to title
-ts.legend.add_face(TextFace('     Minor', fsize = 13), column = 8) #Legend label
-ts.legend.add_face(TextFace('m', fsize = 12, ftype = 'UbuntuCondensed'), column = 9) #Legend text
-ts.legend.add_face(TextFace('     Major', fsize = 13), column = 8) #Legend label
-ts.legend.add_face(TextFace('M', fsize = 12, ftype = 'UbuntuCondensed'), column = 9) #Legend text
+# #Add text legend for major and minor parents
+# ts.legend.add_face(TextFace('Parents', fsize = 15, bold = True), 
+#                     column = 8) #Title of the parent legend
+# ts.legend.add_face(TextFace(' ', fsize = 13), column = 9) #Empty legend next to title
+# ts.legend.add_face(TextFace('     Minor', fsize = 13), column = 8) #Legend label
+# ts.legend.add_face(TextFace('m', fsize = 12, ftype = 'UbuntuCondensed'), column = 9) #Legend text
+# ts.legend.add_face(TextFace('     Major', fsize = 13), column = 8) #Legend label
+# ts.legend.add_face(TextFace('M', fsize = 12, ftype = 'UbuntuCondensed'), column = 9) #Legend text
 
 # =============================================================================
 # 4. Format the nodes (and branch lines)
@@ -286,8 +289,9 @@ with open(in_tab) as tabfile: #Open the file with positional information
                 shape = '<' #Make the gene point to the left
             labels[countvar] = row['gene_name'] #Save the gene name as the label for the gene
             countvar += 1 #Increase the count
-            locus = [row['start']-1, row['end']-1, shape, 0, segment_height, 'slategrey', 
-                     '#9DAAB7', f'Timmana|20|black|{row["gene_name"]}'] #Format the graphic representation of the gene
+            locus = [row['start']-1, row['end']-1, shape, 0, segment_height*2, 
+                     'black', colors[countvar%5],
+                     f'Timmana|16|black|{row["gene_name"]}'] #Format the graphic representation of the gene
             if row['gene_name'] == 'bcrA': #If the gene is bcrA
                 locus[0] += 1 #Increase the start position by 1 (so that it doesn't overlap with the previous gene)
             loci.append(locus) #Append the locus to the list
@@ -307,7 +311,7 @@ loci[16][7] = loci[16][7].replace('unk.', 'CDS8')
 
 seq = 'A'*middle_point #Create the first half of the segment to be plotted
 seq2 = 'A'*(aln_len-middle_point) #Create the second half of the segment
-miniseq = 'A'*10 #Create a smaller sequence
+miniseq = 'A'*20 #Create a smaller sequence
 for leaf in leaves: #Loop through the leaves in the tree
     color = leaf_color.get(leaf.name.replace('-', '').upper(), None) #Color leaves according to strain phylogroup
     if 'DSM' in leaf.name: #If the leaf name is DSM
@@ -359,15 +363,15 @@ for leaf in leaves: #Loop through the leaves in the tree
                     check = False #Filter out tracts with p-values > 0.05
             if 'Unknown' in tract[1]: #If the minor parent includes "Unknown"
                 tract[1] = tract[1].replace('Unknown (', '').replace(')', '?') #Replace it with a question mark
-            if 'Unknown' in tract[2]:
-                tract[2] = tract[2].replace('Unknown (', '').replace(')', '?') #Replace it with a question mark
+            # if 'Unknown' in tract[2]:
+            #     tract[2] = tract[2].replace('Unknown (', '').replace(')', '?') #Replace it with a question mark
             tract[1] = tract[1].replace('Z12361', '') #Remove part of the name of DSM
-            tract[2] = tract[2].replace('Z12361', '') #Remove part of the name of DSM
+            # tract[2] = tract[2].replace('Z12361', '') #Remove part of the name of DSM
                     
             if check: #If the tract should be included
                 info_list = [int(tract[3]), int(tract[4]), '[]', 0, segment_height, 
                              'lightgrey', color, 
-                             f'UbuntuCondensed|12|{color2}|m: {tract[1]}\nM: {tract[2]}'] #Create a list with tract information
+                             f'Verdana|16|{color2}|{tract[1]}'] #Create a list with tract information
                 if info_list[1] > middle_point: #If the tract goes on the second segment
                     info_list[0] += 1 #Add one to the start (so that it doesn't overlap with the end of the previous segment)
                     info_list[1] += 1 #Add one to the end
@@ -446,14 +450,14 @@ for leaf in leaves: #Loop through the leaves in the tree
                     locus[1] -= middle_point - len(miniseq) #Substract the middle point and the separator length from the start position
                     loci2.append(locus)
                     
-            seqFace = SeqMotifFace(seq, motifs = loci1, height = segment_height, 
+            seqFace = SeqMotifFace(seq, motifs = loci1, height = segment_height*2, 
                                     seq_format = 'blank', gap_format = 'blank', 
                                     scale_factor = segment_scale, 
                                     bgcolor = 'lightgrey', 
                                     fgcolor = 'lightgrey')
             (t & f'{leaf.name}').add_face(seqFace, 1, 'aligned') #Add the CDS to column 1 of the plot
             
-            seqFace2 = SeqMotifFace(seq2, motifs = loci2, height = 40, 
+            seqFace2 = SeqMotifFace(seq2, motifs = loci2, height = segment_height*2, 
                                     seq_format = 'blank', gap_format = 'blank', 
                                     scale_factor = segment_scale, 
                                     bgcolor = 'lightgrey', 
