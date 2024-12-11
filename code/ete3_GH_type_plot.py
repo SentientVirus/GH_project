@@ -78,8 +78,8 @@ leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
               'H4B411M': '#D55E00', 'H4B412M': '#0072B2', 'H4B501J': '#0072B2', 
               'H4B502X': '#0072B2', 'H4B503X': '#0072B2', 'H4B504J': '#33B18F',
               'H4B505J': '#33B18F', 'H4B507J': '#0072B2', 'H4B507X': '#0072B2', 
-              'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': 'black', 
-              'DSMZ12361': 'black'}
+              'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': '#D55E00', 
+              'DSMZ12361': '#0072B2', 'DSM': '#0072B2'}
 
 #Highlighted gene colors for GS1-2 and BRS, faint colors for the rest
 # gene_colors = {'GS1': '#FF7575', 'GS2': '#FF75B6', 'BRS': '#E875FF',
@@ -92,22 +92,24 @@ leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
 #               'S1': '#FFD3BD', 'S2': '#FFE0C3', 'S2a': '#FFE0C3', 'S2b': '#FFF0CB', 
 #               'S3': '#FFFCD0'}
 
-gene_colors = {'GS1': '#FF7575', 'GS2': '#ca7afe', 'BRS': '#7a84fe',
-                'S1': '#FFF575', 'S2': '#FFB875', 'S2a': '#b5ff70', 'S2b': '#74ff85', 
-                'S3': '#71f6ff', 'mhpD': '#CCCCCC', 'hpcG': '#CCCCCC', 
-                'oppA': '#CCCCCC', 'nox': '#CCCCCC', 'GS3': '#ffc0f9', 'GS4': '#FF8A75'}
+gene_colors = {'GS1': '#FF707C', 'GS2': '#FFE570', 'BRS': '#84E8A7',
+                'S1': '#757FEB', 'S2': '#C870FF', 'S2a': '#C870FF', 'S2b': '#F870FF', 
+                'S3': '#84CDE8', 'mhpD': '#DAD9DF', 'hpcG': '#DAD9DF', 
+                'oppA': '#DAD9DF', 'nox': '#DAD9DF', 'GS3': '#FFD3C2', 'GS4': '#CEAAAF'}
+
+gs2_brs_col = '#E8FFC2'
 
 #Faint colors for GS1-2 and BRS
-alt_colors = {'GS1': '#FFC0C0', 'GS2': '#e6c0ff', 'BRS': '#b5bbff', 
-              'S1': '#fcffc2', 'S2': '#d7feb2', 'S2a': '#d7feb2', 'S2b': '#b8ffc0', 
-              'S3': '#bafbff'}
+alt_colors = {'GS1': '#FFC6CB', 'GS2': '#FFF5C6', 'BRS': '#C4FFD9', 
+              'S1': '#C0C5FF', 'S2': '#E9C7FF', 'S2a': '#E9C7FF', 'S2b': '#FCC7FF', 
+              'S3': '#C4EFFF'}
 
 # =============================================================================
 # Set target region and load input files
 # =============================================================================
 # TO DO: Annotate script and integrate into Snakemake
 
-segment_length = 29000 #25000 #Length of the graphical representation of the CDS in the plot
+segment_length = 23000 #25000 #Length of the graphical representation of the CDS in the plot
 gapscale = 1000 #Gap added for padding at the beginning
 padding = 500 #Padding on the horizontal line with the CDS
 config_file = os.path.expanduser('~') + '/GH_project/config.yml' #File with gene groups
@@ -308,7 +310,7 @@ for GH in GH70_types + GH32_types: #Loop through gene types
                 color = 'black' #Color the support value in black
             else: color = 'dimgrey' #Otherwise, color the support value in grey
             if n.support >= 80: #If the support value is above 80%
-                support_face = TextFace(int(n.support), fgcolor = color, fsize = 10) #Format support value text
+                support_face = TextFace(int(n.support), fgcolor = color, fsize = 12) #Format support value text
                 n.add_face(support_face, column=0, position='branch-top') #Add the text to the tree
     
 # =============================================================================
@@ -327,8 +329,11 @@ for GH in GH70_types + GH32_types: #Loop through gene types
         for file in sorted(tabs): # Loop through CDS tab files
             strain = leaf.split('_')[0] # Get strain name from locus tag
             if strain in file.replace('-', ''): # If strain name (without -) is in the tab file:
-                print(strain, leaf) 
+                # print(strain, leaf) 
                 check = False #Checks to keep the right gene order in the plots 
+                S3_check = False
+                S2a_check = False
+                GS1_check = 0
                 oppA_check = False
                 border = 'grey' #Color of the border of the plotted CDS
                 with open(f'{indir}/{file}', 'r') as gfile: #Open CDS tab file
@@ -338,73 +343,85 @@ for GH in GH70_types + GH32_types: #Loop through gene types
                     for gene in genes: #Loop through genes in CDS tab file
                         gene[1] = gene[1].replace('join(', '')
                         
-                        if any(list(gs in gene[0] for gs in GH70_doms + GS2_BRS + GS3 + S1 + S2a + S2b + S3)) or ('mhpD' in gene[0] or 'hpcG' in gene[0] or 'tesE' in gene[0] or 'nox' in gene[0]) or ('oppA' in gene[0] and strain in mhpD_dict.keys() and int(gene[1]) > mhpD_dict[strain][0] and not oppA_check) or (strain != 'MP2'  and strain in nox_dict.keys() and nox_dict[strain][1] + 300 > int(gene[1]) > nox_dict[strain][1]) or (strain == 'DSM' and gene[0] in ['K2W83_RS06170', 'K2W83_RS06165', 'K2W83_RS06190', 'K2W83_RS06195']) or (strain == 'IBH001' and gene[0] in ['LDX55_06315', 'LDX55_06320', 'LDX55_06340', 'LDX55_06345']) or (strain == 'MP2' and gene[0] in ['APS55_RS03835', 'APS55_RS03840', 'APS55_RS03855', 'APS55_RS03860']): #If it is one of the genes of interest
-                                
+                        if any(list(gs in gene[0] for gs in GH70_doms + GS2_BRS + GS3 + S1 + S2a + S2b + S3)) or (strain in ['A0901', 'A1001', 'A1404', 'H3B203M', 'H4B206J', 'H4B402J', 'H4B412M', 'H4B503X'] and ((GS1_check > 0 and 'oppA' in gene[0] and oppA_check == False) or 'mhpD' in gene[0] or 'hpcG' in gene[0] or 'tesE' in gene[0])): #If it is one of the genes of interest
+
                             if any(list(bs in gene[0] for bs in S2b)): #If it is S2b
                                 print(gene[0], 'is S2b') #Print gene type
+                                start = int(gene[1]) - padding - gapscale #Set the start position of the plot based on S2b
+                                end = start + segment_length #Set the end position
+                                GS1_check += 1 #Add +1 to the check variable
                                 gene[0] = 'S2b' #Change gene name
-                                
+                        
                             elif any(list(bs in gene[0] for bs in S2a)): #If the gene is S2a
                                 print(gene[0], 'is S2a') 
+                                if GS1_check == 0: #If S2b is not in the strain
+                                    start = int(gene[1]) - padding - gapscale #Set the start based on S2a
+                                    end = start + segment_length  
+                                GS1_check += 1 #Add +1 to the check variable
+                                S2a_check = True #Set the S2a check to True
                                 gene[0] = 'S2a'
-                                
+                        
                             elif any(list(bs in gene[0] for bs in S1)): #If the gene is S1
                                 print(gene[0], 'is S1')
+                                start = int(gene[1]) - padding - gapscale #Set the start to the position of S1 (no GH before it)
+                                end = start + segment_length
+                                GS1_check += 1
                                 gene[0] = 'S1'
-                                
+                        
                             elif any(list(gs in gene[0] for gs in GS3)): #If the gene is GS3
+                                print(f'Processing gene {gene[0]}...')
                                 print(gene[0], 'is GS3')
+                                start = int(gene[1]) - padding - gapscale #Set the start to the position of GS3 (no GH before it)
+                                end = start + segment_length
+                                GS1_check += 1
                                 gene[0] = 'GS3'
-                                
+                        
                             elif any(list(gs in gene[0] for gs in GS1)): #If the gene is GS1
                                 print(gene[0], 'is GS1')
+                                if strain != 'MP2': #If the strain is not MP2 (reversed)
+                                    if GS1_check == 0:
+                                        start = int(gene[1]) - padding - gapscale #Set the start to the position of GS1 if S1-2 and GS3 are not present
+                                        end = start + segment_length
+                                    check = True
+                                    GS1_check += 1
                                 gene[0] = 'GS1'
-                                
+                        
                             elif any(list(gs in gene[0] for gs in GS2_BRS)): #If the gene is in GS2_BRS
                                 print(gene[0], 'is GS2_BRS') 
                                 gene[0] = 'GS2_BRS'
-                                    
+                        
                             elif any(list(gs in gene[0] for gs in GS2)): #If the gene is in GS2
                                 print(gene[0], 'is GS2')
                                 gene[0] = 'GS2'
-                                        
+                                if strain == 'MP2' and check == False: #If the strain is MP2 (reversed), set the start to GS2
+                                    start = int(gene[1]) - padding - gapscale
+                                    end = start + segment_length
+                                    check = True
+                        
                             elif any(list(bs in gene[0] for bs in BRS)): #If the gene is BRS
                                 print(gene[0], 'is BRS')
                                 if 'A1401_12770' in gene[0]: #If the strain has a small extra BRS segment
                                     gene[1] = int(gene[1]) + 11 #Place the start a bit before the segment
-                                    
+                        
                                 gene[0] = 'BRS'
-                                
+                        
                             elif any(list(bs in gene[0] for bs in S3)): #If the gene is S3
                                 print(gene[0], 'is S3')
                                 gene[0] = 'S3'
-                            
+                                S3_check = True
+                        
                             else: #If it is other gene of interest
                                 print(gene[0], 'is other')
-                                if gene[0] == 'hpcG' or gene[0] == 'mhpD' or gene[0] == 'tesE' or gene[0] == 'K2W83_RS06190' or gene[0] == 'LDX55_06340' or gene[0] == 'APS55_RS03840':
+                                if gene[0] == 'hpcG' or gene[0] == 'tesE':
                                     gene[0] = 'mhpD'
-                                    mhpD_dict[strain] = (int(gene[1]), int(gene[2]))
-                                elif gene[0] == 'oppA' or gene[0] == 'K2W83_RS06195' or gene[0] == 'LDX55_06345':
+                                elif gene[0] == 'oppA':
                                     oppA_check = True
-                                    gene[0] = 'oppA'
-                                elif strain == 'MP2' and check == False and gene[0] == 'APS55_RS03835': #If the strain is MP2 (reversed)
-                                    start = int(gene[1]) - padding - gapscale #Set the start position based on oppA
-                                    end = start + segment_length #Get the end position
-                                    check = True
-                                    gene[0] = 'oppA'
-                                elif gene[0] == 'nox' or gene[0] == 'K2W83_RS06165' or gene[0] == 'LDX55_06315' or gene[0] == 'APS55_RS03860':
-                                    nox_dict[strain] = (int(gene[1]), int(gene[2]))
-                                    gene[0] = 'nox'
-                                    if strain != 'MP2': #If the strain is not MP2 (not reversed)
-                                        start = int(gene[1]) - padding - gapscale #Set the start to the position of nox
-                                        end = start + segment_length
-                                else:
-                                    gene[0] = 'CDS7'
 
 
-                            format_str = f'Arial|14|black|{gene[0]}' #Text on the CDS to be plotted
-                            if gene[0] == 'GS2_BRS': #Gradient fill for multi-GH70 domain proteins
-                                col = f'{"rgradient:" + gene_colors["BRS"] + "|" + gene_colors["GS2"]}'
+                            format_str = f'Verdana|16|black|{gene[0]}' #Text on the CDS to be plotted
+                            if gene[0] == 'GS2_BRS': #Different fill for multi-GH70 domain proteins
+                                #col = f'{"rgradient:" + gene_colors["BRS"] + "|" + gene_colors["GS2"]}'
+                                col = gs2_brs_col
                             else:
                                 if gene[0] in gene_colors:
                                     col = gene_colors[gene[0]] #Solid fill for the other CDS
@@ -420,17 +437,17 @@ for GH in GH70_types + GH32_types: #Loop through gene types
             
     #Code to adjust the positions of CDS in the plots for each gene
     if GH == 'BRS':
-        length_dict = {key:segment_length+1000 for key in gene_dict}
+        length_dict = {key:segment_length+1500 for key in gene_dict}
     elif GH == 'GS1':
-        length_dict = {key:segment_length+6000 for key in gene_dict}
+        length_dict = {key:segment_length+3800 for key in gene_dict}
     elif GH == 'GS2':
-        length_dict = {key:segment_length-2000 for key in gene_dict}
+        length_dict = {key:segment_length-3700 for key in gene_dict}
     elif GH == 'S3':
-        length_dict = {key:segment_length-3000 for key in gene_dict}
+        length_dict = {key:segment_length-500 for key in gene_dict}
     elif GH == 'S2':
-        length_dict = {key:segment_length+1000 for key in gene_dict}
+        length_dict = {key:segment_length+3600 for key in gene_dict}
     elif GH == 'S1':
-        length_dict = {key:segment_length-4000 for key in gene_dict}
+        length_dict = {key:segment_length-2700 for key in gene_dict}
     else:
         length_dict = {key:segment_length for key in gene_dict}
     
@@ -460,20 +477,20 @@ for GH in GH70_types + GH32_types: #Loop through gene types
                 print(key, GH, 'Domain BRS from GS2_BRS')
             elif GH == 'GS2' and f'|{GH}' in element[7]: #If the plot is for GS2 and the domain is a GS2
                 divide = True
-                # print(key, GH, 'Domain GS2')
+                print(key, GH, 'Domain GS2')
             elif GH == 'GS1' and f'|{GH}' in element[7]: #If the plot is for GS1 and the domain is a GS1
                 divide = True
-                # print(key, GH, 'Domain GS1')
+                print(key, GH, 'Domain GS1')
             elif GH == 'S1' and f'|{GH}' in element[7]:
                 divide = True
-                # print(key, GH, f'Domain {GH}')
-            elif GH == 'S2' and f'|{GH}' in element[7]:
-                if (key in S2a and 'S2a' in element[7]) or (key in S2b and 'S2b' in element[7]):
+                print(key, GH, f'Domain {GH}')
+            elif GH == 'S2' and f'|{GH}' in element[7]: #If the plot is for S2 and the domain is an S2
+                if (key in S2a and 'S2a' in element[7]) or (key in S2b and 'S2b' in element[7]): #If the gene from the tree is the same type as the CDS
                     divide = True
-                # print(key, GH, f'Domain {GH}')
+                print(key, GH, f'Domain {GH}')
             elif GH == 'S3' and f'|{GH}' in element[7]:
                 divide = True
-                # print(key, GH, f'Domain {GH}')
+                print(key, GH, f'Domain {GH}')
                 
                 
             if divide: #If the gene should be divided
@@ -482,6 +499,9 @@ for GH in GH70_types + GH32_types: #Loop through gene types
                 new_domain[1] = element[0] + domain_dict[key][1] - 1 #Modify end of segment to end of the domain
                 new_domain[7] = new_domain[7].replace('GS2_BRS', GH) #Modify text of segment if it is a GS2_BRS gene
                 new_domain[5] = 'black' #Modify edge color
+                new_domain[6] = gene_colors[GH]
+                if 'S2b' in new_domain[7]:
+                    new_domain[6] = gene_colors['S2b']
                 for GH_typ in GH70_types+GH32_types: #Loop through GH types and change the domain colors to brighter colors
                     if f'|{GH_typ}' in element[7] and 'GS2_BRS' not in element[7]:
                         element[6] = alt_colors[GH_typ]
@@ -521,7 +541,7 @@ for GH in GH70_types + GH32_types: #Loop through gene types
     sum_dict = {} #Create an empty dictionary
     for key, value in gene_dict.items(): #Loop through information in the dictionary
         for entry in gene_dict[key]: #Loop through CDS to be plotted for a specific leaf of the phylogeny
-            if f'|{GH}' in entry[7] and (any(color in entry[6] for color in gene_colors.values()) or (any(color in entry[6] for color in alt_colors.values())) and GH != 'BRS'): #If the type of a gene matches the gene type that should be highlighted on the tree
+            if f'|{GH}' in entry[7] and (any(color in entry[6] for color in gene_colors.values())): #If the type of a gene matches the gene type that should be highlighted on the tree
                 sum_dict[key] = entry[0] #Store the start position of the gene
 
     max_value = max(sum_dict.values()) #Get the highest starting position
