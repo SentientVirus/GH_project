@@ -93,15 +93,15 @@ leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
 #               'S3': '#FFFCD0'}
 
 gene_colors = {'GS1': '#FF707C', 'GS2': '#FFE570', 'BRS': '#84E8A7',
-                'S1': '#757FEB', 'S2': '#C870FF', 'S2a': '#C870FF', 'S2b': '#F870FF', 
+                'S1': '#656ED4', 'S2': '#CB78FF', 'S2a': '#C870FF', 'S2b': '#F87BFF', 
                 'S3': '#84CDE8', 'mhpD': '#DAD9DF', 'hpcG': '#DAD9DF', 
-                'oppA': '#DAD9DF', 'nox': '#DAD9DF', 'GS3': '#FFD3C2', 'GS4': '#CEAAAF'}
+                'oppA': '#DAD9DF', 'nox': '#DAD9DF', 'GS3': '#FFD3C2', 'GS4': '#FFD6C6'}
 
-gs2_brs_col = '#E8FFC2'
+gs2_brs_col = '#DDF0C0'
 
 #Faint colors for GS1-2 and BRS
-alt_colors = {'GS1': '#FFC6CB', 'GS2': '#FFF5C6', 'BRS': '#C4FFD9', 
-              'S1': '#C0C5FF', 'S2': '#E9C7FF', 'S2a': '#E9C7FF', 'S2b': '#FCC7FF', 
+alt_colors = {'GS1': '#FFC6CB', 'GS2': '#FFF5C6', 'BRS': '#CDF6DB', 
+              'S1': '#C1C5ED', 'S2': '#EBCAFF', 'S2a': '#EBCAFF', 'S2b': '#FCCAFF', 
               'S3': '#C4EFFF'}
 
 # =============================================================================
@@ -117,6 +117,12 @@ indir =  os.path.expanduser('~') + '/GH_project/plots/tabfiles' #Directory with 
 outdir =  os.path.expanduser('~') + '/GH_project/plots/trees' #Directory to store output plots
 GH70_types = ['BRS', 'GS1', 'GS2'] #Types of GH to plot
 GH32_types = ['S1', 'S2', 'S3'] #Types of GH to plot
+
+S3_strains = ['A0901', 'A1001', 'A1404', 'H3B203M', 'H4B206J', 'H4B402J', 
+              'H4B412M', 'H4B503X']
+CDS6_list = ['AKUA0901_13310', 'AKUA1001_12330', 'AKUA1404_13440', 
+             'AKUH3B203M_12510', 'AKUH4B206J_13440', 'AKUH4B402J_12630', 
+             'AKUH4B412M_13280', 'AKUH4B503X_12730']
 
 domain_path =  os.path.expanduser('~') + '/interproscan' #Path to domain annotations
 
@@ -310,7 +316,8 @@ for GH in GH70_types + GH32_types: #Loop through gene types
                 color = 'black' #Color the support value in black
             else: color = 'dimgrey' #Otherwise, color the support value in grey
             if n.support >= 80: #If the support value is above 80%
-                support_face = TextFace(int(n.support), fgcolor = color, fsize = 12) #Format support value text
+                support_face = TextFace(int(n.support), ftype = 'Arial', 
+                                        fgcolor = color, fsize = 12) #Format support value text
                 n.add_face(support_face, column=0, position='branch-top') #Add the text to the tree
     
 # =============================================================================
@@ -343,7 +350,7 @@ for GH in GH70_types + GH32_types: #Loop through gene types
                     for gene in genes: #Loop through genes in CDS tab file
                         gene[1] = gene[1].replace('join(', '')
                         
-                        if any(list(gs in gene[0] for gs in GH70_doms + GS2_BRS + GS3 + S1 + S2a + S2b + S3)) or (strain in ['A0901', 'A1001', 'A1404', 'H3B203M', 'H4B206J', 'H4B402J', 'H4B412M', 'H4B503X'] and ((GS1_check > 0 and 'oppA' in gene[0] and oppA_check == False) or 'mhpD' in gene[0] or 'hpcG' in gene[0] or 'tesE' in gene[0])): #If it is one of the genes of interest
+                        if any(list(gs in gene[0] for gs in GH70_doms + GS2_BRS + GS3 + S1 + S2a + S2b + S3)) or (strain in S3_strains and ((GS1_check > 0 and 'oppA' in gene[0] and oppA_check == False) or (oppA_check == True and gene[0] in CDS6_list) or 'mhpD' in gene[0] or 'hpcG' in gene[0] or 'tesE' in gene[0])): #If it is one of the genes of interest
 
                             if any(list(bs in gene[0] for bs in S2b)): #If it is S2b
                                 print(gene[0], 'is S2b') #Print gene type
@@ -416,9 +423,11 @@ for GH in GH70_types + GH32_types: #Loop through gene types
                                     gene[0] = 'mhpD'
                                 elif gene[0] == 'oppA':
                                     oppA_check = True
+                                elif gene[0] != 'mhpD':
+                                    gene[0] = 'CDS6'
 
 
-                            format_str = f'Verdana|16|black|{gene[0]}' #Text on the CDS to be plotted
+                            format_str = f'Arial|16|black|{gene[0]}' #Text on the CDS to be plotted
                             if gene[0] == 'GS2_BRS': #Different fill for multi-GH70 domain proteins
                                 #col = f'{"rgradient:" + gene_colors["BRS"] + "|" + gene_colors["GS2"]}'
                                 col = gs2_brs_col
@@ -561,7 +570,7 @@ for GH in GH70_types + GH32_types: #Loop through gene types
         lname = replace_strain_name(leaf.name) #Get the right name for each leaf
         strain = lname.split('_')[0] #Get the name of the strain
         color = leaf_color.get(strain, None) #Color leaves according to strain phylogroup
-        name_face = TextFace(lname, fgcolor = color, fsize = 18) #Create text with corrected locus tag
+        name_face = TextFace(lname, ftype = 'Arial', fgcolor = color, fsize = 20) #Create text with corrected locus tag
         leaf.add_face(name_face, column=0, position='branch-right') #Add formatted leaf names
 
         seqFace = SeqMotifFace(seq_dict[lname], motifs = gene_dict[lname], 
