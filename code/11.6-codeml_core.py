@@ -18,7 +18,7 @@ import Bio.Phylo.PAML.codeml as codeml
 # =============================================================================
 # Logging
 # =============================================================================
-
+print('The script is running...')
 logging.basicConfig(filename = snakemake.log[0], level = logging.INFO,
                     format = '%(asctime)s %(message)s',
                     datefmt = '%Y-%m-%d %H:%M:%S')
@@ -36,15 +36,16 @@ sys.excepthook = handle_exception
 
 sys.stdout = open(snakemake.log[0], 'a')
 
+print('Start logging...')
 # =============================================================================
 # Define CodeML objects
 # =============================================================================
 
-def codeml_object(workdir, seqfile, outfile, treefile = 'empty.tree'):
+def codeml_object(workdir, seqfile, outfile, treefile = 'trees/empty.tree'):
     cml = codeml.Codeml()            #Initialize object
-    cml.alignment = '/home/marina/GH_project/' + str(seqfile)     #Assign alignmentfile to object
+    cml.alignment = str(seqfile)     #Assign alignmentfile to object
     cml.tree = str(treefile)         #Assign tree (optional)
-    cml.out_file = '/home/marina/GH_project/' + str(outfile)      #Set output name
+    cml.out_file = str(outfile)      #Set output name
     cml.working_dir = str(workdir)   #Revise this after setting up snakemake
     
     return cml
@@ -73,10 +74,19 @@ def set_codeml_options(cml, rmd, seq, mdl = 1, noise = 0, verb = False, cf = 2, 
 # =============================================================================
 # Apply these functions to snakemake pipeline
 # =============================================================================
+if not os.path.exists(snakemake.output.outdir):
+    os.makedirs(snakemake.output.outdir)
 
-cml = codeml_object(snakemake.params.outdir, snakemake.input[0],
-                        snakemake.output, snakemake.input[1])
-cml = set_codeml_options(cml, -2, 1)
-    
-##Run CodeML
-cml.run(verbose = True, parse = False)
+for i in range(len(snakemake.output.outfiles)):
+    sub_outdir = os.path.dirname(snakemake.output.outfiles[i])
+    print(sub_outdir)
+
+    if not os.path.exists(sub_outdir):
+        os.makedirs(sub_outdir)
+
+    cml = codeml_object(sub_outdir, snakemake.input[i],
+                        snakemake.output.outfiles[i], snakemake.input[-1])
+    cml = set_codeml_options(cml, -2, 1)
+    print(cml.alignment)
+    ##Run CodeML
+    cml.run(verbose = True, parse = False)
