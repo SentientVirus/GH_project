@@ -86,7 +86,7 @@ group_names = {0: 'GS1_S2-3_subset', 1: 'GS1-2_BRS', 2: 'only_GS1+GS2'}
 gene_order = {32: 'ohrR', 31: 'yifK', 30: 'yifK2', 29: 'yhdG', 28: 'T5', 
               27: 'CDS8', 26: 'nox', 25: 'T4', 24: 'CDS7', 23: 'S2a', 
               22: 'GS1', 21: 'BRS', 20: 'GS2', 19: 'T3', 18: 'mhpD', 
-              17: 'oppA', 16: 'T2', 15: 'S3', 14: 'CDS6', 13: 'CDS5', 
+              17: 'oppA', 16: 'CDS6', 15: 'T2', 14: 'S3', 13: 'CDS5', 
               12: 'sbnD', 11: 'CDS4', 10: 'CDS3', 9: 'CDS2', 8: 'epsE', 
               7: 'CDS1', 6: 'epsL', 5: 'ywqE', 4: 'ywqD', 3: 'ywqC', 2: 'T1', 
               1: 'tagU'}
@@ -435,7 +435,7 @@ for comparison in group_names.values():
                 
             
             # Reverse index of genes in the forward strand
-            if gene_no >= 24 or gene_no == 13:
+            if gene_no >= 29 or gene_no == 16:
                 df_aln = df_aln.iloc[::-1] #.reset_index(drop = True)
             df_aln.index += 1 # Make the index start with 1, not 0
             df_aln_dict[gene] = df_aln # Save dataframe to dictionary
@@ -471,7 +471,7 @@ for comparison in group_names.values():
                 # elif gene == 'S3':
                 #     color = '#fffcdc'
                     
-                if gene_no >= 28 or gene_no == 14: # Invert arrows for genes in the forward strand
+                if gene_no >= 28 or gene_no == 16: # Invert arrows for genes in the forward strand
                     startx = max(df_aln.index)
                     dx = -max(df_aln.index)
                 else: # Otherwise, plot the arrows facing toward the right
