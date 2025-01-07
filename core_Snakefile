@@ -42,6 +42,12 @@ def get_CodeML(path_to_files = 'all_core/codons', base_outpath = 'all_core/resul
     outfiles = [f'{base_outpath}/{file}/{file}.{term}' for file in infiles]
     return outfiles
 
+def get_parsed(path_to_files = 'all_core/codons', base_outpath = 'all_core/results', ext = 'dNdS.tsv'):
+    infiles = [file.replace('.pal2nal', '') for file in os.listdir(path_to_files) if file.endswith('.pal2nal')]
+    outfiles = [f'{base_outpath}/{file}/{ext}' for file in infiles]
+    print(outfiles)
+    return outfiles
+
 rule mafft:
         input: 
                 get_files('all_core/fasta')
@@ -82,7 +88,7 @@ rule codeml_exe:
 		get_pal2nal('all_core/fasta', 'all_core/codons'), #"data/codons/core_genes/{gnrl}_codon.pal2nal",
 		'trees/empty.tree'
 	output:
-                outdir = 'all_core/results', 
+                outdir = directory('all_core/results'), 
                 outfiles = get_CodeML()  #'results/core_genes/{gnrl}/{gnrl}.txt"
 	threads: 1
 	#params:	outdir = "/home/marina/GH_project/results/core_genes/{gnrl}"
@@ -93,13 +99,15 @@ rule codeml_exe:
 		
 rule run_parser:
 	input:
-		'results/core_genes/{gnrl}/{gnrl}.txt'
+		txt = get_CodeML() #'results/core_genes/{gnrl}/{gnrl}.txt'
 	output:
-		'results/core_genes/{gnrl}/dNdS.tsv',
-		'results/core_genes/{gnrl}/stats.tsv'
+		dNdS = get_parsed(ext = 'dNdS.tsv'), #'results/core_genes/{gnrl}/dNdS.tsv',
+		stats = get_parsed(ext = 'stats.tsv') #'results/core_genes/{gnrl}/stats.tsv'
 	threads: 1
+        log: 'logs/python/parse_codeml.log'
+        conda: 'envs/environment.yml'
 	script:
-		'code/parse_codeml.py'
+		'code/12-parse_codeml.py'
 
 #rule parse_representatives:
 #        input:
