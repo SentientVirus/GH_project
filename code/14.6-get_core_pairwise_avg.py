@@ -3,19 +3,19 @@
 """
 Created on Fri Nov 19 09:18:40 2021
 
-From the CodeML output, this script creates a tab file
-with the dN and dS values for all the comparisons of
-core genes, and it calculates statistics for each strain
-pair (not general statistics for all core genes).
-
-@author: Marina Mota Merlo
+@author: marina
 """
 import os
-from numpy import mean, median
+from numpy import nan, isnan, mean, median
+import pandas as pd
 import re
 
-outpath = 'results/core_genes'
-finalfile = './core_pairwise_metrics.tsv'
+inpath = os.path.expanduser('~') + '/GH_project/all_core/results'
+outpath = f'{inpath}/global'
+finalfile = f'{outpath}/core_pairwise_metrics.tsv'
+
+if not os.path.exists(outpath):
+    os.makedirs(outpath)
 
 ##Parse codeml output (.txt)
 
@@ -65,8 +65,13 @@ def parse_codeml_output(infile, pairwise_dict):
 
                 g2 = second_split[0]
 
-
-
+                g1 = g1.replace('K2W83', 'DSM').replace('LDX55', 'IBH001')
+                g2 = g2.replace('K2W83', 'DSM').replace('LDX55', 'IBH001')
+                
+                if g1.startswith('H'):
+                    g1 = g1[:4] + '-' + g1[4:]
+                if g2.startswith('H'):
+                    g2 = g2[:4] + '-' + g2[4:]
 
             if i.startswith('t='):
 
@@ -105,9 +110,11 @@ def parse_codeml_output(infile, pairwise_dict):
 ##Read files
 
 locus_pairs = {}
-for folder in os.listdir(os.chdir(outpath)):
-    if os.path.isdir(folder) and 'A1401' in folder and '12720' not in folder:
-        locus_pairs = parse_codeml_output(f'{folder}/{folder}.txt', locus_pairs)
+folders = [folder for folder in os.listdir(inpath) if os.path.isdir(f'{inpath}/{folder}') and folder.startswith('A1401')]
+print(folders)
+for folder in folders:
+    print(f'{inpath}/{folder}/{folder}.txt')
+    locus_pairs = parse_codeml_output(f'{inpath}/{folder}/{folder}.txt', locus_pairs)
 
         
 ##Get mean and median values and save them to files
