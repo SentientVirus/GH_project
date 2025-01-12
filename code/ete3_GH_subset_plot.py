@@ -78,15 +78,15 @@ leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
               'H4B411M': '#D55E00', 'H4B412M': '#0072B2', 'H4B501J': '#0072B2', 
               'H4B502X': '#0072B2', 'H4B503X': '#0072B2', 'H4B504J': '#33B18F',
               'H4B505J': '#33B18F', 'H4B507J': '#0072B2', 'H4B507X': '#0072B2', 
-              'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': 'black', 
-              'DSMZ12361': 'black'}
+              'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': '#D55E00', 
+              'DSM': '#0072B2'}
 
 # =============================================================================
 # Set target region and load input files
 # =============================================================================
 # TO DO: Integrate into Snakemake
 outdir =  os.path.expanduser('~') + '/GH_project/plots/trees' #Directory to store output plots
-GH_types = ['BRS', 'GS1', 'GS2', 'S2a'] #Types of GH to plot
+GH_types = ['BRS', 'GS1', 'GS2', 'NGB', 'S2a'] #Types of GH to plot
 
 #Create output directory if it doesn't exist
 if not os.path.exists(outdir): 
@@ -147,7 +147,7 @@ for GH in GH_types:
 # Create rooted tree from treefile
 # =============================================================================
     t = Tree(treefile, format = 0) #Read tree file
-    
+    print(GH)
     #Root trees
     if GH == 'GS1':
         outnode = 'A1001_12310' #Root of GS1
@@ -155,6 +155,8 @@ for GH in GH_types:
         outnode = t.get_common_ancestor('H3B104X_13220', 'H4B505J_12900') #Root of GS2
     elif GH == 'BRS':
         outnode = t.get_common_ancestor('LDX55_06330', 'H4B204J_13340') #Root of BRS
+    elif GH == 'NGB':
+        outnode = 'A0901_05380' #Root of NGB
     else: outnode = 'A1001_12300' #Root of S2a
     t.set_outgroup(outnode) #Set the root
     
@@ -163,11 +165,11 @@ for GH in GH_types:
 # =============================================================================
     ts = TreeStyle() #Create default tree style
     ts.show_branch_length = False # Hide support values
-    ts.scale = 400 #General tree scale
+    ts.scale = 2000 #General tree scale
     ts.branch_vertical_margin = -5 # Space between branches
     ts.show_branch_support = False
     ts.show_leaf_name = False # Hide unformatted leaf names
-    ts.show_scale = False # Hide tree scale
+    ts.show_scale = True # Show tree scale
     
     #Add legend
     ts.legend_position = 3 #Bottom left
