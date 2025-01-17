@@ -60,8 +60,8 @@ leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
               'H4B411M': '#D55E00', 'H4B412M': '#0072B2', 'H4B501J': '#0072B2', 
               'H4B502X': '#0072B2', 'H4B503X': '#0072B2', 'H4B504J': '#33B18F',
               'H4B505J': '#33B18F', 'H4B507J': '#0072B2', 'H4B507X': '#0072B2', 
-              'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': 'black', 
-              'DSMZ12361': 'black'}
+              'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': '#D55E00', 
+              'DSMZ12361': '#0072B2'}
 
 #NGB locus tags
 NGB = ['A0901_05380', 'A1003_04750', 'A1202_05530', 'A1401_04720', 'A1805_04920',
@@ -79,15 +79,27 @@ phage_pos = {'MP2': (190, 500),
              'A0901': (4670, 5350)}
 
 #Order in which strains and corresponding comparisons should be plotted
-phylo_order = {1:'G0101', 2:'H4B2-05J', 3:'H4B2-11M', 4:'H1B1-04J', 
-              5:'H4B4-12M', 6:'H4B5-01J', 7:'H3B1-01A', 8:'H3B2-03J', 
-              9:'H3B1-04X', 10:'H3B2-02X', 11:'A1003', 12:'H4B2-04J', 
-              13:'H4B5-03X', 14:'H4B4-02J', 15:'H1B3-02M', 16:'Fhon2', 
-              17:'DSMZ12361', 18:'H4B2-02J', 19:'H1B1-05A', 20:'H3B1-04J', 
-              21:'A1401', 22:'A1202', 23:'H4B5-05J', 24:'H3B2-09X', 
-              25:'H4B5-04J', 26:'A1805', 27:'MP2', 28:'G0403', 29:'H3B2-06M', 
-              30:'H4B4-05J', 31:'H4B1-11J', 32:'H4B4-06M', 33:'A0901', 
-              34:'IBH001', 35:'H4B2-06J', 36:'H3B2-03M', 37:'A1404', 38:'A1001'}
+# phylo_order = {1:'G0101', 2:'H4B2-05J', 3:'H4B2-11M', 4:'H1B1-04J', 
+#               5:'H4B4-12M', 6:'H4B5-01J', 7:'H3B1-01A', 8:'H3B2-03J', 
+#               9:'H3B1-04X', 10:'H3B2-02X', 11:'A1003', 12:'H4B2-04J', 
+#               13:'H4B5-03X', 14:'H4B4-02J', 15:'H1B3-02M', 16:'Fhon2', 
+#               17:'DSMZ12361', 18:'H4B2-02J', 19:'H1B1-05A', 20:'H3B1-04J', 
+#               21:'A1401', 22:'A1202', 23:'H4B5-05J', 24:'H3B2-09X', 
+#               25:'H4B5-04J', 26:'A1805', 27:'MP2', 28:'G0403', 29:'H3B2-06M', 
+#               30:'H4B4-05J', 31:'H4B1-11J', 32:'H4B4-06M', 33:'A0901', 
+#               34:'IBH001', 35:'H4B2-06J', 36:'H3B2-03M', 37:'A1404', 38:'A1001'}
+
+phylo_order = {1:'G0101', 2:'H4B2-05J', 3:'H4B2-11M', 4:'H4B5-01J', 
+              5:'H4B4-12M', 6:'H1B1-04J', 7:'H3B1-01A', 8:'H3B2-03J', 
+              9:'H4B2-04J', 10:'H3B1-04X', 11:'H3B2-02X', 12:'A1003',
+              13:'H1B3-02M', 14:'H4B4-02J', 15:'H4B5-03X', 16:'Fhon2', 
+              17:'H1B1-05A', 18:'H4B2-02J', 19:'DSMZ12361', 20:'H3B1-04J', 
+              21:'A1202', 22:'A1401', 23:'H4B5-05J', 24:'H3B2-09X', 
+              25:'H4B5-04J', 26:'A1805', 27:'MP2', 28:'G0403', 29:'H4B4-05J', 
+              30:'H3B2-06M', 31:'H4B1-11J', 32:'H4B4-06M', 33:'IBH001', 
+              34:'H4B2-06J', 35:'A0901', 36:'H3B2-03M', 37:'A1404', 38:'A1001'}
+
+vmin = 60 #Minimum sequence identity
 
 #Paths to inputs and outputs
 projdir = os.path.expanduser('~') + '/GH_project'
@@ -338,34 +350,40 @@ for i in range(1, len(phylo_order.keys())): #Loop through strains in the order i
             link2 = (strain2_name, 'region1', tab_df.loc[j, 's. start'], tab_df.loc[j, 's. end'])
             
             #Add the links to the gv plot, especifying the colors of Blast matches (v indicates the variable setting color, and vmin is the minimum value)
-            gv.add_link(link1, link2, color = 'grey', inverted_color = 'red', v = identity, vmin = 50, curve = True) #Curve makes the matches form curves
+            gv.add_link(link1, link2, color = 'grey', inverted_color = 'red', 
+                        v = identity, vmin = vmin, curve = True, alpha = 0.7) #Curve makes the matches form curves
             
     elif query_check == True: #If the query strain has two segments
         for j in range(len(seg1_q)): #Do two comparisons, one for each segment
             link1 = (seg1_q.loc[j, 'query acc.ver'], 'region1', seg1_q.loc[j, 'q. start'], seg1_q.loc[j, 'q. end'])
             link2 = (seg1_q.loc[j, 'subject acc.ver'], 'region1', seg1_q.loc[j, 's. start'], seg1_q.loc[j, 's. end'])
             identity = seg1_q.loc[j, '% identity']
-            gv.add_link(link1, link2, color = 'grey', inverted_color = 'red', v = identity, vmin = 50, curve = True)
+            gv.add_link(link1, link2, color = 'grey', inverted_color = 'red', 
+                        v = identity, vmin = vmin, curve = True, alpha = 0.7)
         for j in range(len(seg2_q)):
             link1 = (seg2_q.loc[j, 'query acc.ver'], 'region2', seg2_q.loc[j, 'q. start'], seg2_q.loc[j, 'q. end'])
             link2 = (seg2_q.loc[j, 'subject acc.ver'], 'region1', seg2_q.loc[j, 's. start'], seg2_q.loc[j, 's. end'])
             identity = seg2_q.loc[j, '% identity']
-            gv.add_link(link1, link2, color = 'grey', inverted_color = 'red', v = identity, vmin = 50, curve = True)
+            gv.add_link(link1, link2, color = 'grey', inverted_color = 'red', 
+                        v = identity, vmin = vmin, curve = True, alpha = 0.7)
     
     elif subject_check == True: #If the subject strain has two segments
         for j in range(len(seg1_s)): #Do two comparisons, one for each segment
             link1 = (seg1_s.loc[j, 'query acc.ver'], 'region1', seg1_s.loc[j, 'q. start'], seg1_s.loc[j, 'q. end'])
             link2 = (seg1_s.loc[j, 'subject acc.ver'], 'region1', seg1_s.loc[j, 's. start'], seg1_s.loc[j, 's. end'])
             identity = seg1_s.loc[j, '% identity']
-            gv.add_link(link1, link2, color = 'grey', inverted_color = 'red', v = identity, vmin = 50, curve = True)
+            gv.add_link(link1, link2, color = 'grey', inverted_color = 'red', 
+                        v = identity, vmin = vmin, curve = True, alpha = 0.7)
         for j in range(len(seg2_s)):
             link1 = (seg2_s.loc[j, 'query acc.ver'], 'region1', seg2_s.loc[j, 'q. start'], seg2_s.loc[j, 'q. end'])
             link2 = (seg2_s.loc[j, 'subject acc.ver'], 'region2', seg2_s.loc[j, 's. start'], seg2_s.loc[j, 's. end'])
             identity = seg2_s.loc[j, '% identity']
-            gv.add_link(link1, link2, color = 'grey', inverted_color = 'red', v = identity, vmin = 50, curve = True)
+            gv.add_link(link1, link2, color = 'grey', inverted_color = 'red', 
+                        v = identity, vmin = vmin, curve = True, alpha = 0.7)
 
 #Set legend for the Blast matches (two adjacent colorbars that show the colors of forward and reverse matches with a minimum of 50% identity)
-gv.set_colorbar(['grey', 'red'], vmin = 50, bar_height = 0.05, tick_labelsize = 16) #Bar height sets the height of the bars and tick_labelsize sets the font size of tick labels
+gv.set_colorbar(['grey', 'red'], vmin = vmin, bar_height = 0.05, 
+                tick_labelsize = 16, alpha = 0.7) #Bar height sets the height of the bars and tick_labelsize sets the font size of tick labels
  
 fig = gv.plotfig(dpi = 400) #Plot the figure with a resolution of 400 dpi
 
@@ -406,5 +424,6 @@ legend.get_texts()[12].set_fontweight('bold')
 fig.savefig(outfig) #Save figure to SVG
 fig.savefig(outfig.replace('svg', 'tiff')) #Save figure to TIFF
 fig.savefig(outfig.replace('svg', 'png')) #Save figure to PNG
+fig.savefig(outfig.replace('svg', 'pdf')) #Save figure to PDF
 gv.savefig_html(outfig.replace('svg', 'html')) #Save figure to HTML
     

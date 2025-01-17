@@ -420,9 +420,10 @@ rule parse_neighbors:
 ## Rules to generate plots
 def getTargetFiles():
     targets = []
-    all_strains = config["strains"] + config["extra_strains"]
+    #all_strains = config["strains"] + config["extra_strains"]
+    all_strains = config["representatives"]
     for s in all_strains:
-        no = str(config["no_dict"][s][0])
+        no = str(config["no_dict_repr"][s][0])
         while len(no) < 3:
             no = "0" + no
         target = "plots/tabfiles/"+no+"_"+s+"_gpr.tab"
@@ -436,8 +437,8 @@ rule get_CDS_tabs:
         output_tabs 
         #lambda wildcards: expand("plots/tabfiles/{no}_{strain}_gpr.tab", strain = config["strains"], no = config["no_dict"][{wildcards.strain}])
     input:
-        gbff = expand("gbks/{strain}_1.gbk", strain = config["strains"] + config["extra_strains"]),
-        tree = "trees/phylogeny.txt"
+        gbff = expand("gbks/{strain}_1.gbk", strain = config["representatives"]),
+        tree = "trees/new_phylogeny.txt"
     log: "logs/python/05.2-CDS_tabfiles.log"
 #    shadow: "minimal"
     script:

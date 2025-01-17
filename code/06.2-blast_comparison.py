@@ -56,8 +56,8 @@ leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
               'H4B411M': '#D55E00', 'H4B412M': '#0072B2', 'H4B501J': '#0072B2', 
               'H4B502X': '#0072B2', 'H4B503X': '#0072B2', 'H4B504J': '#33B18F',
               'H4B505J': '#33B18F', 'H4B507J': '#0072B2', 'H4B507X': '#0072B2', 
-              'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': 'black', 
-              'DSMZ12361': 'black'}
+              'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': '#D55E00', 
+              'DSMZ12361': '#0072B2'}
 
 # =============================================================================
 # Locus tags
@@ -96,15 +96,25 @@ S3 = ['A0901_13360', 'A1001_12360', 'A1404_13450', 'H3B203M_12520',
 # phylogeny.
 # =============================================================================
 
-phylo_order = {1:'G0101', 2:'H4B2-05J', 3:'H4B2-11M', 4:'H1B1-04J', 
-              5:'H4B4-12M', 6:'H4B5-01J', 7:'H3B1-01A', 8:'H3B2-03J', 
-              9:'H3B1-04X', 10:'H3B2-02X', 11:'A1003', 12:'H4B2-04J', 
-              13:'H4B5-03X', 14:'H4B4-02J', 15:'H1B3-02M', 16:'Fhon2', 
-              17:'DSMZ12361', 18:'H4B2-02J', 19:'H1B1-05A', 20:'H3B1-04J', 
-              21:'A1401', 22:'A1202', 23:'H4B5-05J', 24:'H3B2-09X', 
-              25:'H4B5-04J', 26:'A1805', 27:'MP2', 28:'G0403', 29:'H3B2-06M', 
-              30:'H4B4-05J', 31:'H4B1-11J', 32:'H4B4-06M', 33:'A0901', 
-              34:'IBH001', 35:'H4B2-06J', 36:'H3B2-03M', 37:'A1404', 38:'A1001'}
+# phylo_order = {1:'G0101', 2:'H4B2-05J', 3:'H4B2-11M', 4:'H1B1-04J', 
+#               5:'H4B4-12M', 6:'H4B5-01J', 7:'H3B1-01A', 8:'H3B2-03J', 
+#               9:'H3B1-04X', 10:'H3B2-02X', 11:'A1003', 12:'H4B2-04J', 
+#               13:'H4B5-03X', 14:'H4B4-02J', 15:'H1B3-02M', 16:'Fhon2', 
+#               17:'DSMZ12361', 18:'H4B2-02J', 19:'H1B1-05A', 20:'H3B1-04J', 
+#               21:'A1401', 22:'A1202', 23:'H4B5-05J', 24:'H3B2-09X', 
+#               25:'H4B5-04J', 26:'A1805', 27:'MP2', 28:'G0403', 29:'H3B2-06M', 
+#               30:'H4B4-05J', 31:'H4B1-11J', 32:'H4B4-06M', 33:'A0901', 
+#               34:'IBH001', 35:'H4B2-06J', 36:'H3B2-03M', 37:'A1404', 38:'A1001'}
+
+phylo_order = {1:'G0101', 2:'H4B2-05J', 3:'H4B2-11M', 4:'H4B5-01J', 
+              5:'H4B4-12M', 6:'H1B1-04J', 7:'H3B1-01A', 8:'H3B2-03J', 
+              9:'H4B2-04J', 10:'H3B1-04X', 11:'H3B2-02X', 12:'A1003',
+              13:'H1B3-02M', 14:'H4B4-02J', 15:'H4B5-03X', 16:'Fhon2', 
+              17:'H1B1-05A', 18:'H4B2-02J', 19:'DSMZ12361', 20:'H3B1-04J', 
+              21:'A1202', 22:'A1401', 23:'H4B5-05J', 24:'H3B2-09X', 
+              25:'H4B5-04J', 26:'A1805', 27:'MP2', 28:'G0403', 29:'H4B4-05J', 
+              30:'H3B2-06M', 31:'H4B1-11J', 32:'H4B4-06M', 33:'IBH001', 
+              34:'H4B2-06J', 35:'A0901', 36:'H3B2-03M', 37:'A1404', 38:'A1001'}
 
 color_dict = {'BRS': '#e875ff', 'GS2BRS': '#FF75ED', 'GS2': '#ff75b6', 
               'GS3': '#ff7594', 'GS1': '#ff7575', 'GS4': '#FF8A75',
@@ -129,8 +139,12 @@ def get_tabs(phylo_dict, folder_path, outpath):
         strain1_file = f'{folder_path}/{phylo_dict[i]}_genomic.fna'
         strain2_file = f'{folder_path}/{phylo_dict[i+1]}_genomic.fna'
         outfile = f'{outpath}/{i}.tab'
-        cline_input = cline_blast(cmd = 'blastn', query = strain2_file, subject = strain1_file, remote = False, out = outfile, outfmt = 7)
+        cline_input = cline_blast(cmd = 'blastn', query = strain2_file, 
+                                  subject = strain1_file, remote = False, 
+                                  out = outfile, outfmt = 7)
         os.system(str(cline_input));
+        
+get_tabs(phylo_order, folder_path, outpath)
 
 # =============================================================================
 # In this section, we establish the start and end positions for every strain
@@ -210,6 +224,8 @@ gv = GenomeViz(
     link_track_ratio = 0.8, #Size ratio between the links (Blast comparisons) and the tracks
     track_align_type = 'center', #Align tracks to the center
     )
+
+gv.set_scale_bar(scale_size_label=(5000, '5 Kb')) #Set a legend for the scale of the plot (5kb bar)
 
 for i in range(1, len(phylo_order.keys())+1): #Loop through strain names in the order dictionary
     strain = phylo_order[i] #Get the name of a strain
@@ -338,10 +354,12 @@ for i in range(1, len(phylo_order.keys())): #Loop through strains in the order i
         link2 = (strain2_name, 'region1', tab_df.loc[j, 's. start'], tab_df.loc[j, 's. end'])
         
         #Add the links to the gv plot, especifying the colors of Blast matches (v indicates the variable setting color, and vmin is the minimum value)
-        gv.add_link(link1, link2, color = 'grey', inverted_color = 'red', v = identity, vmin = 50, curve = True) #Curve makes the matches form curves
+        gv.add_link(link1, link2, color = 'grey', inverted_color = 'red', 
+                    v = identity, vmin = 60, curve = True, alpha = 0.7) #Curve makes the matches form curves
             
 #Set legend for the Blast matches (two adjacent colorbars that show the colors of forward and reverse matches with a minimum of 50% identity)        
-gv.set_colorbar(['grey', 'red'], vmin = 50, bar_height = 0.05, tick_labelsize = 16)
+gv.set_colorbar(['grey', 'red'], vmin = 60, bar_height = 0.05, 
+                tick_labelsize = 16, alpha = 0.7)
 fig = gv.plotfig(dpi = 400)
 
 #Create legend text (label) and icons (marker sets the size, color sets marker color, ms sets marker size and ls sets border size)
@@ -381,5 +399,6 @@ legend.get_texts()[18].set_fontweight('bold')
     
 fig.savefig(outfig) #Save figure to SVG
 fig.savefig(outfig.replace('svg', 'png')) #Save figure to PNG
+fig.savefig(outfig.replace('svg', 'pdf')) #Save figure to PDF
 fig.savefig(outfig.replace('svg', 'tiff')) #Save figure to TIFF
 gv.savefig_html(outfig.replace('svg', 'html')) #Save figure to HTML
