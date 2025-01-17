@@ -114,7 +114,7 @@ strain_presence = {'A0901':    [1, 1, 0, 0, 0,-1, 0, 0, 1, 0, 0],
                    'MP2':      [0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0]
                    }
 
-scale = 80 #To set the size of the dots
+scale = 42 #To set the size of the dots
 #To color the dots
 colors = ['#336E74', '#84CDE8', '#FFE570', '#BDE384', '#84E8A7', '#FF707C', 
           '#FFC36F', '#FF986F', '#C870FF', '#F87BFF', '#656ED4']
@@ -179,19 +179,19 @@ for treefile in treefiles:
         if leaf.name == 'A1001':
             name_string = ''
             for i in range(len(names)):
-                gene_text = f'       {names[i]}'
-                text_face = TextFace(gene_text, fsize=24, tight_text = False)
+                gene_text = f'{names[i]}'
+                text_face = TextFace(gene_text, fsize=20, tight_text = True)
                 text_face.rotation = 290
                 text_face.margin_bottom = -9 #Reduce space between labels
                 if i == 0:
                     ts.legend.add_face(text_face, column = i)
-                    empty_face = TextFace(' '*2, fsize=24, tight_text = False)
+                    empty_face = TextFace(' '*2, fsize=22, tight_text = False)
                     ts.legend.add_face(empty_face, column = i+1)
                     ts.legend.add_face(empty_face, column = i+2)
                 else:
                     ts.legend.add_face(text_face, column = i+2)
                 if i == len(names)-1:
-                    empty_face = TextFace(' '*3, fsize=24, tight_text = False)
+                    empty_face = TextFace(' '*2, fsize=22, tight_text = False)
                     ts.legend.add_face(empty_face, column = len(names)+2)
         
         motifs = ['']*len(names)
@@ -199,7 +199,7 @@ for treefile in treefiles:
                                gap_format = 'blank') #Add presence/absence info to node
         (t & f'{leaf.name}').add_face(seqFace, 0, 'aligned') #The number represents the column
         for n in range(len(names)):
-            motifs[n] = [0, 60, 'o', None, 60, '', '', '']
+            motifs[n] = [1, 41, 'o', None, 40, '', '', '']
             motifs[n][5] = colors[n]
             motifs[n][6] = colors[n]
             if n == 0:
@@ -208,16 +208,16 @@ for treefile in treefiles:
                 motifs[n][7] = 'Arial|18|black|' #'{domain_no[n]}'
                 
             if strain_presence[leaf.name][n] == 0:
-                motifs[n][0] = 10
-                motifs[n][1] = 50
-                motifs[n][4] = 40
+                motifs[n][0] = 6
+                motifs[n][1] = 36
+                motifs[n][4] = 30
                 motifs[n][5] = '#E7E7E7'
                 motifs[n][6] = '#E7E7E7'
                 motifs[n][7] = 'Arial|18|black|'
             elif strain_presence[leaf.name][n] == -1:
-                motifs[n][0] = 5
-                motifs[n][1] = 55
-                motifs[n][4] = 50
+                motifs[n][0] = 3
+                motifs[n][1] = 39
+                motifs[n][4] = 36
                 motifs[n][5] = 'darkgrey'
                 motifs[n][6] = 'darkgrey'
                 motifs[n][7] = 'Arial|18|black|'
@@ -232,6 +232,30 @@ for treefile in treefiles:
         
     #print(t)
     t.ladderize(1)
+    nodeA = t.get_common_ancestor('H3B1-01A', 'G0101')
+    nodeA.ladderize(0)
+    nodeB = t.get_common_ancestor('H1B1-04J', 'G0101')
+    nodeB.ladderize(1)
+    nodeC = t.get_common_ancestor('G0101', 'H4B2-05J')
+    nodeC.ladderize(0)
+    nodeD = t.get_common_ancestor('fhon2', 'H3B2-02X')
+    nodeD.ladderize(1)
+    nodeE = t.get_common_ancestor('H3B2-02X', 'H1B3-02M')
+    nodeE.ladderize(1)
+    nodeF = t.get_common_ancestor('DSM', 'H3B1-04J')
+    nodeF.ladderize(1)
+    nodeG = t.get_common_ancestor('A1202', 'A1401')
+    nodeG.ladderize(1)
+    nodeH = t.get_common_ancestor('H4B2-06J', 'H3B2-06M')
+    nodeH.ladderize(0)
+    nodeI = t.get_common_ancestor('H3B2-03M', 'IBH001')
+    nodeI.ladderize(1)
+    nodeJ = t.get_common_ancestor('A0901', 'IBH001')
+    nodeJ.ladderize(1)
+    nodeK = t.get_common_ancestor('H4B4-12M', 'H4B5-01J')
+    nodeK.ladderize(1)
+    nodeL = t.get_common_ancestor('IBH001', 'H4B2-06J')
+    nodeL.ladderize(1)
     # t.convert_to_ultrametric()
     t.render(outfile, tree_style = ts)
     t.render(outfile.replace('png', 'tiff'), tree_style = ts)

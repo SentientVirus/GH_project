@@ -166,6 +166,7 @@ for GH in GH_types:
     ts = TreeStyle() #Create default tree style
     ts.show_branch_length = False # Hide support values
     ts.scale = 2000 #General tree scale
+    ts.scale_length = 0.05
     ts.branch_vertical_margin = -5 # Space between branches
     ts.show_branch_support = False
     ts.show_leaf_name = False # Hide unformatted leaf names
