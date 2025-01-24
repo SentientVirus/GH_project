@@ -114,7 +114,7 @@ strain_presence = {'A0901':    [1, 1, 0, 0, 0,-1, 0, 0, 1, 0, 0],
                    'MP2':      [0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0]
                    }
 
-scale = 42 #To set the size of the dots
+scale = 60 #To set the size of the dots
 #To color the dots
 colors = ['#336E74', '#84CDE8', '#FFE570', '#BDE384', '#84E8A7', '#FF707C', 
           '#FFC36F', '#FF986F', '#C870FF', '#F87BFF', '#656ED4']
@@ -149,12 +149,15 @@ for treefile in treefiles:
     ts.show_leaf_name = False
     ts.scale_length = 0.01
     ts.legend_position = 4 #Bottom left
+    ts.draw_guiding_lines = True
+    ts.guiding_lines_color = 'lightgrey'
     
     ns = NodeStyle()
     ns['size'] = 0
     ns['vt_line_width'] = 5
     ns['hz_line_width'] = 5
     ns['hz_line_type'] = 0
+ 
     for n in t.traverse():
        n.set_style(ns)
        if n not in t.get_leaves() and n.support > 1:
@@ -162,7 +165,8 @@ for treefile in treefiles:
                color = 'black' #'#0E9E00'
            else: color = 'dimgrey'
            if n.support >= 50:
-               support_face = TextFace(int(n.support), fgcolor = color, fsize = 24)
+               support_face = TextFace(int(n.support), ftype = 'Arial', 
+                                       fgcolor = color, fsize = 24)
                n.add_face(support_face, column=0, position='branch-top')
        
     leaves = t.get_leaves() #Sort by phylogeny
@@ -173,33 +177,36 @@ for treefile in treefiles:
     for leaf in leaves:
         nleaf = leaf.name.replace('-', '').upper()
         color = leaf_color.get(nleaf, None)
-        name_face = TextFace(leaf.name, fgcolor = color, fsize = 40)
-        leaf.add_face(name_face, column=0, position='branch-right')
+        name_face = TextFace(leaf.name, ftype = 'Arial', fgcolor = color, 
+                             fsize = 40)
+        leaf.add_face(name_face, column=0, position='aligned')
         
         if leaf.name == 'A1001':
             name_string = ''
             for i in range(len(names)):
                 gene_text = f'{names[i]}'
-                text_face = TextFace(gene_text, fsize=20, tight_text = True)
+                text_face = TextFace(gene_text, fsize=28, tight_text = True)
                 text_face.rotation = 290
                 text_face.margin_bottom = -9 #Reduce space between labels
                 if i == 0:
                     ts.legend.add_face(text_face, column = i)
-                    empty_face = TextFace(' '*2, fsize=22, tight_text = False)
+                    empty_face = TextFace(' ', ftype = 'Arial', fsize=28, 
+                                          tight_text = True)
                     ts.legend.add_face(empty_face, column = i+1)
                     ts.legend.add_face(empty_face, column = i+2)
                 else:
                     ts.legend.add_face(text_face, column = i+2)
                 if i == len(names)-1:
-                    empty_face = TextFace(' '*2, fsize=22, tight_text = False)
+                    empty_face = TextFace(' '*2, ftype = 'Arial', fsize=28, 
+                                          tight_text = True)
                     ts.legend.add_face(empty_face, column = len(names)+2)
         
         motifs = ['']*len(names)
-        seqFace = SeqMotifFace('A'*20, motifs = '', seq_format = 'blank', 
+        seqFace = SeqMotifFace('A'*300, motifs = '', seq_format = 'blank', 
                                gap_format = 'blank') #Add presence/absence info to node
         (t & f'{leaf.name}').add_face(seqFace, 0, 'aligned') #The number represents the column
         for n in range(len(names)):
-            motifs[n] = [1, 41, 'o', None, 40, '', '', '']
+            motifs[n] = [5, 55, 'o', None, 50, '', '', '']
             motifs[n][5] = colors[n]
             motifs[n][6] = colors[n]
             if n == 0:
@@ -208,16 +215,16 @@ for treefile in treefiles:
                 motifs[n][7] = 'Arial|18|black|' #'{domain_no[n]}'
                 
             if strain_presence[leaf.name][n] == 0:
-                motifs[n][0] = 6
-                motifs[n][1] = 36
+                motifs[n][0] = 15
+                motifs[n][1] = 45
                 motifs[n][4] = 30
                 motifs[n][5] = '#E7E7E7'
                 motifs[n][6] = '#E7E7E7'
                 motifs[n][7] = 'Arial|18|black|'
             elif strain_presence[leaf.name][n] == -1:
-                motifs[n][0] = 3
-                motifs[n][1] = 39
-                motifs[n][4] = 36
+                motifs[n][0] = 10
+                motifs[n][1] = 50
+                motifs[n][4] = 40
                 motifs[n][5] = 'darkgrey'
                 motifs[n][6] = 'darkgrey'
                 motifs[n][7] = 'Arial|18|black|'
