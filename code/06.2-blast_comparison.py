@@ -283,7 +283,7 @@ for i in range(1, len(phylo_order.keys())+1): #Loop through strain names in the 
                                   text_kws = dict(color = 'black', rotation = 45, #Set label properties (label and rotation)
                                                   size = 15, ymargin = 0, #Set label properties (text size and distance from the CDS)
                                                   vpos = 'top', hpos = 'left')) #Set label properties (vertical and horizontal position)
-            segment.add_sublabel(f'{segment.start:,} - {segment.end:,} bp')  #Add text indicating segment range to the plot
+        segment.add_sublabel(f'{segment.start:,} - {segment.end:,} bp')  #Add text indicating segment range to the plot
 
         track.align_label = True #Align track label (strain name) to track
         track.set_segment_sep() #Set separator (//) between segments
