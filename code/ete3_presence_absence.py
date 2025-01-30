@@ -124,7 +124,8 @@ colors = ['#336E74', '#84CDE8', '#FFE570', '#BDE384', '#84E8A7', '#FF707C',
 # =============================================================================
 treefile1 = os.path.expanduser('~') + '/GH_project/trees/phylogeny_bootstrap.treefile' #Tree with recombination filters
 treefile2 = os.path.expanduser('~') + '/GH_project/trees/phylogeny_bootstrap.nofilter.treefile' #Tree without recombination filter
-treefiles = [treefile1, treefile2] #List with both of the tree files
+treefile3 = os.path.expanduser('~') + '/GH_project/all_core/38_strains/trees/38strains.treefile' #Tree without recombination filter
+treefiles = [treefile1, treefile2, treefile3] #List with both of the tree files
 
 outdir = os.path.expanduser('~') +  '/GH_project/plots/trees'
 
@@ -136,10 +137,15 @@ for treefile in treefiles:
     print(outfile)
 
     t = Tree(treefile, format = 0)
-    outnode = t.search_nodes(name = 'fhon13')[0] #t.get_common_ancestor('A1001', ['A2002', 'A2003']) #GH70
-    t.set_outgroup(outnode)
-    to_keep = [node for node in t.traverse() if node.name in to_include] #Get all t>
-    t.prune(to_keep) #Prune the tree
+    if treefile != treefile3:
+        outnode = t.search_nodes(name = 'fhon13')[0] #t.get_common_ancestor('A1001', ['A2002', 'A2003']) #GH70
+        t.set_outgroup(outnode)
+        to_keep = [node for node in t.traverse() if node.name in to_include] #Get all t>
+        t.prune(to_keep) #Prune the tree
+    else:
+        outnode = t.search_nodes(name = 'A1001')[0]
+        t.set_outgroup(outnode)
+        outfile = f'{outdir}/representative_38.png'
     
     ts = TreeStyle()
     #ts.show_leaf_name = True
