@@ -9,10 +9,16 @@ strains.
 @author: Marina Mota-Merlo
 """
 
+# =============================================================================
+# 0. Import required packages
+# =============================================================================
 from Bio import SeqIO
 import os, subprocess
 # from Bio.Nexus import Nexus
 
+# =============================================================================
+# 1. Define inputs and outputs
+# =============================================================================
 inpath = os.path.expanduser('~') + '/GH_project/all_core/38_strains/fasta'
 # outpath = inpath.replace('fasta', 'nexus')
 # nexus_out = f'{outpath}/concatenated.nex'
@@ -27,6 +33,9 @@ if not os.path.exists(aln_dir):
 
 infiles = [f'{inpath}/{file}' for file in os.listdir(inpath) if file.endswith('.mafft.faa')]
 
+# =============================================================================
+# 2. Loop through input files to generate the right inputs for IQtree
+# =============================================================================
 for file in infiles:
     outfile = file.replace(inpath, aln_dir)
     records = []
@@ -41,10 +50,16 @@ for file in infiles:
     with open(outfile, 'w') as out_file:
         SeqIO.write(records, out_file, 'fasta')
             
+# =============================================================================
+# 3. Run IQtree
+# =============================================================================
+#Run IQtree2 on the folder with input alignments, restricting the possible models
+#to a subset and generating 1000 UFBootstrap replicates
 subprocess.run(f'iqtree2 -nt AUTO -ntmax {threads} -p {aln_dir} --prefix 38strains -st AA -mset Q.pfam,LG,WAG,JTT -bb 1000 -bnni > {log}', shell = True)
-subprocess.run(f'mkdir -p {outdir}', shell = True)
-subprocess.run(f'mv 38strains.* {outdir}', shell = True)
+subprocess.run(f'mkdir -p {outdir}', shell = True) #Create the output directory if it doesn't exist
+subprocess.run(f'mv 38strains.* {outdir}', shell = True) #Move the IQtree output to the desired directory
 
+## Below is the other script that I tried to concatenate the alignments before making the tree
 # import pandas as pd
 
 # def fasta_reader(file):
