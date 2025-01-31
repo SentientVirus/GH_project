@@ -95,7 +95,7 @@ rule codeml_exe:
         log: 'logs/python/all_codeml.log'
         conda: 'envs/environment.yml'
 	script: 
-                'code/all_core/04-codeml_core.py'
+                'code/core_pipeline/all_core/04-codeml_core.py'
 		
 rule run_parser:
 	input:
@@ -107,7 +107,7 @@ rule run_parser:
         log: 'logs/python/parse_codeml.log'
         conda: 'envs/environment.yml'
 	script:
-		'code/all_core/05-parse_codeml.py'
+		'code/core_pipeline/all_core/05-parse_codeml.py'
 
 #rule parse_representatives:
 #        input:
