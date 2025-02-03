@@ -17,9 +17,9 @@ from matplotlib.lines import Line2D
 # =============================================================================
 workdir = os.path.expanduser('~') + '/GH_project' #Working directory
 pairwise_ds = f'{workdir}/results' #Directory with input pairwise dS data
-core_ds = f'{pairwise_ds}/core_genes/core_pairwise_metrics.tsv' #File with core dS data
+core_ds = f'{workdir}/all_core/results/global/core_pairwise_metrics.tsv' #'core_genes/core_pairwise_metrics.tsv' #File with core dS data
 outplot = f'{workdir}/plots/scatter/GH_types_scatterplot.png' #Output file
-coredir = f'{workdir}/results/core_genes/GH_repr'
+coredir = f'{workdir}/all_core'
 
 GH_types = ['GS1', 'GS2', 'BRS', 'NGB', 'S2a', 'S3'] #Gene types to be plotted
 to_exclude = ['A1001', 'A1404']
@@ -84,6 +84,7 @@ plt.subplots_adjust(hspace = 0.3, wspace = 0.2) #Adjust horizontal and vertical 
 
 for i in range(len(GH_types)): #Loop through gene types
     GH = GH_types[i] #Name of the gene type
+    core_dir = f'{coredir}/{GH}/results'
     axs[0, i].set_title(GH, fontsize = 14) #Use the name of the gene as the title of the scatter plots
     
     label_list = [] #Create an empty list to store labels (not used)
@@ -191,16 +192,20 @@ for i in range(len(GH_types)): #Loop through gene types
     
     dS_corelist = [] #Create an empty list to store core dS values
     dN_corelist = [] #Create an empty list to store core dN values
-    for file in os.listdir(coredir): #Loop through files in the input directory
-        if file.startswith(GH) and file.endswith('dNdS.tsv'): #If the file includes dN and dS calues
-            df = pd.read_csv(f'{coredir}/{file}', sep = '\t') #Read the file as a dataframe
-            for index, row in df.iterrows(): #Loop through the dataframe
-                check = any(strain in row['locus1'] for strain in to_exclude) or any(strain in row['locus2'] for strain in to_exclude) #Check that basal strains are not present
-                if not check and not (GH == 'GS1' and ('A1003' in row['locus1'] or 'A1003' in row['locus2'])): #Check that gene GS4 is not present
-                    dS = min(1.5, row['dS']) #Get dS (set maximum of 1.5)
-                    dN = min(1.5, row['dN']) #Get dN (set maximum of 1.5)
-                    dS_corelist.append(dS) #Append dS to list
-                    dN_corelist.append(dN) #Append dN to list
+    for core_gene in os.listdir(core_dir): #Loop through files in the input directory
+        if os.path.isdir(f'{core_dir}/{core_gene}'):
+            indir = f'{core_dir}/{core_gene}'
+            for file in os.listdir(indir):
+                if file == 'dNdS.tsv': #If the file includes dN and dS calues
+                    print(f'{indir}/{file}')
+                    df = pd.read_csv(f'{indir}/{file}', sep = '\t') #Read the file as a dataframe
+                    for index, row in df.iterrows(): #Loop through the dataframe
+                        check = any(strain in row['locus1'] for strain in to_exclude) or any(strain in row['locus2'] for strain in to_exclude) #Check that basal strains are not present
+                        if not check and not (GH == 'GS1' and ('A1003' in row['locus1'] or 'A1003' in row['locus2'])): #Check that gene GS4 is not present
+                            dS = min(1.5, row['dS']) #Get dS (set maximum of 1.5)
+                            dN = min(1.5, row['dN']) #Get dN (set maximum of 1.5)
+                            dS_corelist.append(dS) #Append dS to list
+                            dN_corelist.append(dN) #Append dN to list
     
     #As for the other plots, get x and y when x <= y or x > y
     sub_xcore = [dS_corelist[j] for j in range(len(dN_corelist)) if dS_corelist[j] <= dN_corelist[j]]
