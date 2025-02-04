@@ -40,3 +40,8 @@ figures/*
 all_core/*
 phylo_networks/*
 paper_tables/*
+PCR_analyses/PCR*
+PCR_analyses/pdf*
+new_interpro/*
+dS_tables/*
+core_genes/*
