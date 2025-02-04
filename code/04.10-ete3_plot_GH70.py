@@ -10,12 +10,18 @@ outgroups.
 """
 
 # =============================================================================
-# 
+# 0. Import required modules
 # =============================================================================
+
 from ete3 import Tree, TreeStyle, NodeStyle, SeqMotifFace, TextFace
 import re
 import os
 
+# =============================================================================
+# 1. Define input variables
+# =============================================================================
+
+#Dictionary to color strains by phylogroup
 leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
               'A1003': '#0072B2', 'A1201': '#D55E00', 'A1202': '#33B18F',
               'A1401': '#33B18F', 'A1404': '#DA73B3', 'A1802': '#D55E00',
@@ -50,90 +56,75 @@ leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
               'H4B411M': '#D55E00', 'H4B412M': '#0072B2', 'H4B501J': '#0072B2', 
               'H4B502X': '#0072B2', 'H4B503X': '#0072B2', 'H4B504J': '#33B18F',
               'H4B505J': '#33B18F', 'H4B507J': '#0072B2', 'H4B507X': '#0072B2', 
-              'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': 'black', 
-              'DSM': 'black'}
+              'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': '#D55E00', 
+              'DSM': '#0072B2'}
 
+workdir = os.path.expanduser('~') + '/GH_project' #Working directory
+treefile1 = f'{workdir}/data/fasta/GH70/trees/GH70_functional_outgroup_repset.mafft.faa.treefile' #Path to the tree file for GH70
+treefile2 = f'{workdir}/data/fasta/GH32/trees/GH32_repset.mafft.faa.treefile' #Path to the tree file for GH32
+outdir = f'{workdir}/plots/trees' #Path where outputs will be saved
 
-
-# Maybe I should re-do the treefile getting domains only after running Interproscan on all the genes in the outgroup file
-treefile = os.path.expanduser('~') + '/GH_project/data/fasta/GH70/trees/GH70_functional_outgroup_repset.mafft.faa.treefile' 
-outfile = os.path.expanduser('~') + '/GH_project/plots/trees/GH70_outgroups_tree.png'
-outdir = os.path.dirname(outfile)
-
-if not os.path.exists(outdir):
+if not os.path.exists(outdir): #Create output directory if it does not exist
    os.makedirs(outdir)
-
-
-t = Tree(treefile, format = 0)
-outnode = t.get_common_ancestor('AOR73699.1_L_fermentum', 'AAU08014.2_L_reuteri') #GH70
-t.set_outgroup(outnode)
-
-ts = TreeStyle()
-#ts.show_leaf_name = True
-ts.show_branch_length = False
-ts.show_branch_support = False
-ts.scale =  2000
-#ts.tree_width = 200
-#ts.force_topology = True
-ts.show_leaf_name = False
-ts.scale_length = 0.2
-
-ns = NodeStyle()
-ns['size'] = 0
-ns['vt_line_width'] = 5
-ns['hz_line_width'] = 5
-ns['hz_line_type'] = 0
-for n in t.traverse():
-   n.set_style(ns)
-   if n not in t.get_leaves() and n.support > 1:
-       if n.support >= 95:
-           color = 'black' #'#0E9E00'
-       else: color = 'dimgrey'
-       # elif 90 <= n.support < 95:
-       #     color = 'dimgrey'
-       # elif 80 <= n.support < 90:
-       #     color = 'grey' #'#5D9E00'
-       # elif 70 <= n.support < 80:
-       #     color = 'darkgrey' #'#809E00'
-       # elif 60 <= n.support < 70:
-       #     color = 'silver' #'#9E9E00'
-       # elif 40 <= n.support < 60:
-       #     color = 'lightgrey' #'#9E6D00'
-       # elif 20 <= n.support < 40:
-       #     color = '#9E4F00'
-       # elif n.support < 20:
-       #     color = '#9E0000'
-       if n.support >= 50:
-           support_face = TextFace(int(n.support), fgcolor = color, fsize = 24)
-           n.add_face(support_face, column=0, position='branch-top')
    
-leaves = t.get_leaves() #Sort by phylogeny
-lnames = [leaf.name for leaf in leaves]
+# =============================================================================
+# 2. Loop through tree files and generate output plot
+# =============================================================================
 
-                
-# Fix this part for MP2. To fix MP2 successfully, I have to add the old locus tag from the Interproscan in the previous script
-for leaf in leaves:
-    # if leaf.name[-2:] == '_2':
-    #     nleaf = leaf.name[:-2]
-    # else:
-    nleaf = leaf.name
-    if 'LDX55' in nleaf:
-        nleaf = nleaf.replace('LDX55', 'IBH001')
-    elif 'APS55' in nleaf:
-        nleaf = nleaf.replace('APS55_RS', 'MP2_')
-    elif 'K2W83' in leaf.name:
-        nleaf = nleaf.replace('K2W83_RS', 'DSM_')
-    if nleaf[-2:] == '_2':
-        mleaf = nleaf[:-2]
-    else:
-        mleaf = nleaf
-    color = leaf_color.get(mleaf.split('_')[0], None)
-    name_face = TextFace(nleaf, fgcolor = color, fsize = 40)
-    leaf.add_face(name_face, column=0, position='branch-right')
+for treefile in [treefile1, treefile2]: #Loop through the tree file
+    outfile = f'{outdir}/{os.path.basename(treefile).split(".")[0]}_tree.png' #Set the name of the output
     
-#print(t)
-t.ladderize(1)
-# t.convert_to_ultrametric()
-t.render(outfile, tree_style = ts)
-t.render(outfile.replace('png', 'tiff'), tree_style = ts)
-t.render(outfile.replace('png', 'svg'), tree_style = ts)
+    t = Tree(treefile, format = 0) #Load the tree file into a tree object
+    
+    if 'GH70' in treefile: #If the tree filename includes GH70
+        outnode = t.get_common_ancestor('AOR73699.1_L_fermentum', 'AAU08014.2_L_reuteri') #Get the outgroup
+    else: #If the file name does not include GH70
+        outnode = t.get_common_ancestor('A1404_13450', 'H4B503X_12760') #Get the most divergent different subtype of genes
+    t.set_outgroup(outnode) #Root the tree
+    
+    ts = TreeStyle() #Create tree style object
+    ts.show_branch_length = False #Hide branch lengths
+    ts.show_branch_support = False #Hide branch supports to add formatted text
+    ts.show_leaf_name = False #Hide leaf names to add formatted tex
+    ts.scale = 2000 #Set the scale of the tree
+    ts.scale_length = 0.2 #Set the length of the legend scale bar
+    
+    ns = NodeStyle() #Create node style
+    ns['size'] = 0 #Hide nodes
+    ns['vt_line_width'] = 5 #Set width of vertical lines
+    ns['hz_line_width'] = 5 #Set width of horizontal lines
+    ns['hz_line_type'] = 0 #Horizontal lines will be solid lines
+    
+    for n in t.traverse(): #Loop through nodes in the tree
+       n.set_style(ns) #Apply the style to each node
+       if n not in t.get_leaves() and n.support >= 50: #If the node is not a leaf and support bigger or equal than 50%
+           if n.support >= 95: #If the node support is bigger or equal than 95%
+               color = 'black' #Color the support in black
+           else: color = 'dimgrey' #Otherwise, color the support in grey
+           support_face = TextFace(int(n.support), fgcolor = color, #Create text for support values and set its color
+                                   ftype = 'Arial', fsize = 30) #Sent font type and size
+           n.add_face(support_face, column = 0, position = 'branch-top') #Add the text to the node
+                    
+    for leaf in t.get_leaves(): #Loop through the leaves in the tree
+        nleaf = leaf.name #Retrieve the leaf name
+        if 'LDX55' in nleaf: #If the leaf name contains this string
+            nleaf = nleaf.replace('LDX55', 'IBH001') #Change the string to IBH001
+        elif 'APS55' in nleaf: #Same for MP2
+            nleaf = nleaf.replace('APS55_RS', 'MP2_')
+        elif 'K2W83' in leaf.name: #Same for DSM
+            nleaf = nleaf.replace('K2W83_RS', 'DSM_')
+            
+        if nleaf[-2:] == '_2' or nleaf[-2:] == '_1': #If the gene name ends with _1/2 (multi-GH70 domains)
+            mleaf = nleaf[:-2] #Remove that from the locus tag used to retrieve the phylogroup color
+        else:
+            mleaf = nleaf #Otherwise, use the locus tag as it is
+            
+        color = leaf_color.get(mleaf.split('_')[0], None) #Retrieve the color getting the strain name from the locus tag
+        name_face = TextFace(nleaf, fgcolor = color, ftype = 'Arial', 
+                             fsize = 40) #Create a text face with the locus tag, colored by phylogroup 
+        leaf.add_face(name_face, column = 0, position = 'branch-right') #Add the locus tag to the leaf
+        
+    t.ladderize(1) #Change the arrangement of the nodes in the tree so that the root is at the bottom
+    t.render(outfile, tree_style = ts) #Save the output plot to PNG
+    t.render(outfile.replace('png', 'tiff'), tree_style = ts) #Save the plot to TIFF
+    t.render(outfile.replace('png', 'svg'), tree_style = ts) #Save the plot to SVG
