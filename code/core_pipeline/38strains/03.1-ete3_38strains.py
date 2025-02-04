@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Dec 20 11:06:54 2021
-
-This script creates a plot of the GH70 phylogeny, including
-outgroups.
+This script plots the strain phylogeny considering only the representative 38
+strains, either because they are not in the original tree or because they have
+been pruned out of the final tree.
 
 @author: Marina Mota-Merlo
 """
@@ -84,24 +83,24 @@ if not os.path.exists(outdir):
 # 2. Loop through tree files and generate output plot
 # =============================================================================
 
-for treefile in treefiles:
-    outfile = f'{outdir}/{treefile.split("/")[-1].split(".treefile")[0]}.png'
-    print(outfile)
+for treefile in treefiles: #Loop through tree files
+    outfile = f'{outdir}/{treefile.split("/")[-1].split(".treefile")[0]}.png' #Define path to the output plot
+    print(outfile) #Print path to output
 
-    t = Tree(treefile, format = 0)
-    if treefile != treefile3:
-        outnode = t.search_nodes(name = 'fhon13')[0] #t.get_common_ancestor('A1001', ['A2002', 'A2003']) #GH70
-    else: outnode = t.search_nodes(name = 'A1001')[0]
-    t.set_outgroup(outnode)
-    to_keep = [node for node in t.traverse() if node.name in to_include] #Get all t>
-    t.prune(to_keep) #Prune the tree
+    t = Tree(treefile, format = 0) #Create a tree object from the tree file
+    
+    if treefile != treefile3: #If the tree file has more than just the representative strains
+        to_keep = [node for node in t.traverse() if node.name in to_include] #Set the nodes to be kept (representative strains)
+        t.prune(to_keep) #Prune the tree
+    outnode = t.search_nodes(name = 'A1001')[0] #Set the outgroup to the phylogroup F strain A1001
+    t.set_outgroup(outnode) #Root the tree
     
     ts = TreeStyle() #Create tree style object
     ts.show_branch_length = False #Hide branch lengths
     ts.show_branch_support = False #Hide branch supports to add formatted text
     ts.show_leaf_name = False #Hide leaf names to add formatted text
-    ts.scale =  2000 #Scale of the tree
-    ts.scale_length = 0.1 #Scale legend bar
+    ts.scale =  30000 #Scale of the tree
+    ts.scale_length = 0.01 #Scale legend bar
     
     ns = NodeStyle() #Create node style
     ns['size'] = 0 #Hide nodes
