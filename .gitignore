@@ -29,3 +29,14 @@ add_species/files/*
 *.tiff
 */files/*
 RDP5_analysis/RDP_output/*
+RDP5_analysis/error.txt
+trees/*
+code/not_used/*
+BRS_analysis/*
+pal2nal.v14/*
+code_txt/*
+test/*
+figures/*
+all_core/*
+phylo_networks/*
+paper_tables/*
