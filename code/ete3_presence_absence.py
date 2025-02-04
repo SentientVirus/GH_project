@@ -172,7 +172,7 @@ for treefile in treefiles:
            else: color = 'dimgrey'
            if n.support >= 50:
                support_face = TextFace(int(n.support), ftype = 'Arial', 
-                                       fgcolor = color, fsize = 24)
+                                       fgcolor = color, fsize = 30)
                n.add_face(support_face, column=0, position='branch-top')
        
     leaves = t.get_leaves() #Sort by phylogeny
