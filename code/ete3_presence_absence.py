@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Dec 20 11:06:54 2021
-
-This script creates a plot of the GH70 phylogeny, next to which it plots the
-presence/absence of GH70 and GH32 genes.
+This script creates a plot of the 38 representative strains, next to which it 
+plots the presence/absence of GH70 and GH32 genes.
 
 @author: Marina Mota-Merlo
 """
@@ -12,12 +10,14 @@ presence/absence of GH70 and GH32 genes.
 # =============================================================================
 # 0. Load required packages
 # =============================================================================
+
 from ete3 import Tree, TreeStyle, NodeStyle, SeqMotifFace, TextFace
 import os
 
 # =============================================================================
 # 1. Define variables to do the formatting
 # =============================================================================
+
 #Dictionary to color strains by phylogroup
 leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
               'A1003': '#0072B2', 'A1201': '#D55E00', 'A1202': '#33B18F',
@@ -56,7 +56,7 @@ leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
               'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': '#D55E00', 
               'DSM': '#0072B2'}
 
-#This can be removed after I generate a tree of the 38 strains
+#Representative set of strains
 to_include = ['A0901', 'A1001', 'A1003', 'A1202', 'A1401', 'A1404', 'A1805',
              'DSM', 'fhon2', 'G0101', 'G0403', 'H1B1-04J', 'H1B1-05A',
              'H1B3-02M', 'H3B1-01A', 'H3B1-04J', 'H3B1-04X', 'H3B2-02X',
@@ -114,137 +114,134 @@ strain_presence = {'A0901':    [1, 1, 0, 0, 0,-1, 0, 0, 1, 0, 0],
                    'MP2':      [0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0]
                    }
 
-scale = 60 #To set the size of the dots
-#To color the dots
+scale = 60 #Variable to scale the presence/absence circles
+
+#To color the circles
 colors = ['#336E74', '#84CDE8', '#FFE570', '#BDE384', '#84E8A7', '#FF707C', 
           '#FFC36F', '#FF986F', '#C870FF', '#F87BFF', '#656ED4']
 
 # =============================================================================
 # 2. Set path to input files
 # =============================================================================
+
 treefile1 = os.path.expanduser('~') + '/GH_project/trees/phylogeny_bootstrap.treefile' #Tree with recombination filters
 treefile2 = os.path.expanduser('~') + '/GH_project/trees/phylogeny_bootstrap.nofilter.treefile' #Tree without recombination filter
-treefile3 = os.path.expanduser('~') + '/GH_project/all_core/38_strains/trees/38strains.treefile' #Tree without recombination filter
-treefiles = [treefile1, treefile2, treefile3] #List with both of the tree files
+treefile3 = os.path.expanduser('~') + '/GH_project/all_core/38_strains/trees/38strains.treefile' #Tree of the 38 representative strains
+treefiles = [treefile1, treefile2, treefile3] #List with all of the tree files
 
-outdir = os.path.expanduser('~') +  '/GH_project/plots/trees'
+outdir = os.path.expanduser('~') +  '/GH_project/plots/trees' #Directory to save the plots
 
-if not os.path.exists(outdir):
+if not os.path.exists(outdir): #Create the output directory if it does not exist
    os.makedirs(outdir)
 
-for treefile in treefiles:
-    outfile = f'{outdir}/{treefile.split("/")[-1].split(".treefile")[0]}.png'
+# =============================================================================
+# 3. Loop through input files and generate the plots
+# =============================================================================
+
+for treefile in treefiles: #Loop through tree files
+    outfile = f'{outdir}/{treefile.split("/")[-1].split(".treefile")[0]}_GH.png'
     print(outfile)
 
-    t = Tree(treefile, format = 0)
-    if treefile != treefile3:
-        outnode = t.search_nodes(name = 'fhon13')[0] #t.get_common_ancestor('A1001', ['A2002', 'A2003']) #GH70
-        t.set_outgroup(outnode)
-        to_keep = [node for node in t.traverse() if node.name in to_include] #Get all t>
+    t = Tree(treefile, format = 0) #Create a tree object from the tree file
+    
+    if treefile != treefile3: #If the tree file has more than just the representative strains
+        to_keep = [node for node in t.traverse() if node.name in to_include] #Set the nodes to be kept (representative strains)
         t.prune(to_keep) #Prune the tree
-    else:
-        outnode = t.search_nodes(name = 'A1001')[0]
-        t.set_outgroup(outnode)
-        outfile = f'{outdir}/representative_38.png'
+    outnode = t.search_nodes(name = 'A1001')[0] #Set the outgroup to the phylogroup F strain A1001
+    t.set_outgroup(outnode) #Root the tree
     
-    ts = TreeStyle()
-    #ts.show_leaf_name = True
-    ts.show_branch_length = False
-    ts.show_branch_support = False
-    ts.scale = 30000
-    ts.show_leaf_name = False
-    ts.scale_length = 0.01
-    ts.legend_position = 4 #Bottom left
-    ts.draw_guiding_lines = True
-    ts.guiding_lines_color = 'lightgrey'
+    ts = TreeStyle() #Create tree style object
+    ts.show_branch_length = False #Hide branch lengths
+    ts.show_branch_support = False #Hide branch supports to add formatted text
+    ts.show_leaf_name = False #Hide leaf names to add formatted text
+    ts.scale =  30000 #Scale of the tree
+    ts.scale_length = 0.01 #Scale legend bar
+    ts.legend_position = 4 #Legend placement at bottom left
+    ts.draw_guiding_lines = True #Draw guiding lines
+    ts.guiding_lines_color = 'lightgrey' #Set the color of guiding lines
     
-    ns = NodeStyle()
-    ns['size'] = 0
-    ns['vt_line_width'] = 5
-    ns['hz_line_width'] = 5
-    ns['hz_line_type'] = 0
+    ns = NodeStyle() #Create node style
+    ns['size'] = 0 #Hide nodes
+    ns['vt_line_width'] = 5 #Set width of vertical lines
+    ns['hz_line_width'] = 5 #Set width of horizontal lines
+    ns['hz_line_type'] = 0 #Horizontal lines will be solid lines
  
-    for n in t.traverse():
-       n.set_style(ns)
-       if n not in t.get_leaves() and n.support > 1:
-           if n.support >= 95:
-               color = 'black' #'#0E9E00'
-           else: color = 'dimgrey'
-           if n.support >= 50:
-               support_face = TextFace(int(n.support), ftype = 'Arial', 
-                                       fgcolor = color, fsize = 30)
-               n.add_face(support_face, column=0, position='branch-top')
+    for n in t.traverse(): #Loop through nodes in the tree
+       n.set_style(ns) #Apply the style to each node
+       if n not in t.get_leaves() and n.support >= 50: #If the node is not a leaf and support bigger or equal than 50%
+           if n.support >= 95: #If the node support is bigger or equal than 95%
+               color = 'black' #Color the support in black
+           else: color = 'dimgrey' #Otherwise, color the support in grey
+           support_face = TextFace(int(n.support), fgcolor = color, #Create text for support values and set its color
+                                   ftype = 'Arial', fsize = 30) #Sent font type and size
+           n.add_face(support_face, column = 0, position = 'branch-top') #Add the text to the node
        
-    leaves = t.get_leaves() #Sort by phylogeny
-    lnames = [leaf.name for leaf in leaves]
-    
-                    
-    # Fix this part for MP2. To fix MP2 successfully, I have to add the old locus tag from the Interproscan in the previous script
-    for leaf in leaves:
-        nleaf = leaf.name.replace('-', '').upper()
-        color = leaf_color.get(nleaf, None)
+    for leaf in t.get_leaves(): #Loop through the leaves sorted by phylogeny 
+        nleaf = leaf.name.replace('-', '').upper()  #Create leaf names without the '-' symbol
+        color = leaf_color.get(nleaf, None) #Use that to retrieve the leaf color
         name_face = TextFace(leaf.name, ftype = 'Arial', fgcolor = color, 
-                             fsize = 40)
-        leaf.add_face(name_face, column=0, position='aligned')
+                             fsize = 40) #Create the text with leaf names
+        leaf.add_face(name_face, column = 0, position = 'branch-right') #Add the text to the leaf
         
-        if leaf.name == 'A1001':
-            name_string = ''
-            for i in range(len(names)):
-                gene_text = f'{names[i]}'
-                text_face = TextFace(gene_text, fsize=28, tight_text = True)
-                text_face.rotation = 290
+        if leaf.name == 'A1001': #If the node is the outgroup
+            name_string = '' #Create an empty string to add gene names
+            for i in range(len(names)): #Loop through gene names
+                gene_text = f'{names[i]}' #Create text with each gene name
+                text_face = TextFace(gene_text, fsize = 28, tight_text = True) #Format text
+                text_face.rotation = 290 #Rotate text
                 text_face.margin_bottom = -9 #Reduce space between labels
-                if i == 0:
-                    ts.legend.add_face(text_face, column = i)
-                    empty_face = TextFace(' ', ftype = 'Arial', fsize=28, 
+                if i == 0: #If it's the first gene name
+                    ts.legend.add_face(text_face, column = i) #Add it to the plot
+                    empty_face = TextFace(' ', ftype = 'Arial', fsize=28, #Create text with empty spaces
                                           tight_text = True)
-                    ts.legend.add_face(empty_face, column = i+1)
+                    ts.legend.add_face(empty_face, column = i+1) #Add these spaces to two columns (to separate NGB from the other GHs)
                     ts.legend.add_face(empty_face, column = i+2)
-                else:
-                    ts.legend.add_face(text_face, column = i+2)
-                if i == len(names)-1:
+                else: #Otherwise
+                    ts.legend.add_face(text_face, column = i+2) #Add the gene name text
+                if i == len(names)-1: #If it is the last gene name
                     empty_face = TextFace(' '*2, ftype = 'Arial', fsize=28, 
-                                          tight_text = True)
-                    ts.legend.add_face(empty_face, column = len(names)+2)
+                                          tight_text = True) #Create text with spaces
+                    ts.legend.add_face(empty_face, column = len(names)+2) #Add it after the last gene (to center gene names better)
         
-        motifs = ['']*len(names)
-        seqFace = SeqMotifFace('A'*300, motifs = '', seq_format = 'blank', 
-                               gap_format = 'blank') #Add presence/absence info to node
-        (t & f'{leaf.name}').add_face(seqFace, 0, 'aligned') #The number represents the column
-        for n in range(len(names)):
-            motifs[n] = [5, 55, 'o', None, 50, '', '', '']
-            motifs[n][5] = colors[n]
-            motifs[n][6] = colors[n]
-            if n == 0:
-                motifs[n][7] = 'Arial|18|white|' #'{domain_no[n]}'
-            else:
-                motifs[n][7] = 'Arial|18|black|' #'{domain_no[n]}'
-                
-            if strain_presence[leaf.name][n] == 0:
-                motifs[n][0] = 15
-                motifs[n][1] = 45
-                motifs[n][4] = 30
-                motifs[n][5] = '#E7E7E7'
-                motifs[n][6] = '#E7E7E7'
-                motifs[n][7] = 'Arial|18|black|'
-            elif strain_presence[leaf.name][n] == -1:
-                motifs[n][0] = 10
-                motifs[n][1] = 50
-                motifs[n][4] = 40
-                motifs[n][5] = 'darkgrey'
-                motifs[n][6] = 'darkgrey'
-                motifs[n][7] = 'Arial|18|black|'
+        motifs = ['']*len(names) #Create an empty list of motifs to plot
+        seqFace = SeqMotifFace('A'*300, motifs = '', seq_format = 'blank', #Create an empty motif to add space between leaf names and presence/absence 
+                               gap_format = 'blank')
+        (t & f'{leaf.name}').add_face(seqFace, 0, 'aligned') #Add empty motif to the first column
+        
+        for n in range(len(names)): #Loop through gene names
+            motifs[n] = [5, 55, 'o', None, 50, '', '', ''] #Start adding info to plot a motif
+            motifs[n][5] = colors[n] #Update edge colors according to gene type
+            motifs[n][6] = colors[n] #Update fill colors according to gene type
             
-            seq = 'A'*scale
-            if n == 0:
-                seq += 'A'*40
-            seqFace = SeqMotifFace(seq, motifs = [motifs[n]], seq_format = 'blank', 
-                                   gap_format = 'blank') #Add presence/absence info to node
-            (t & f'{leaf.name}').add_face(seqFace, n+1, 'aligned') #The number represents the column
+            # if n == 0: #Uncomment to add gene type on circles
+            #     motifs[n][7] = f'Arial|18|white|{names[n]}' 
+            # else:
+            #     motifs[n][7] = f'Arial|18|black|{names[n]}'
+                
+            if strain_presence[leaf.name][n] == 0: #If the gene is absent
+                motifs[n][0] = 15 #Set start position of circle
+                motifs[n][1] = 45 #Set end position of circle (equal to end - start)
+                motifs[n][4] = 30 #Set height of circle
+                motifs[n][5] = '#E7E7E7' #Set edge color to light grey
+                motifs[n][6] = '#E7E7E7' #Set fill color to light grey
+                # motifs[n][7] = 'Arial|18|black|'
+            elif strain_presence[leaf.name][n] == -1: #If the gene is partially present, perhaps lost
+                motifs[n][0] = 10 #Set start position of circle
+                motifs[n][1] = 50 #Set end position of circle
+                motifs[n][4] = 40 #Set height of circle (equal to end - start)
+                motifs[n][5] = 'darkgrey' #Set edge color to dark grey
+                motifs[n][6] = 'darkgrey' #Set fill color to dark grey
+                # motifs[n][7] = 'Arial|18|black|'
+            
+            seq = 'A'*scale #Create sequence object on top to which circles are plotted
+            if n == 0: #If it's the first gene (NGB)
+                seq += 'A'*40 #Increase the length of the sequence object to add space between NGB and the other genes
+            seqFace = SeqMotifFace(seq, motifs = [motifs[n]], seq_format = 'blank', #Create object with the motifs, make the sequence tract invisible
+                                   gap_format = 'blank') 
+            (t & f'{leaf.name}').add_face(seqFace, n+1, 'aligned') #Add each gene to a different column
 
         
-    #print(t)
-    t.ladderize(1)
+    t.ladderize(1) #Reorder the nodes to keep the order consistent in all plots
     nodeA = t.get_common_ancestor('H3B1-01A', 'G0101')
     nodeA.ladderize(0)
     nodeB = t.get_common_ancestor('H1B1-04J', 'G0101')
@@ -268,7 +265,6 @@ for treefile in treefiles:
     nodeK = t.get_common_ancestor('H4B4-12M', 'H4B5-01J')
     nodeK.ladderize(1)
     
-    # t.convert_to_ultrametric()
-    t.render(outfile, tree_style = ts)
-    t.render(outfile.replace('png', 'tiff'), tree_style = ts)
-    t.render(outfile.replace('png', 'svg'), tree_style = ts)
+    t.render(outfile, tree_style = ts) #Save the tree plot to a PNG file
+    t.render(outfile.replace('png', 'tiff'), tree_style = ts) #Save plot to TIFF
+    t.render(outfile.replace('png', 'svg'), tree_style = ts) #Save plot to SVG
