@@ -1,0 +1,43 @@
+rule retrieve_seq_errors:
+    output:
+        "truncated_seqs.fna"
+    input:
+        expand("../../Akunkeei_files/fna/{strain_set}_genomic.fna", strain_set = ["A1401", "G0102", "H3B1-11M", "H3B2-09X", "Fhon2"])
+    conda: "../biopython_env.yml"
+    log: "logs/python/seq_errors.log"
+    script:
+        "get_seq_errors.py"
+
+rule align_seqs:
+    output:
+        expand("complete_{type}_repset.mafft.fna", type = ["GS1", "BRS", "GS2"])
+    input:
+        expand("complete_{type}_repset.fna", type = ["GS1", "BRS", "GS2"])
+    conda: "../environment.yml"
+    threads: 12
+    log: "logs/mafft/seq_errors.log"
+    shell:
+        """
+        mafft-linsi --thread {threads} {input[0]} > {output[0]} 2> {log} &&
+        mafft-linsi --thread {threads} {input[1]} > {output[1]} 2>> {log} &&
+        mafft-linsi --thread {threads} {input[2]} > {output[2]} 2>> {log}
+        """
+
+rule align_seq_results:
+    output:
+        expand("{strain}_seqresults.mafft.fna", strain = ["A1401", "Fhon2", "G0102", "H3B1-11M", "H3B2-09X"])
+        #expand("{strain}_seqresults.mafft.fna", strain = ["A1401", "G0102", "Fhon2", "H3B1-11M", "H3B2-09X"])
+    input:
+        expand("{strain}_seqresults.fna", strain = ["A1401", "Fhon2", "G0102", "H3B1-11M", "H3B2-09X"])
+        #expand("{strain}_seqresults.fna", strain = ["A1401", "G0102", "Fhon2", "H3B1-11M", "H3B2-09X"])
+    conda: "../environment.yml"
+    threads: 12
+    log: "logs/mafft/seq_results.log"
+    shell:
+        """
+        mafft-linsi --thread {threads} {input[0]} > {output[0]} 2> {log} &&
+        mafft-linsi --thread {threads} {input[1]} > {output[1]} 2>> {log} &&
+        mafft-linsi --thread {threads} {input[2]} > {output[2]} 2>> {log} &&
+        mafft-linsi --thread {threads} {input[3]} > {output[3]} 2>> {log} &&
+        mafft-linsi --thread {threads} {input[4]} > {output[4]} 2>> {log}        
+        """
