@@ -264,11 +264,10 @@ for treefile in treefiles:
     nodeI = t.get_common_ancestor('H3B2-03M', 'IBH001')
     nodeI.ladderize(1)
     nodeJ = t.get_common_ancestor('A0901', 'IBH001')
-    nodeJ.ladderize(1)
+    nodeJ.ladderize(0)
     nodeK = t.get_common_ancestor('H4B4-12M', 'H4B5-01J')
     nodeK.ladderize(1)
-    nodeL = t.get_common_ancestor('IBH001', 'H4B2-06J')
-    nodeL.ladderize(1)
+    
     # t.convert_to_ultrametric()
     t.render(outfile, tree_style = ts)
     t.render(outfile.replace('png', 'tiff'), tree_style = ts)
