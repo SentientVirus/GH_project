@@ -181,7 +181,7 @@ for treefile in treefiles: #Loop through tree files
         color = leaf_color.get(nleaf, None) #Use that to retrieve the leaf color
         name_face = TextFace(leaf.name, ftype = 'Arial', fgcolor = color, 
                              fsize = 40) #Create the text with leaf names
-        leaf.add_face(name_face, column = 0, position = 'branch-right') #Add the text to the leaf
+        leaf.add_face(name_face, column = 0, position = 'aligned') #Add the text to the leaf
         
         if leaf.name == 'A1001': #If the node is the outgroup
             name_string = '' #Create an empty string to add gene names
