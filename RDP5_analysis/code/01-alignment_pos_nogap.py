@@ -3,8 +3,16 @@
 """
 Created on Fri Jun 17 13:31:36 2022
 
-@author: marina
+This script concatenates two regions of the genome of A. kunkeei and,
+removing all the gaps, generates an alignment of the region in the
+representative subset of 38 strains.
+
+@author: Marina Mota-Merlo
 """
+
+# =============================================================================
+# 0. Import required modules
+# =============================================================================
 
 import logging, traceback, sys
 from Bio import SeqIO
@@ -17,42 +25,34 @@ import subprocess
 # =============================================================================
 log = os.path.expanduser('~') + '/GH_project/RDP5_analysis/logs/get_alignments.log'
 
-# if os.path.exists(log):
-#     os.remove(log)
+if os.path.exists(log):
+    os.remove(log)
 
-# if not os.path.exists(os.path.dirname(log)):
-#     os.makedirs(os.path.dirname(log))
+if not os.path.exists(os.path.dirname(log)):
+    os.makedirs(os.path.dirname(log))
 
-# logger = logging.getLogger()
+logger = logging.getLogger()
 
-# logging.basicConfig(filename = log, level = logging.INFO,
-#                     format = '%(asctime)s %(message)s',
-#                     datefmt = '%Y-%m-%d %H:%M:%S')
+logging.basicConfig(filename = log, level = logging.INFO,
+                    format = '%(asctime)s %(message)s',
+                    datefmt = '%Y-%m-%d %H:%M:%S')
 
-# def handle_exception(exc_type, exc_value, exc_traceback):
-#     if issubclass(exc_type, KeyboardInterrupt):
-#         sys.__excepthook__(exc_type, exc_value, exc_traceback)
-#         return
+def handle_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
 
-#     logger.error(''.join(["Uncaught exception: ",
-#                           *traceback.format_exception(exc_type, exc_value, exc_traceback)
-#                           ]))
+    logger.error(''.join(["Uncaught exception: ",
+                          *traceback.format_exception(exc_type, exc_value, exc_traceback)
+                          ]))
 
-# sys.excepthook = handle_exception
+sys.excepthook = handle_exception
 
-# sys.stdout = open(log, 'a')
+sys.stdout = open(log, 'a')
 
 # =============================================================================
-# 0. Input definition
+# 1. Input definition
 # =============================================================================
-# Paths
-gbk_dir = os.path.expanduser('~') + '/Akunkeei_files/gbff'
-fna_dir = os.path.expanduser('~') + '/Akunkeei_files/fna'
-infile_suffix = 'genomic.gbff'
-infile_suffix2 = 'genomic.fna'
-pos_dir = os.path.expanduser('~') + '/GH_project/RDP5_analysis/files/tab/all_subsets_nogap'
-out_dir = os.path.expanduser('~') + '/GH_project/RDP5_analysis/files/fna/all_subsets_nogap'
-threads = 48 #Threads to run mafft
 
 # Strains and comparisons of interest
 # strain_groups = {'H3B2-03M': 0, 'H4B4-02J': 0, 'H4B5-03X': 0, 'H4B4-12M': 0, 
@@ -60,8 +60,8 @@ threads = 48 #Threads to run mafft
 #                  'H3B2-09X': 1, 'H4B5-05J': 1, 'H3B1-04X': 1, 'H4B5-04J': 1,
 #                  'MP2': 2, 'H3B2-02X': 2, 'H3B2-03J': 2, 'G0403': 2}
 
-group_names = {0: 'root_GS1_S2-3_subset', 1: 'GS1-2_BRS', 2: 'only_GS1+GS2'}
-
+#Dictionary with the locus tags in each strain for each of the genes included in the aligned region
+#Basal strains A1001 and A1404 are not considered
 bcrA_loctag = {'A0901': 'AKUA0901_13170', 'A1003': 'AKUA1003_12430',
                'A1202': 'AKUA1202_13410', 'A1401': 'AKUA1401_12650', #'A1404': 'AKUA1404_13340',
                'A1805': 'AKUA1805_12670', 'DSMZ12361': 'K2W83_RS06120',
@@ -233,11 +233,15 @@ tagU_plus2_loctag = {'A0901': 'AKUA0901_13530', 'A1003': 'AKUA1003_12720',
                'H4B5-04J': 'AKUH4B504J_13650', 'H4B5-05J': 'AKUH4B505J_13110',
                'IBH001': 'LDX55_06420', 'MP2': 'APS55_RS03760'}
 
+group_names = {0: 'root_GS1_S2-3_subset', 1: 'GS1-2_BRS', 2: 'only_GS1+GS2'} #Combinations of strains to analyse
+
 # =============================================================================
-# 0. Create a gene object class
+# 2. Create a gene object class
 # =============================================================================
 # Maybe not needed, I can use CDS objects
 class geneObj:
+    '''A class to store CDS information, can be initialized as an empty object
+    with default values'''
     def __init__(self, seq = '', start = 0, end = 0, strand = '+', name = 'unk.', annot = 'hypothetical protein', locus_tag = '', strain = '', organism = 'Apilactobacillus kunkeei'):
         self.seq = seq
         self.start = start
@@ -252,179 +256,207 @@ class geneObj:
         return f'<{self.locus_tag} ({self.name}) from {self.organism} {self.strain} at position ({self.start}, {self.end}), strand {self.strand}>'
     
 # =============================================================================
-# 1. Create paths and input files
+# 3. Create paths and input files
 # =============================================================================
-if not os.path.exists(pos_dir):
-    os.makedirs(pos_dir)
-    
-if not os.path.exists(out_dir):
-    os.makedirs(out_dir)
-    
-with open(f'{pos_dir}/all_subsets_positions.tab', 'w+') as gpos:
-    gpos.write('locus_tag\tstrain\tgene_name\tstart\tend\tstrand\n')
-    
-for ind in range(1, 6):
-    rawdata = f'{out_dir}/all_subsets_seqs{ind}.fasta'
-    with open(rawdata, 'w+') as seq_no:
-        seq_no.write('')
 
-full_record = {}
-dict_pos = {}
-all_genes = {}
-genes_in_segment = {}
-loop =  list(bcrA_loctag.keys())
-# loop.remove('H1B3-02M')
-for strain in loop:
-    segment1 = [0, 0]
-    segment2 = [0, 0]
-    segment3 = [0, 0]
-    segment4 = [0, 0]
-    segment5 = [0, 0]
-    with open(f'{gbk_dir}/{strain}_{infile_suffix}') as gbk_file:
-        gbk = SeqIO.parse(gbk_file, 'genbank')
-        genes_in_segment[strain] = []
-        all_genes[strain] = []
-        for genomic_element in gbk:
-            for CDS in genomic_element.features:
-                if 'locus_tag' in CDS.qualifiers and CDS.type == 'CDS' and 'translation' in CDS.qualifiers:
-                    gene_obj = geneObj(seq = CDS.qualifiers['translation'][0], 
-                                    start = int(CDS.location.start), 
-                                    end = int(CDS.location.end),
-                                    strand = CDS.location.strand,
-                                    annot = CDS.qualifiers['product'][0],
-                                    locus_tag = CDS.qualifiers['locus_tag'][0],
-                                    strain = strain)
-                    if strain == 'MP2':
-                        gene_obj.strand *= -1
-                    
-                    if 'gene' in CDS.qualifiers:
-                        gene_obj.name = CDS.qualifiers['gene'][0]
-                    
-                    all_genes[strain].append(gene_obj)
-                    
-                    if gene_obj.locus_tag == bcrA_loctag[strain]:
-                        if strain != 'MP2':
-                            segment1[0] = gene_obj.start
-                        else:
-                            segment5[1] = gene_obj.end
-                    elif gene_obj.locus_tag == yhdG_loctag[strain]:
-                        if strain != 'MP2':
-                            segment1[1] = gene_obj.end
-                        else:
-                            segment5[0] = gene_obj.start
-                    elif gene_obj.locus_tag == CDS8_loctag[strain]:
-                        if strain != 'MP2':
-                            segment2[0] = gene_obj.start
-                        else:
-                            segment4[1] = gene_obj.end
-                    elif gene_obj.locus_tag == nox_loctag[strain]:
-                        if strain != 'MP2':
-                            segment2[1] = gene_obj.end
-                        else:
-                            segment4[0] = gene_obj.start
-                    elif gene_obj.locus_tag == CDS7_loctag[strain]:
-                        segment3[0] = gene_obj.start
-                        segment3[1] = gene_obj.end
-                    elif gene_obj.locus_tag == CDS5_loctag[strain]:
-                        if strain != 'MP2':
-                            segment4[0] = gene_obj.start
-                        else:
-                            segment2[1] = gene_obj.end
-                    elif gene_obj.locus_tag == ywqC_loctag[strain]:
-                        if strain != 'MP2':
-                            segment4[1] = gene_obj.end
-                        else:
-                            segment2[0] = gene_obj.start
-                    elif gene_obj.locus_tag == tagU_loctag[strain]:
-                        if strain != 'MP2':
-                            segment5[0] = gene_obj.start
-                        else:
-                            segment1[1] = gene_obj.end
-                    elif gene_obj.locus_tag == tagU_plus2_loctag[strain]:
-                        if strain != 'MP2':
-                            segment5[1] = gene_obj.end
-                        else:
-                            segment1[0] = gene_obj.start
-                      
-    dict_pos[strain] = [segment5, segment4, segment3, segment2, segment1]
-     
-    cummulength = 0
-    # for segment in dict_pos[strain]:
-    #     cummulength += segment[1]-segment[0]
-    for i in range(0, len(dict_pos[strain])):
-        j = len(dict_pos[strain])-1-i
-        if i > 0:
-            cummulength += dict_pos[strain][i-1][1]-dict_pos[strain][i-1][0]
-        for gene in all_genes[strain]:
-            check = False
-            if strain == 'MP2' and dict_pos[strain][j][0] <= gene.start < dict_pos[strain][j][1]:
-                gene.start = gene.start - dict_pos[strain][j][0] + 1
-                gene.end = gene.end - dict_pos[strain][j][0] + 1
-                check = True
-                genes_in_segment[strain].append(gene)
-            elif strain != 'MP2' and dict_pos[strain][i][0] <= gene.start < dict_pos[strain][i][1]:
-                    
-                
-                print(i, cummulength)
-                gene_start = gene.start
-                gene.start = dict_pos[strain][i][1] - gene.end + cummulength + 2
-                gene.end = dict_pos[strain][i][1] - gene_start + cummulength + 2
-                check = True
-                genes_in_segment[strain].append(gene)
+# Paths
+data_dir = os.path.expanduser('~') + '/Akunkeei_files' #Directory with the files from NCBI
+work_dir = os.path.expanduser('~') + '/GH_project/RDP5_analysis' #Work directory
+gbk_dir = f'{data_dir}/gbff' #Directory with GenBank files
+fna_dir =  f'{data_dir}/fna' #Directory with fna files
+infile_suffix = 'genomic.gbff' #Suffix of GenBank files
+infile_suffix2 = 'genomic.fna' #Suffix of fna files
+prefixes = ['E', 'F']
+threads = 48 #Threads to run mafft
+
+for prefix in prefixes:
+    pos_dir = f'{work_dir}/files/tab/{prefix}' #Directory to save tab files
+    out_dir = f'{work_dir}/files/fna/{prefix}' #Directory to save fna files and alignments
+    outfile = f'{out_dir}/{prefix}.mafft.fasta'
+    
+    #Create output directories if they don't exist
+    if not os.path.exists(pos_dir):
+        os.makedirs(pos_dir)
         
-            if check:
-                with open(f'{pos_dir}/all_subsets_positions.tab', 'a+') as pos_file:
-                    pos_file.write(f'{gene.locus_tag}\t{strain}\t{gene.name}\t{gene.start}\t{gene.end}\t{gene.strand}\n')
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+        
+    with open(f'{pos_dir}/{prefix}.tab', 'w+') as gpos: #Initialize file with positional information
+        gpos.write('locus_tag\tstrain\tgene_name\tstart\tend\tstrand\n') #Write headers to file
+        
+    for ind in range(1, 6): #Loop through all the segments to be plotted
+        rawdata = f'{out_dir}/{prefix}{ind}.fasta' #Path to the output files with each segment
+        with open(rawdata, 'w+') as seq_no: #Open output files
+            seq_no.write('') #Write empty string to files
+    
+    # =============================================================================
+    # 4. Save alignments to file
+    # =============================================================================
+    
+    full_record = {} #Dictionary to store complete records
+    dict_pos = {} #Dictionary to store the start and end positions of each segment
+    all_genes = {} #Dictionary to store gene information as geneObj
+    genes_in_segment = {} #Dictionary to store the genes in each segment
+    loop =  list(bcrA_loctag.keys()) #List of strains to include
+    
+    for strain in loop: #Loop through strains
+    
+        segment1 = [0, 0] #Initialize the five segments
+        segment2 = [0, 0]
+        segment3 = [0, 0]
+        segment4 = [0, 0]
+        segment5 = [0, 0]
+        
+        with open(f'{gbk_dir}/{strain}_{infile_suffix}') as gbk_file: #Open the GenBank file of the strain   
+            gbk = SeqIO.parse(gbk_file, 'genbank') #Parse GenBank file
+            genes_in_segment[strain] = [] #Initialize list of genes in the segment
+            all_genes[strain] = [] #Initialize gene dictionary with all the gene sin the strain
+            for genomic_element in gbk: #Loop through the genomic elements in the GenBank file
+                for CDS in genomic_element.features: #Loop through the CDS in the genomic element
+                    if 'locus_tag' in CDS.qualifiers and CDS.type == 'CDS' and 'translation' in CDS.qualifiers: #If it's a protein-coding gene
+                        gene_obj = geneObj(seq = CDS.qualifiers['translation'][0],  #Create a geneObj from the CDS information
+                                        start = int(CDS.location.start), 
+                                        end = int(CDS.location.end),
+                                        strand = CDS.location.strand,
+                                        annot = CDS.qualifiers['product'][0],
+                                        locus_tag = CDS.qualifiers['locus_tag'][0],
+                                        strain = strain)
                         
+                        if strain == 'MP2': #If the strain is MP2
+                            gene_obj.strand *= -1 #Change the strand
                         
-        with open(f'{fna_dir}/{strain}_{infile_suffix2}') as fna:
-            fna_read = SeqIO.parse(fna, 'fasta')
-            count = 0
-            for record in fna_read:
-                if count > 0:
-                    break
-                if strain != 'MP2':
-                    segment = record.seq[dict_pos[strain][j][0]:dict_pos[strain][j][1]+1] #+ '!'
-                else: # Almost fixed, there is now a single 1 kb gap in MP2, possibly transposons?
-                    genome_len = len(record.seq)
-                    start_s = genome_len - dict_pos[strain][i][1]
-                    end_s = genome_len - dict_pos[strain][i][0] + 1
-                    segment = record.seq[start_s:end_s]
+                        if 'gene' in CDS.qualifiers: #If the gene name is in the CDS qualifiers
+                            gene_obj.name = CDS.qualifiers['gene'][0] #Add gene name to the geneObj
+                        
+                        all_genes[strain].append(gene_obj) #Add geneObj to the list with all genes
+                        
+                        if gene_obj.locus_tag == bcrA_loctag[strain]: #If the gene is bcrA
+                            if strain != 'MP2': #If the strain is MP2
+                                segment1[0] = gene_obj.start #Set the start of the segment to the start of the gene
+                            else: #Otherwise
+                                segment5[1] = gene_obj.end #Set the end of the last segment to the end of the gene
+                        elif gene_obj.locus_tag == yhdG_loctag[strain]: #Same thing, but for the other segments and genes
+                            if strain != 'MP2':
+                                segment1[1] = gene_obj.end
+                            else:
+                                segment5[0] = gene_obj.start
+                        elif gene_obj.locus_tag == CDS8_loctag[strain]:
+                            if strain != 'MP2':
+                                segment2[0] = gene_obj.start
+                            else:
+                                segment4[1] = gene_obj.end
+                        elif gene_obj.locus_tag == nox_loctag[strain]:
+                            if strain != 'MP2':
+                                segment2[1] = gene_obj.end
+                            else:
+                                segment4[0] = gene_obj.start
+                        elif gene_obj.locus_tag == CDS7_loctag[strain]:
+                            segment3[0] = gene_obj.start
+                            segment3[1] = gene_obj.end
+                        elif gene_obj.locus_tag == CDS5_loctag[strain]:
+                            if strain != 'MP2':
+                                segment4[0] = gene_obj.start
+                            else:
+                                segment2[1] = gene_obj.end
+                        elif gene_obj.locus_tag == ywqC_loctag[strain]:
+                            if strain != 'MP2':
+                                segment4[1] = gene_obj.end
+                            else:
+                                segment2[0] = gene_obj.start
+                        elif gene_obj.locus_tag == tagU_loctag[strain]:
+                            if strain != 'MP2':
+                                segment5[0] = gene_obj.start
+                            else:
+                                segment1[1] = gene_obj.end
+                        elif gene_obj.locus_tag == tagU_plus2_loctag[strain]:
+                            if strain != 'MP2':
+                                segment5[1] = gene_obj.end
+                            else:
+                                segment1[0] = gene_obj.start
+                          
+        dict_pos[strain] = [segment5, segment4, segment3, segment2, segment1] #Save the segment positions to a dictionary
+         
+        cummulength = 0 #Total length of the segments
+    
+        for i in range(0, len(dict_pos[strain])): #Loop through segment positions by index i
+            j = len(dict_pos[strain])-1-i #The opposite of i, for MP2
+            if i > 0: #If i is bigger than 0
+                cummulength += dict_pos[strain][i-1][1]-dict_pos[strain][i-1][0] #Add the length of the segment to the total length
+            
+            for gene in all_genes[strain]: #Loop through all the genes in the strain
+                check = False #Set the check to false
+                if strain == 'MP2' and dict_pos[strain][j][0] <= gene.start < dict_pos[strain][j][1]: #If the strain is MP2 and the gene is inside the segment
+                    gene.start = gene.start - dict_pos[strain][j][0] + 1 #Set the gene start from the segment start
+                    gene.end = gene.end - dict_pos[strain][j][0] + 1 #Set the gene end from the segment start
+                    check = True #Set the check to True
+                    genes_in_segment[strain].append(gene) #Add the gene to the list of genes in the segment
+                
+                elif strain != 'MP2' and dict_pos[strain][i][0] <= gene.start < dict_pos[strain][i][1]: #If the strain is not MP2 and the gene is inside the segment
+                    print(i, cummulength) #Print the current total length
+                    gene_start = gene.start #Set the start of the gene
+                    gene.start = dict_pos[strain][i][1] - gene.end + cummulength + 2 #Set the start of the gene from the end of the segment (strand has to be reversed)
+                    gene.end = dict_pos[strain][i][1] - gene_start + cummulength + 2 #Same, but for the gene end
+                    check = True #Set the check to True
+                    genes_in_segment[strain].append(gene) #Append the gene to the list
+            
+                if check: #If the check is set to True
+                    with open(f'{pos_dir}/{prefix}.tab', 'a+') as pos_file: #Open the tab file with gene positions in append mode
+                        pos_file.write(f'{gene.locus_tag}\t{strain}\t{gene.name}\t{gene.start}\t{gene.end}\t{gene.strand}\n') #Write the gene to the file
+                            
+                            
+            with open(f'{fna_dir}/{strain}_{infile_suffix2}') as fna: #Open the fna input file to retrieve sequences
+                fna_read = SeqIO.parse(fna, 'fasta') #Parse the dna file
+                count = 0 #Set a count to 0
+                for record in fna_read: #Loop through the records in the fna file
+                    if count > 0: #If the count is over 0
+                        break #Stop the loop (only the first record is needed)
+                    if strain != 'MP2': #If the strain is not MP2
+                        segment = record.seq[dict_pos[strain][j][0]:dict_pos[strain][j][1]+1] #Retrieve the segments in reversed order. Here I can add +'!' to recognise segments
+                    else: #If it is not MP2
+                        genome_len = len(record.seq) #Get the length of the record (chromosome)
+                        start_s = genome_len - dict_pos[strain][i][1] #Get the start of the segment (end of the chromosome - end of the segment)
+                        end_s = genome_len - dict_pos[strain][i][0] + 1 #Get the end of the segment
+                        segment = record.seq[start_s:end_s] #Retrieve the segment from the record
+                        
+                    record.description = '' #Remove record descripton
+                    record.seq = segment #Set the sequence of the record to the segment
+                    full_record[strain] = record.seq #Store the record sequence in a dictionary
+                    record.seq = record.seq.reverse_complement() #Get the reverse complement of the sequence
+                    record.id = f'{strain}_{i+1}' #Set the record id to the strain id and segment number
                     
-                record.id = strain
-                record.description = ''
-                record.seq = segment
-                full_record[strain] = record.seq
-
-                record.seq = record.seq.reverse_complement()
-                record.id = f'{strain}_{i+1}'
-                with open(f'{out_dir}/all_subsets_seqs{i+1}.fasta', 'a+') as nogap:
-                    print(f'Saving record {record.id} to file {out_dir}/all_subsets_seqs{i+1}.fasta')
-                    SeqIO.write(record, nogap, 'fasta')
-                    count += 1
-       
-with open(f'{out_dir}/all_subsets_seqs.mafft.fasta', 'w+') as last_outfile:
-    last_outfile.write('')
+                    with open(f'{out_dir}/{prefix}{i+1}.fasta', 'a+') as nogap: #Open output file
+                        print(f'Saving record {record.id} to file {out_dir}/{prefix}{i+1}.fasta')
+                        SeqIO.write(record, nogap, 'fasta') #Save the record to the output file
+                        count += 1 #Increase the count by one
     
-record_dict = {}
-for ind in range(1, 6):
-    raw_data = f'{out_dir}/all_subsets_seqs{ind}.fasta'
-    alignment = raw_data.replace('fasta', 'mafft.fasta')
-    subprocess.run(f'mafft --auto --thread {threads} {raw_data} > {alignment} 2>> {log}', shell = True)
+    # =============================================================================
+    # 5. Generate alignments and save them to file 
+    # =============================================================================
     
+    with open(outfile, 'w+') as last_outfile: #Create final output alignment file
+        last_outfile.write('')
+        
+    record_dict = {} #Create an empty dictionary to store records
+    for ind in range(1, 6): #Loop through the segment index
+        raw_data = f'{out_dir}/{prefix}{ind}.fasta' #Get the file with raw data
+        alignment = raw_data.replace('fasta', 'mafft.fasta') #Get the name of the output alignment
+        subprocess.run(f'mafft --auto --thread {threads} {raw_data} > {alignment} 2>> {log}', shell = True) #Run mafft
+        
+        
+        with open(f'{out_dir}/{prefix}{ind}.mafft.fasta') as seq: #Open the output alignment of a single segment
+            records = list(SeqIO.parse(seq, 'fasta')) #Generate a list of records
+            for k in range(0, len(records)): #Loop through all the records in the alignment
+                strain = records[k].id.split('_')[0] #Get the strain name
+                if strain not in record_dict: #If the strain is not in the record dictionary
+                    record_dict[strain] = '' #Create an empty variable for the strain
+                record_dict[strain] += records[k].seq #Otherwise, add the sequence to the variable
+                if prefix == 'E':
+                    record_dict[strain] += '!'
     
-    with open(f'{out_dir}/all_subsets_seqs{ind}.mafft.fasta') as seq:
-        records = list(SeqIO.parse(seq, 'fasta'))
-        for k in range(0, len(records)):
-            strain = records[k].id.split('_')[0]
-            if strain not in record_dict:
-                record_dict[strain] = ''
-            record_dict[strain] += records[k].seq
-
-for strain in record_dict.keys():
-    seqrec = SeqRecord(record_dict[strain], id = strain, name = strain, 
-                       description = '')
-    with open(f'{out_dir}/all_subsets_seqs.mafft.fasta', 'a+') as last_outfile:
-        SeqIO.write(seqrec, last_outfile, 'fasta')
-        print(f'Writing concatenated alignment of strain {strain} to file {out_dir}/all_subsets_seqs.mafft.fasta')
-                    
+    for strain in record_dict.keys(): #Loop through the strains in the dictionary
+        seqrec = SeqRecord(record_dict[strain], id = strain, name = strain, #Create a SeqRecord with the full sequence
+                           description = '')
+        with open(f'{out_dir}/{prefix}.mafft.fasta', 'a+') as last_outfile: #Open output file in append mode
+            SeqIO.write(seqrec, last_outfile, 'fasta') #Write the record to the file
+            print(f'Writing concatenated alignment of strain {strain} to file {out_dir}/{prefix}.mafft.fasta') #Print process
+                        

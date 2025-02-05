@@ -11,6 +11,39 @@ import os
 import subprocess
 import pandas as pd
 
+# =============================================================================
+# 0. Logging
+# =============================================================================
+log = os.path.expanduser('~') + '/GH_project/RDP5_analysis/logs/get_alignments.log'
+
+if os.path.exists(log):
+    os.remove(log)
+
+if not os.path.exists(os.path.dirname(log)):
+    os.makedirs(os.path.dirname(log))
+
+logger = logging.getLogger()
+
+logging.basicConfig(filename = log, level = logging.INFO,
+                    format = '%(asctime)s %(message)s',
+                    datefmt = '%Y-%m-%d %H:%M:%S')
+
+def handle_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+
+    logger.error(''.join(["Uncaught exception: ",
+                          *traceback.format_exception(exc_type, exc_value, exc_traceback)
+                          ]))
+
+sys.excepthook = handle_exception
+
+sys.stdout = open(log, 'a')
+
+# =============================================================================
+# 1. Define inputs and paths
+# =============================================================================
 
 pos_dir = os.path.expanduser('~') + '/GH_project/RDP5_analysis/files/tab'
 out_dir = os.path.expanduser('~') + '/GH_project/RDP5_analysis/files/fna'
@@ -26,7 +59,7 @@ for group in group_names.values():
         pos_file.write('locus_tag\tstrain\tgene_name\tstart\tend\tstrand\n')
 
 # =============================================================================
-# Section to make files with the gene positions in the alignment
+# 2. Section to make files with the gene positions in the alignment
 # =============================================================================
 for group in list(group_names.values()) + ['all_subsets']:
     outtab = f'{pos_dir}/{group}_positions_aln.tab'
@@ -58,13 +91,3 @@ for group in list(group_names.values()) + ['all_subsets']:
                             # break
                             
     new_df.to_csv(outtab, sep = '\t', index = False)
-                            
-                        
-                    
-        
-            
-        
-
-
-# with open(f'{out_dir}/{group}_seqs.mafft.fasta', 'a+') as last_outfile:
-#     SeqIO.write(new_record, last_outfile, 'fasta')
