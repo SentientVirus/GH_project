@@ -3,8 +3,16 @@
 """
 Created on Fri Jun 17 13:31:36 2022
 
-@author: marina
+This script concatenates two regions of the genome of A. kunkeei and,
+keeping all the gaps, generates an alignment of the region in the
+representative subset of 38 strains or the subset of 34 strains without 
+transposons.
+
+@author: Marina Mota-Merlo
 """
+# =============================================================================
+# 0. Import required modules
+# =============================================================================
 
 import logging, traceback, sys
 from Bio import SeqIO
@@ -46,14 +54,8 @@ sys.stdout = open(log, 'a')
 # 0. Input definition
 # =============================================================================
 
-# Strains and comparisons of interest
-strain_groups = {'H3B2-03M': 0, 'H4B4-02J': 0, 'H4B5-03X': 0, 'H4B4-12M': 0, 
-                 'H4B4-06M': 0, 'H1B1-04J': 0, 'A0901': 0, 'H1B3-02M': 0,
-                 'H3B2-09X': 1, 'H4B5-05J': 1, 'H3B1-04X': 1, 'H4B5-04J': 1,
-                 'MP2': 2, 'H3B2-02X': 2, 'H3B2-03J': 2, 'G0403': 2}
-
-group_names = {0: 'root_GS1_S2-3_subset', 1: 'GS1-2_BRS', 2: 'only_GS1+GS2'}
-
+#Dictionary with the locus tags in each strain for each of the genes included in the aligned region
+#Basal strains A1001 and A1404 are not considered
 bcrA_loctag = {'A0901': 'AKUA0901_13170', 'A1003': 'AKUA1003_12430',
                'A1202': 'AKUA1202_13410', 'A1401': 'AKUA1401_12650', #'A1404': 'AKUA1404_13340',
                'A1805': 'AKUA1805_12670', 'DSMZ12361': 'K2W83_RS06120',
@@ -135,6 +137,8 @@ tagU_plus2_loctags = {'A0901': 'AKUA0901_13530', 'A1003': 'AKUA1003_12720',
 # =============================================================================
 # Maybe not needed, I can use CDS objects
 class geneObj:
+    '''A class to store CDS information, can be initialized as an empty object
+    with default values'''
     def __init__(self, seq = '', start = 0, end = 0, strand = '+', name = 'unk.', annot = 'hypothetical protein', locus_tag = '', strain = '', organism = 'Apilactobacillus kunkeei'):
         self.seq = seq
         self.start = start
@@ -152,6 +156,7 @@ class geneObj:
 # 1. Create paths and input files
 # =============================================================================
 
+#Paths
 gbk_dir = os.path.expanduser('~') + '/Akunkeei_files/gbff'
 fna_dir = os.path.expanduser('~') + '/Akunkeei_files/fna'
 infile_suffix = 'genomic.gbff'
@@ -211,6 +216,7 @@ for prefix in prefixes:
                                         annot = CDS.qualifiers['product'][0],
                                         locus_tag = CDS.qualifiers['locus_tag'][0],
                                         strain = strain)
+                        
                         if strain == 'MP2':
                             gene_obj.strand *= -1
                         

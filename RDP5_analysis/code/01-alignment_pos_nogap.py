@@ -54,12 +54,6 @@ sys.stdout = open(log, 'a')
 # 1. Input definition
 # =============================================================================
 
-# Strains and comparisons of interest
-# strain_groups = {'H3B2-03M': 0, 'H4B4-02J': 0, 'H4B5-03X': 0, 'H4B4-12M': 0, 
-#                  'H4B4-06M': 0, 'H1B1-04J': 0, 'A0901': 0, 'H1B3-02M': 0,
-#                  'H3B2-09X': 1, 'H4B5-05J': 1, 'H3B1-04X': 1, 'H4B5-04J': 1,
-#                  'MP2': 2, 'H3B2-02X': 2, 'H3B2-03J': 2, 'G0403': 2}
-
 #Dictionary with the locus tags in each strain for each of the genes included in the aligned region
 #Basal strains A1001 and A1404 are not considered
 bcrA_loctag = {'A0901': 'AKUA0901_13170', 'A1003': 'AKUA1003_12430',
@@ -233,8 +227,6 @@ tagU_plus2_loctag = {'A0901': 'AKUA0901_13530', 'A1003': 'AKUA1003_12720',
                'H4B5-04J': 'AKUH4B504J_13650', 'H4B5-05J': 'AKUH4B505J_13110',
                'IBH001': 'LDX55_06420', 'MP2': 'APS55_RS03760'}
 
-group_names = {0: 'root_GS1_S2-3_subset', 1: 'GS1-2_BRS', 2: 'only_GS1+GS2'} #Combinations of strains to analyse
-
 # =============================================================================
 # 2. Create a gene object class
 # =============================================================================
@@ -259,7 +251,7 @@ class geneObj:
 # 3. Create paths and input files
 # =============================================================================
 
-# Paths
+#Paths
 data_dir = os.path.expanduser('~') + '/Akunkeei_files' #Directory with the files from NCBI
 work_dir = os.path.expanduser('~') + '/GH_project/RDP5_analysis' #Work directory
 gbk_dir = f'{data_dir}/gbff' #Directory with GenBank files
@@ -374,15 +366,19 @@ for prefix in prefixes:
                             else:
                                 segment1[0] = gene_obj.start
                           
-        dict_pos[strain] = [segment5, segment4, segment3, segment2, segment1] #Save the segment positions to a dictionary
+        dict_pos[strain] = [segment5, segment4, segment3, segment2, segment1] #[segment1, segment2, segment3, segment4, segment5] #Save the segment positions to a dictionary
          
         cummulength = 0 #Total length of the segments
     
         for i in range(0, len(dict_pos[strain])): #Loop through segment positions by index i
             j = len(dict_pos[strain])-1-i #The opposite of i, for MP2
+            if prefix == 'E':
+                padding = 1
+            else: padding = 0
             if i > 0: #If i is bigger than 0
-                cummulength += dict_pos[strain][i-1][1]-dict_pos[strain][i-1][0] #Add the length of the segment to the total length
+                cummulength += dict_pos[strain][i-1][1]-dict_pos[strain][i-1][0] + 1 + padding #Add the length of the segment to the total length
             
+            prev_end = 0
             for gene in all_genes[strain]: #Loop through all the genes in the strain
                 check = False #Set the check to false
                 if strain == 'MP2' and dict_pos[strain][j][0] <= gene.start < dict_pos[strain][j][1]: #If the strain is MP2 and the gene is inside the segment
@@ -411,11 +407,11 @@ for prefix in prefixes:
                     if count > 0: #If the count is over 0
                         break #Stop the loop (only the first record is needed)
                     if strain != 'MP2': #If the strain is not MP2
-                        segment = record.seq[dict_pos[strain][j][0]:dict_pos[strain][j][1]+1] #Retrieve the segments in reversed order. Here I can add +'!' to recognise segments
+                        segment = record.seq[dict_pos[strain][i][0]:dict_pos[strain][i][1]+1] #Retrieve the segments in reversed order. Here I can add +'!' to recognise segments
                     else: #If it is not MP2
                         genome_len = len(record.seq) #Get the length of the record (chromosome)
-                        start_s = genome_len - dict_pos[strain][i][1] #Get the start of the segment (end of the chromosome - end of the segment)
-                        end_s = genome_len - dict_pos[strain][i][0] + 1 #Get the end of the segment
+                        start_s = genome_len - dict_pos[strain][j][1] #Get the start of the segment (end of the chromosome - end of the segment)
+                        end_s = genome_len - dict_pos[strain][j][0] + 1 #Get the end of the segment
                         segment = record.seq[start_s:end_s] #Retrieve the segment from the record
                         
                     record.description = '' #Remove record descripton

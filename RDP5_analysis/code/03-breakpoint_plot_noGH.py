@@ -19,9 +19,26 @@ import numpy as np
 from scipy.signal import find_peaks
 
 # =============================================================================
-# 0. Define inputs, outputs and paths
+# 0. Define working directory
 # =============================================================================
 infolder = os.path.expanduser('~') + '/GH_project/RDP5_analysis'
+
+# =============================================================================
+# 1. Set gap positions and CDS colors
+# =============================================================================
+colors = ['#9DAAB7', '#6586A3', '#647D88', '#626D75', '#B1BFD4']
+
+gap1 = (3863, 5299)
+gap2 = (16804, 18101)
+gap3 = (21286, 23073)
+
+gaps = [gap1, gap2, gap3]
+
+vline = 15969 
+
+# =============================================================================
+# 2. Loop through inputs and define outputs
+# =============================================================================
 
 for folder in ['A', 'B']:
 
@@ -33,9 +50,9 @@ for folder in ['A', 'B']:
     if not os.path.exists(os.path.dirname(outfile)):
         os.makedirs(os.path.dirname(outfile))
     
-    # =============================================================================
-    # 1. Read RDP5 output
-    # =============================================================================
+# =============================================================================
+# 3. Read RDP5 output
+# =============================================================================
     
     df = pd.read_csv(infile)
     
@@ -44,39 +61,27 @@ for folder in ['A', 'B']:
     
     gene_positions = pd.read_csv(gene_pos, sep = '\t')
     genes = gene_positions[gene_positions['strain'] == 'A0901']
+
     
-    # =============================================================================
-    # 2. Set gap positions and CDS colors
-    # =============================================================================
-    gap1 = (3863, 5299)
-    gap2 = (16804, 18101)
-    gap3 = (21286, 23073)
-    
-    gaps = [gap1, gap2, gap3]
-    
-    colors = ['#9DAAB7', '#6586A3', '#647D88', '#626D75', '#B1BFD4']
-    
-    vline = 15969 
-    
-    # =============================================================================
-    # 4. Create variables to be plotted
-    # =============================================================================
+# =============================================================================
+# 4. Create variables to be plotted
+# =============================================================================
     x = df['Position in alignment']
     y = df[' Recombination breakpoint number (200nt win)']
     conf95 = df[' Upper 95% CI']
     conf99 = df[' Upper 99% CI']
     
-    # =============================================================================
-    # 5. Create a plot with 3 subplots
-    # =============================================================================
+# =============================================================================
+# 5. Create a plot with 3 subplots
+# =============================================================================
     f, (ax2, ax, ax3) = plt.subplots(3, 1, figsize = (26, 8), 
                                      gridspec_kw={'height_ratios': [1, 8.8, 1.2]})
     
     f.subplots_adjust(wspace=0, hspace=0) # Remove space between subplots´
     
-    # =============================================================================
-    # 6. Plot confidence intervals and putative breakpoints
-    # =============================================================================
+# =============================================================================
+# 6. Plot confidence intervals and putative breakpoints
+# =============================================================================
     ax.margins(x=0.01) # Decrease ax margins
     ax.set_xlim(0, max(x)) # Set x axis limits
     
@@ -90,33 +95,6 @@ for folder in ['A', 'B']:
     ax.set_ylim(bottom = 0, top = max(max(y), max(conf99)) + 0.5) # Set y axis limits
     
     ax.plot(x, y, color = 'black', zorder = 25) # Plot breakpoint curve
-    
-    # const = 500
-    # ax.set_xlim(0, max(x)+const) # Set x axis limits
-    # x1 = [xn for xn in x if xn <= vline]
-    # x2 = [xn+const for xn in x if xn > vline]
-    
-    # conf99_1 = [conf99[i] for i in range(0, len(x)) if x[i] <= vline]
-    # conf99_2 = [conf99[i] for i in range(0, len(x)) if x[i] > vline]
-    
-    # conf95_1 = [conf95[i] for i in range(0, len(x)) if x[i] <= vline]
-    # conf95_2 = [conf95[i] for i in range(0, len(x)) if x[i] > vline]
-    
-    # y1 = [y[i] for i in range(0, len(x)) if x[i] <= vline]
-    # y2 = [y[i] for i in range(0, len(x)) if x[i] > vline]
-    
-    # ax.plot(x1, conf99_1, color = '#FAD4C0', alpha = 0.6, zorder = 5) # Plot 99% CI
-    # ax.fill_between(x1, conf99_1, 0, color = '#FEE9E1', alpha = 0.5, zorder = 0) # Fill the CI
-    # ax.plot(x2, conf99_2, color = '#FAD4C0', alpha = 0.6, zorder = 5) # Plot 99% CI
-    # ax.fill_between(x2, conf99_2, 0, color = '#FEE9E1', alpha = 0.5, zorder = 0) # Fill the CI
-    
-    # ax.plot(x1, conf95_1, color = '#D58870', zorder = 15) # Plot 99% CI
-    # ax.fill_between(x1, conf95_1, 0, color = '#E0937A', alpha = 0.6, zorder = 0) # Fill the CI
-    # ax.plot(x2, conf95_2, color = '#D58870', zorder = 15) # Plot 99% CI
-    # ax.fill_between(x2, conf95_2, 0, color = '#E0937A', alpha = 0.6, zorder = 0) # Fill the CI
-    
-    # ax.plot(x1, y1, color = 'black', zorder = 25) # Plot breakpoint curve
-    # ax.plot(x2, y2, color = 'black', zorder = 25) # Plot breakpoint curve
     
     # Add triangles pointing to potential recombination hotspots
     y_maxima = find_peaks(y, distance = 50)[0]
@@ -146,9 +124,9 @@ for folder in ['A', 'B']:
     top_side = ax.spines['top']
     top_side.set_visible(False) # Remove top spine
     
-    # =============================================================================
-    # 7. Plot breakpoint positions
-    # =============================================================================
+# =============================================================================
+# 7. Plot breakpoint positions
+# =============================================================================
     ax2.set_xlim(0, max(x)) # Set x axis limits
     ax.set_xticks(range(1, max(x), 2000)) # Set x axis ticks
     ax2.margins(y = 0) # Set y axis margins
@@ -158,9 +136,9 @@ for folder in ['A', 'B']:
     ax2.set_zorder(100) # Move ax forward
     ax2.set_yticks([]) # Remove ticks from y axis
     
-    # =============================================================================
-    # 8. Plot genes in region
-    # =============================================================================
+# =============================================================================
+# 8. Plot genes in region
+# =============================================================================
     ax3.set_xlim(0, max(x)) # Set ax scale
     ax3.set_ylim(-200, 200)
     ax3.margins(x = 0.01, y = 0) # Set ax margins

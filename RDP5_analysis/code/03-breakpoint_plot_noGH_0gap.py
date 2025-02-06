@@ -15,186 +15,187 @@ import numpy as np
 from scipy.signal import find_peaks
 
 # =============================================================================
-# 0. Define inputs, outputs and paths
+# 1. Define inputs, outputs and paths
 # =============================================================================
-prefix = 'all_subsets_positions_aln'
-prefix2 = 'all_subsets_7methods_5+_0gap_filtered_assort'
-
 infolder = os.path.expanduser('~') + '/GH_project/RDP5_analysis'
-infile = f'{infolder}/RDP_output/{prefix2}.csv'
-breakfile = f'{infolder}/RDP_output/{prefix2}.csvBreakpointPositions.csv'
-outfolder = f'{infolder}/results'
-gene_pos = f'{infolder}/files/tab/all_subsets_0gaps/{prefix}.tab'
-outfile = f'{infolder}/plots/{prefix2}.png'
-
-if not os.path.exists(os.path.dirname(outfile)):
-    os.makedirs(os.path.dirname(outfile))
-
-# =============================================================================
-# 1. Read RDP5 output
-# =============================================================================
-
-df = pd.read_csv(infile)
-
-breakpoints = pd.read_csv(breakfile)
-breaks = breakpoints['Breakpoint position']
-
-gene_positions = pd.read_csv(gene_pos, sep = '\t')
-genes = gene_positions[gene_positions['strain'] == 'A0901']
 
 # =============================================================================
 # 2. Set gap positions and CDS colors
 # =============================================================================
-
 colors = ['#9DAAB7', '#6586A3', '#647D88', '#626D75', '#B1BFD4']
 
 vline = 14533
 
-# =============================================================================
-# 4. Create variables to be plotted
-# =============================================================================
-x = df['Position in alignment']
-y = df[' Recombination breakpoint number (200nt win)']
-conf95 = df[' Upper 95% CI']
-conf99 = df[' Upper 99% CI']
 
-# =============================================================================
-# 5. Create a plot with 3 subplots
-# =============================================================================
-f, (ax2, ax, ax3) = plt.subplots(3, 1, figsize = (22, 8), 
-                                 gridspec_kw={'height_ratios': [1, 8.8, 1.2]})
-
-f.subplots_adjust(wspace=0, hspace=0) # Remove space between subplots
-
-# =============================================================================
-# 6. Plot confidence intervals and putative breakpoints
-# =============================================================================
-ax.margins(x=0.01) # Decrease ax margins
-ax.set_xlim(0, max(x)) # Set x axis limits
-
-ax.plot(x, conf99, color = '#FAD4C0', alpha = 0.6, zorder = 5) # Plot 99% CI
-ax.fill_between(x, conf99, 0, color = '#FEE9E1', alpha = 0.5, zorder = 0) # Fill the CI
-
-ax.plot(x, conf95, color = '#D58870', zorder = 15) # Plot the 95% CI
-ax.fill_between(x, conf95, 0, color = '#E0937A', alpha = 0.6, zorder = 10) # Fill the CI
-ax.set_ylim(bottom = 0, top = max(max(y), max(conf99)) + 0.5) # Set y axis limits
-
-ax.plot(x, y, color = 'black', zorder = 25) # Plot breakpoint curve
-
-# triangle_dict = {}
-y_maxima = find_peaks(y, distance = 50)[0]
-for yval in y_maxima:
-    if y[yval] > conf99[yval]:
-        ax.plot(yval*2, y[yval] + 0.4, marker=(3, 0, 180), markersize=20, 
-                mew = 2, color = '#D7FA05', markeredgecolor = 'black',
-                zorder = 55)
-        # triangle_dict[(yval, y[yval])] = 'red'
-    elif y[yval] > conf95[yval]:
-        ax.plot(yval*2, y[yval] + 0.4, marker=(3, 0, 180), markersize=20, 
-                mew = 2, color = '#F4FEB8', markeredgecolor = 'grey', 
-                zorder = 55)
-        # triangle_dict[(yval, y[yval])] = 'yellow'
-        
-        
-
-ax.axvline(x=vline, color = 'r', linestyle = '--', linewidth = 3, zorder = 25) # Add horizontal line between segments
-
-ax.tick_params(          # Remove bottom ticks from x axis
-    axis = 'x',          # Axis to be modified
-    which = 'both',      # Ticks to be modified (both = major + minor)
-    bottom = False,      # Remove ticks along the bottom edge
-    labelbottom = False) # Remove labels along the bottom edge
-
-ax.spines['left'].set_zorder(100) # Move the ax main spines to the front
-right_side = ax.spines['right']
-right_side.set_visible(False) # Remove right spine
-top_side = ax.spines['top']
-top_side.set_visible(False) # Remove top spine
-
-# =============================================================================
-# 7. Plot breakpoint positions
-# =============================================================================
-ax2.set_xlim(0, max(x)) # Set x axis limits
-ax.set_xticks(range(1, max(x), 2000)) # Set x axis ticks
-ax2.margins(y = 0) # Set y axis margins
-ax2.set_xticks(range(1, max(x), 2000)) # Ser x axis ticks
-ax2.plot(breaks, [1]*len(breaks), '|', color = 'black') # Plot breakpoints
-ax2.set_axis_off() # Remove axis display
-ax2.set_zorder(100) # Move ax forward
-ax2.set_yticks([]) # Remove ticks from y axis
-
-# =============================================================================
-# 8. Plot genes in region
-# =============================================================================
-ax3.set_xlim(0, max(x)) # Set ax scale
-ax3.set_ylim(-200, 200)
-ax3.margins(x = 0.01, y = 0) # Set ax margins
-ax3.set_xticks(range(min(x), max(x), 2000)) # Set ticks
-ax3.get_yaxis().set_visible(False) # Remove y axis
-
-#Add horizontal line between genomic segments
-ax3.axvline(x=vline, color='r', linestyle='--', linewidth=3, zorder = 20)
-
-# Plot CDS
-for index, gene in genes.iterrows(): # Loop through CFD
-    gene_zorder = 2 # Plot them at the back
-    basecolor = colors[index%5] # Get a color from a list of alternating colors
-    basewidth = 250 # CDS arrow width
-    headwidth = 250 # Width of the arrow head
-    linewidth = 2 # Edge width
-    alpha = 1 # Transparency (none)
-    lc = 'black' # Edge color
+for folder in ['C', 'D']:
     
-    if gene['end'] - gene['start'] < 400:
-        headwidth = 0
-        linewidth = 0
-        alpha = 0.8
-        gene_zorder = 1
+    infile = f'{infolder}/RDP_output/breakplots/{folder}_breakplot.csv'
+    breakfile = f'{infolder}/RDP_output/breakplots/{folder}_breakplot.csvBreakpointPositions.csv'
+    gene_pos = f'{infolder}/files/tab/{folder}/{folder}_aln.tab'
+    outfile = f'{infolder}/plots/{folder}_breakplot.png'
+    
+    if not os.path.exists(os.path.dirname(outfile)):
+        os.makedirs(os.path.dirname(outfile))
+    
+    # =============================================================================
+    # 3. Read RDP5 output
+    # =============================================================================
+    
+    df = pd.read_csv(infile)
+    
+    breakpoints = pd.read_csv(breakfile)
+    breaks = breakpoints['Breakpoint position']
+    
+    gene_positions = pd.read_csv(gene_pos, sep = '\t')
+    genes = gene_positions[gene_positions['strain'] == 'A0901']
+    
+    
+    # =============================================================================
+    # 4. Create variables to be plotted
+    # =============================================================================
+    x = df['Position in alignment']
+    y = df[' Recombination breakpoint number (200nt win)']
+    conf95 = df[' Upper 95% CI']
+    conf99 = df[' Upper 99% CI']
+    
+    # =============================================================================
+    # 5. Create a plot with 3 subplots
+    # =============================================================================
+    f, (ax2, ax, ax3) = plt.subplots(3, 1, figsize = (22, 8), 
+                                     gridspec_kw={'height_ratios': [1, 8.8, 1.2]})
+    
+    f.subplots_adjust(wspace=0, hspace=0) # Remove space between subplots
+    
+    # =============================================================================
+    # 6. Plot confidence intervals and putative breakpoints
+    # =============================================================================
+    ax.margins(x=0.01) # Decrease ax margins
+    ax.set_xlim(0, max(x)) # Set x axis limits
+    
+    ax.plot(x, conf99, color = '#FAD4C0', alpha = 0.6, zorder = 5) # Plot 99% CI
+    ax.fill_between(x, conf99, 0, color = '#FEE9E1', alpha = 0.5, zorder = 0) # Fill the CI
+    
+    ax.plot(x, conf95, color = '#D58870', zorder = 15) # Plot the 95% CI
+    ax.fill_between(x, conf95, 0, color = '#E0937A', alpha = 0.6, zorder = 10) # Fill the CI
+    ax.set_ylim(bottom = 0, top = max(max(y), max(conf99)) + 0.5) # Set y axis limits
+    
+    ax.plot(x, y, color = 'black', zorder = 25) # Plot breakpoint curve
+    
+    # triangle_dict = {}
+    y_maxima = find_peaks(y, distance = 50)[0]
+    for yval in y_maxima:
+        if y[yval] > conf99[yval]:
+            ax.plot(yval*2, y[yval] + 0.4, marker=(3, 0, 180), markersize=20, 
+                    mew = 2, color = '#D7FA05', markeredgecolor = 'black',
+                    zorder = 55)
+            # triangle_dict[(yval, y[yval])] = 'red'
+        elif y[yval] > conf95[yval]:
+            ax.plot(yval*2, y[yval] + 0.4, marker=(3, 0, 180), markersize=20, 
+                    mew = 2, color = '#F4FEB8', markeredgecolor = 'grey', 
+                    zorder = 55)
+            # triangle_dict[(yval, y[yval])] = 'yellow'
+            
+            
+    if folder != 'D':
+        ax.axvline(x=vline, color = 'r', linestyle = '--', linewidth = 3, zorder = 25) # Add horizontal line between segments
+    
+    ax.tick_params(          # Remove bottom ticks from x axis
+        axis = 'x',          # Axis to be modified
+        which = 'both',      # Ticks to be modified (both = major + minor)
+        bottom = False,      # Remove ticks along the bottom edge
+        labelbottom = False) # Remove labels along the bottom edge
+    
+    ax.spines['left'].set_zorder(100) # Move the ax main spines to the front
+    right_side = ax.spines['right']
+    right_side.set_visible(False) # Remove right spine
+    top_side = ax.spines['top']
+    top_side.set_visible(False) # Remove top spine
+    
+    # =============================================================================
+    # 7. Plot breakpoint positions
+    # =============================================================================
+    ax2.set_xlim(0, max(x)) # Set x axis limits
+    ax.set_xticks(range(1, max(x), 2000)) # Set x axis ticks
+    ax2.margins(y = 0) # Set y axis margins
+    ax2.set_xticks(range(1, max(x), 2000)) # Ser x axis ticks
+    ax2.plot(breaks, [1]*len(breaks), '|', color = 'black') # Plot breakpoints
+    ax2.set_axis_off() # Remove axis display
+    ax2.set_zorder(100) # Move ax forward
+    ax2.set_yticks([]) # Remove ticks from y axis
+    
+    # =============================================================================
+    # 8. Plot genes in region
+    # =============================================================================
+    ax3.set_xlim(0, max(x)) # Set ax scale
+    ax3.set_ylim(-200, 200)
+    ax3.margins(x = 0.01, y = 0) # Set ax margins
+    ax3.set_xticks(range(min(x), max(x), 2000)) # Set ticks
+    ax3.get_yaxis().set_visible(False) # Remove y axis
+    
+    #Add horizontal line between genomic segments
+    if folder != 'D':
+        ax3.axvline(x=vline, color='r', linestyle='--', linewidth=3, zorder = 20)
+    
+    # Plot CDS
+    for index, gene in genes.iterrows(): # Loop through CFD
+        gene_zorder = 2 # Plot them at the back
+        basecolor = colors[index%5] # Get a color from a list of alternating colors
+        basewidth = 250 # CDS arrow width
+        headwidth = 250 # Width of the arrow head
+        linewidth = 2 # Edge width
+        alpha = 1 # Transparency (none)
+        lc = 'black' # Edge color
         
-    if gene['strand'] == 1:
-        ax3.arrow(gene['end'], -30, dx = gene['start'] - gene['end'], dy = 0, 
-              facecolor = basecolor, length_includes_head = True, 
-              width = basewidth, shape = 'full', head_width = headwidth, 
-              edgecolor = lc, linewidth = linewidth,
-              alpha = alpha, zorder = gene_zorder)
-    else:
-        ax3.arrow(gene['start'], -30, dx = gene['end'] - gene['start'], dy = 0, 
-              facecolor = basecolor, length_includes_head = True, 
-              width = basewidth, shape = 'full', head_width = headwidth, 
-              edgecolor = lc, linewidth = linewidth,
-              alpha = alpha, zorder = gene_zorder)
-        
-    hpos = gene['start']
-    if gene['strand'] == 1 and gene['end']-gene['start'] > 500:
-        hpos +=  headwidth
-    if gene.name == 7:
-        gene_name = 'CDS8'
-    elif gene.name == 9:
-        gene_name = 'CDS7'
-    elif gene.name == 10:
-        gene_name = 'CDS5'
-    elif gene.name == 12:
-        gene_name = 'CDS4'
-    elif gene.name == 13:
-        gene_name = 'CDS3'
-    elif gene.name == 14:
-        gene_name = 'CDS2'
-    elif gene.name == 16:
-        gene_name = 'CDS1'
-    else: gene_name = gene['gene_name']
-    ax3.annotate(gene_name, style = 'italic', rotation = 0, 
-          xy = (hpos, 120), 
-          xycoords = 'data', fontweight = 'bold', color = 'black')
-
-
-right_side3 = ax3.spines['right']
-right_side3.set_visible(False)
-left_side3 = ax3.spines['left']
-left_side3.set_visible(False)
-
-ax.set_ylabel('Breakpoints per 200nt window', fontsize = 16)
-plt.xlabel('Position in the alignment', fontsize = 16)
-
-plt.savefig(outfile)
-plt.savefig(outfile.replace('png', 'svg'))
-plt.savefig(outfile.replace('png', 'pdf'))
+        if gene['end'] - gene['start'] < 400:
+            headwidth = 0
+            linewidth = 0
+            alpha = 0.8
+            gene_zorder = 1
+            
+        if gene['strand'] == 1:
+            ax3.arrow(gene['end'], -30, dx = gene['start'] - gene['end'], dy = 0, 
+                  facecolor = basecolor, length_includes_head = True, 
+                  width = basewidth, shape = 'full', head_width = headwidth, 
+                  edgecolor = lc, linewidth = linewidth,
+                  alpha = alpha, zorder = gene_zorder)
+        else:
+            ax3.arrow(gene['start'], -30, dx = gene['end'] - gene['start'], dy = 0, 
+                  facecolor = basecolor, length_includes_head = True, 
+                  width = basewidth, shape = 'full', head_width = headwidth, 
+                  edgecolor = lc, linewidth = linewidth,
+                  alpha = alpha, zorder = gene_zorder)
+            
+        hpos = gene['start']
+        if gene['strand'] == 1 and gene['end']-gene['start'] > 500:
+            hpos +=  headwidth
+        if gene.name == 7:
+            gene_name = 'CDS8'
+        elif gene.name == 9:
+            gene_name = 'CDS7'
+        elif gene.name == 10:
+            gene_name = 'CDS5'
+        elif gene.name == 12:
+            gene_name = 'CDS4'
+        elif gene.name == 13:
+            gene_name = 'CDS3'
+        elif gene.name == 14:
+            gene_name = 'CDS2'
+        elif gene.name == 16:
+            gene_name = 'CDS1'
+        else: gene_name = gene['gene_name']
+        ax3.annotate(gene_name, style = 'italic', rotation = 0, 
+              xy = (hpos, 120), 
+              xycoords = 'data', fontweight = 'bold', color = 'black')
+    
+    
+    right_side3 = ax3.spines['right']
+    right_side3.set_visible(False)
+    left_side3 = ax3.spines['left']
+    left_side3.set_visible(False)
+    
+    ax.set_ylabel('Breakpoints per 200nt window', fontsize = 16)
+    plt.xlabel('Position in the alignment', fontsize = 16)
+    
+    plt.savefig(outfile)
+    plt.savefig(outfile.replace('png', 'svg'))
+    plt.savefig(outfile.replace('png', 'pdf'))
