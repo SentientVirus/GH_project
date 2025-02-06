@@ -115,7 +115,7 @@ for treefile in treefiles: #Loop through tree files
                color = 'black' #Color the support in black
            else: color = 'dimgrey' #Otherwise, color the support in grey
            support_face = TextFace(int(n.support), fgcolor = color, #Create text for support values and set its color
-                                   ftype = 'Arial', fsize = 30) #Sent font type and size
+                                   ftype = 'Arial', fsize = 60) #Sent font type and size
            n.add_face(support_face, column = 0, position = 'branch-top') #Add the text to the node
        
     for leaf in t.get_leaves(): #Loop through the leaves sorted by phylogeny 

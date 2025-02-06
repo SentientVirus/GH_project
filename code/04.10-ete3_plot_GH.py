@@ -86,7 +86,7 @@ for treefile in [treefile1, treefile2]: #Loop through the tree file
     ts.show_branch_length = False #Hide branch lengths
     ts.show_branch_support = False #Hide branch supports to add formatted text
     ts.show_leaf_name = False #Hide leaf names to add formatted tex
-    ts.scale = 2000 #Set the scale of the tree
+    ts.scale = 1000 #Set the scale of the tree
     ts.scale_length = 0.2 #Set the length of the legend scale bar
     
     ns = NodeStyle() #Create node style
@@ -102,7 +102,7 @@ for treefile in [treefile1, treefile2]: #Loop through the tree file
                color = 'black' #Color the support in black
            else: color = 'dimgrey' #Otherwise, color the support in grey
            support_face = TextFace(int(n.support), fgcolor = color, #Create text for support values and set its color
-                                   ftype = 'Arial', fsize = 30) #Sent font type and size
+                                   ftype = 'Arial', fsize = 60) #Sent font type and size
            n.add_face(support_face, column = 0, position = 'branch-top') #Add the text to the node
                     
     for leaf in t.get_leaves(): #Loop through the leaves in the tree
