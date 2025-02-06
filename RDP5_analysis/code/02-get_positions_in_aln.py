@@ -14,7 +14,7 @@ import pandas as pd
 # =============================================================================
 # 0. Logging
 # =============================================================================
-log = os.path.expanduser('~') + '/GH_project/RDP5_analysis/logs/get_alignments.log'
+log = os.path.expanduser('~') + '/GH_project/RDP5_analysis/logs/get_A-D_alnpos.log'
 
 if os.path.exists(log):
     os.remove(log)
@@ -48,22 +48,21 @@ sys.stdout = open(log, 'a')
 pos_dir = os.path.expanduser('~') + '/GH_project/RDP5_analysis/files/tab'
 out_dir = os.path.expanduser('~') + '/GH_project/RDP5_analysis/files/fna'
 
-
-group_names = {0: 'root_GS1_S2-3_subset', 1: 'GS1-2_BRS', 2: 'only_GS1+GS2'}
-
-with open(f'{pos_dir}/all_subsets_positions_aln.tab', 'w+') as gpos:
-    gpos.write('locus_tag\tstrain\tgene_name\tstart\tend\tstrand\n')
+for prefix in ['A', 'B', 'C', 'D']:
     
-for group in group_names.values():
-    with open(f'{pos_dir}/{group}_positions_aln.tab', 'w+') as pos_file:
-        pos_file.write('locus_tag\tstrain\tgene_name\tstart\tend\tstrand\n')
-
-# =============================================================================
-# 2. Section to make files with the gene positions in the alignment
-# =============================================================================
-for group in list(group_names.values()) + ['all_subsets']:
-    outtab = f'{pos_dir}/{group}_positions_aln.tab'
-    with open(f'{out_dir}/{group}_seqs.mafft.fasta') as in_aln, open(f'{pos_dir}/{group}_positions.tab') as in_tab:
+    outtab = f'{pos_dir}/{prefix}/{prefix}_aln.tab'
+    intab = outtab.replace('_aln', '')
+    inaln = f'{out_dir}/{prefix}/{prefix}.mafft.fasta'
+    
+    
+    with open(outtab, 'w+') as gpos:
+        gpos.write('locus_tag\tstrain\tgene_name\tstart\tend\tstrand\n')
+    
+    # =============================================================================
+    # 2. Section to make files with the gene positions in the alignment
+    # =============================================================================
+    
+    with open(inaln) as in_aln, open(intab) as in_tab:
         tab_df = pd.read_csv(in_tab, sep = '\t')
         aln_reader = SeqIO.parse(in_aln, 'fasta')
         new_df = tab_df.copy()
@@ -75,7 +74,7 @@ for group in list(group_names.values()) + ['all_subsets']:
                 nogap = 0
                 count = 0
                 if row['strain'] in record.id:
-                    print(row['locus_tag'], record.id, group)
+                    print(row['locus_tag'], record.id)
                     print(row['gene_name'], row['start'], row['end'])
                     for nt in record.seq:
                         count += 1

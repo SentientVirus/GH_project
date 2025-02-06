@@ -23,7 +23,7 @@ import subprocess
 # =============================================================================
 # 0. Logging
 # =============================================================================
-log = os.path.expanduser('~') + '/GH_project/RDP5_analysis/logs/get_alignments.log'
+log = os.path.expanduser('~') + '/GH_project/RDP5_analysis/logs/get_E-F_alignments.log'
 
 if os.path.exists(log):
     os.remove(log)
