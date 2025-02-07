@@ -379,7 +379,7 @@ for prefix in prefixes:
             j = len(dict_pos[strain])-1-i #The opposite of i, for MP2
 
             if i > 0: #If i is bigger than 0
-                cummulength += dict_pos[strain][i-1][1]-dict_pos[strain][i-1][0] + 1 + padding #Add the length of the segment to the total length
+                cummulength += dict_pos[strain][i-1][1]-dict_pos[strain][i-1][0] + padding #Add the length of the segment to the total length
                 
             with open(f'{fna_dir}/{strain}_{infile_suffix2}') as fna: #Open the fna input file to retrieve sequences
                 fna_read = SeqIO.parse(fna, 'fasta') #Parse the dna file
@@ -409,11 +409,14 @@ for prefix in prefixes:
             for gene in all_genes[strain]: #Loop through all the genes in the strain
                 check = False #Set the check to false
                 if strain == 'MP2' and dict_pos[strain][j][0] <= gene.start < dict_pos[strain][j][1]: #If the strain is MP2 and the gene is inside the segment
-                    gene.start = gene.start - prev_end + 1 #Set the gene start from the segment start
-                    gene.end = gene.end - prev_end #Set the gene end from the segment start
-                    if padding == 0:
+                    gene.start = gene.start - prev_end +1 -i #Set the gene start from the segment start
+                    gene.end = gene.end - prev_end - i #Set the gene end from the segment start
+                    if prefix == 'F':
                         gene.start -= i
                         gene.end -= i
+                    # if prefix == 'F':
+                    #     gene.start -= i
+                    #     gene.end -= i
                     check = True #Set the check to True
                     genes_in_segment[strain].append(gene) #Add the gene to the list of genes in the segment
                 
@@ -422,9 +425,9 @@ for prefix in prefixes:
                     gene_start = gene.start #Set the start of the gene
                     gene.start = dict_pos[strain][i][1] - gene.end + cummulength + 1 #Set the start of the gene from the end of the segment (strand has to be reversed)
                     gene.end = dict_pos[strain][i][1] - gene_start + cummulength #Same, but for the gene end
-                    if padding == 0:
-                        gene.start -= i
-                        gene.end -= i
+                    # if prefix == 'F':
+                    #     gene.start -= i
+                    #     gene.end -= i
                     check = True #Set the check to True
                     genes_in_segment[strain].append(gene) #Append the gene to the list
             
