@@ -251,12 +251,15 @@ for prefix in prefixes:
         for gene in all_genes[strain]:
             check1 = False
             check2 = False
+            padding = 0
+            if prefix == 'A':
+                padding = 1
             if dict_pos[strain][0][0] <= gene.start < dict_pos[strain][0][1]:
                 if strain == 'MP2':
                     gene.start = gene.start - dict_pos[strain][0][0] + 1
                     gene.end = gene.end - dict_pos[strain][0][0] + 1
                 else:
-                    segment_length = dict_pos[strain][1][1] - dict_pos[strain][1][0]
+                    segment_length = dict_pos[strain][1][1] - dict_pos[strain][1][0] + 1 + padding
                     gene_start = gene.start
                     gene.start = dict_pos[strain][0][1] - gene.end + segment_length + 2
                     gene.end = dict_pos[strain][0][1] - gene_start + segment_length + 2

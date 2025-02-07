@@ -58,7 +58,7 @@ for folder in ['E', 'F']: #Loop through input conditions
     conf99 = df[' Upper 99% CI'] #99% CI
     
     #vlines = [max(x)-8296, max(x)-11260, max(x)-12078, max(x)-22546] #Set the positions of cuts
-    vlines = [3840, 14310, 15128, 18090]
+    vlines = [3839, 14308, 15124, 18086]
     
 # =============================================================================
 # 4. Create a plot with 3 subplots

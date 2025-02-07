@@ -323,7 +323,7 @@ for prefix in prefixes:
                         all_genes[strain].append(gene_obj) #Add geneObj to the list with all genes
                         
                         if gene_obj.locus_tag == bcrA_loctag[strain]: #If the gene is bcrA
-                            if strain != 'MP2': #If the strain is MP2
+                            if strain != 'MP2': #If the strain is  not MP2
                                 segment1[0] = gene_obj.start #Set the start of the segment to the start of the gene
                             else: #Otherwise
                                 segment5[1] = gene_obj.end #Set the end of the last segment to the end of the gene
@@ -369,6 +369,7 @@ for prefix in prefixes:
         dict_pos[strain] = [segment5, segment4, segment3, segment2, segment1] #[segment1, segment2, segment3, segment4, segment5] #Save the segment positions to a dictionary
          
         cummulength = 0 #Total length of the segments
+        prev_end = dict_pos[strain][4][0]
     
         for i in range(0, len(dict_pos[strain])): #Loop through segment positions by index i
             j = len(dict_pos[strain])-1-i #The opposite of i, for MP2
@@ -377,29 +378,7 @@ for prefix in prefixes:
             else: padding = 0
             if i > 0: #If i is bigger than 0
                 cummulength += dict_pos[strain][i-1][1]-dict_pos[strain][i-1][0] + 1 + padding #Add the length of the segment to the total length
-            
-            prev_end = 0
-            for gene in all_genes[strain]: #Loop through all the genes in the strain
-                check = False #Set the check to false
-                if strain == 'MP2' and dict_pos[strain][j][0] <= gene.start < dict_pos[strain][j][1]: #If the strain is MP2 and the gene is inside the segment
-                    gene.start = gene.start - dict_pos[strain][j][0] + 1 #Set the gene start from the segment start
-                    gene.end = gene.end - dict_pos[strain][j][0] + 1 #Set the gene end from the segment start
-                    check = True #Set the check to True
-                    genes_in_segment[strain].append(gene) #Add the gene to the list of genes in the segment
                 
-                elif strain != 'MP2' and dict_pos[strain][i][0] <= gene.start < dict_pos[strain][i][1]: #If the strain is not MP2 and the gene is inside the segment
-                    print(i, cummulength) #Print the current total length
-                    gene_start = gene.start #Set the start of the gene
-                    gene.start = dict_pos[strain][i][1] - gene.end + cummulength + 2 #Set the start of the gene from the end of the segment (strand has to be reversed)
-                    gene.end = dict_pos[strain][i][1] - gene_start + cummulength + 2 #Same, but for the gene end
-                    check = True #Set the check to True
-                    genes_in_segment[strain].append(gene) #Append the gene to the list
-            
-                if check: #If the check is set to True
-                    with open(f'{pos_dir}/{prefix}.tab', 'a+') as pos_file: #Open the tab file with gene positions in append mode
-                        pos_file.write(f'{gene.locus_tag}\t{strain}\t{gene.name}\t{gene.start}\t{gene.end}\t{gene.strand}\n') #Write the gene to the file
-                            
-                            
             with open(f'{fna_dir}/{strain}_{infile_suffix2}') as fna: #Open the fna input file to retrieve sequences
                 fna_read = SeqIO.parse(fna, 'fasta') #Parse the dna file
                 count = 0 #Set a count to 0
@@ -407,11 +386,11 @@ for prefix in prefixes:
                     if count > 0: #If the count is over 0
                         break #Stop the loop (only the first record is needed)
                     if strain != 'MP2': #If the strain is not MP2
-                        segment = record.seq[dict_pos[strain][i][0]:dict_pos[strain][i][1]+1] #Retrieve the segments in reversed order. Here I can add +'!' to recognise segments
+                        segment = record.seq[dict_pos[strain][i][0]:dict_pos[strain][i][1]] #Retrieve the segments in reversed order. Here I can add +'!' to recognise segments
                     else: #If it is not MP2
                         genome_len = len(record.seq) #Get the length of the record (chromosome)
                         start_s = genome_len - dict_pos[strain][j][1] #Get the start of the segment (end of the chromosome - end of the segment)
-                        end_s = genome_len - dict_pos[strain][j][0] + 1 #Get the end of the segment
+                        end_s = genome_len - dict_pos[strain][j][0] #Get the end of the segment
                         segment = record.seq[start_s:end_s] #Retrieve the segment from the record
                         
                     record.description = '' #Remove record descripton
@@ -424,6 +403,27 @@ for prefix in prefixes:
                         print(f'Saving record {record.id} to file {out_dir}/{prefix}{i+1}.fasta')
                         SeqIO.write(record, nogap, 'fasta') #Save the record to the output file
                         count += 1 #Increase the count by one
+            
+            for gene in all_genes[strain]: #Loop through all the genes in the strain
+                check = False #Set the check to false
+                if strain == 'MP2' and dict_pos[strain][j][0] <= gene.start < dict_pos[strain][j][1]: #If the strain is MP2 and the gene is inside the segment
+                    gene.start = gene.start - prev_end + 1 #Set the gene start from the segment start
+                    gene.end = gene.end - prev_end #Set the gene end from the segment start
+                    check = True #Set the check to True
+                    genes_in_segment[strain].append(gene) #Add the gene to the list of genes in the segment
+                
+                elif strain != 'MP2' and dict_pos[strain][i][0] <= gene.start < dict_pos[strain][i][1]: #If the strain is not MP2 and the gene is inside the segment
+                    print(i, cummulength) #Print the current total length
+                    gene_start = gene.start #Set the start of the gene
+                    gene.start = dict_pos[strain][i][1] - gene.end + cummulength + 1 #Set the start of the gene from the end of the segment (strand has to be reversed)
+                    gene.end = dict_pos[strain][i][1] - gene_start + cummulength #Same, but for the gene end
+                    check = True #Set the check to True
+                    genes_in_segment[strain].append(gene) #Append the gene to the list
+            
+                if check: #If the check is set to True
+                    with open(f'{pos_dir}/{prefix}.tab', 'a+') as pos_file: #Open the tab file with gene positions in append mode
+                        pos_file.write(f'{gene.locus_tag}\t{strain}\t{gene.name}\t{gene.start}\t{gene.end}\t{gene.strand}\n') #Write the gene to the file
+            prev_end += dict_pos[strain][j-1][0] - dict_pos[strain][j][1] - 2
     
     # =============================================================================
     # 5. Generate alignments and save them to file 
