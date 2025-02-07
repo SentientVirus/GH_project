@@ -370,12 +370,14 @@ for prefix in prefixes:
          
         cummulength = 0 #Total length of the segments
         prev_end = dict_pos[strain][4][0]
+        
+        if prefix == 'E':
+            padding = 1
+        else: padding = 0
     
         for i in range(0, len(dict_pos[strain])): #Loop through segment positions by index i
             j = len(dict_pos[strain])-1-i #The opposite of i, for MP2
-            if prefix == 'E':
-                padding = 1
-            else: padding = 0
+
             if i > 0: #If i is bigger than 0
                 cummulength += dict_pos[strain][i-1][1]-dict_pos[strain][i-1][0] + 1 + padding #Add the length of the segment to the total length
                 
@@ -409,6 +411,9 @@ for prefix in prefixes:
                 if strain == 'MP2' and dict_pos[strain][j][0] <= gene.start < dict_pos[strain][j][1]: #If the strain is MP2 and the gene is inside the segment
                     gene.start = gene.start - prev_end + 1 #Set the gene start from the segment start
                     gene.end = gene.end - prev_end #Set the gene end from the segment start
+                    if padding == 0:
+                        gene.start -= i
+                        gene.end -= i
                     check = True #Set the check to True
                     genes_in_segment[strain].append(gene) #Add the gene to the list of genes in the segment
                 
@@ -417,6 +422,9 @@ for prefix in prefixes:
                     gene_start = gene.start #Set the start of the gene
                     gene.start = dict_pos[strain][i][1] - gene.end + cummulength + 1 #Set the start of the gene from the end of the segment (strand has to be reversed)
                     gene.end = dict_pos[strain][i][1] - gene_start + cummulength #Same, but for the gene end
+                    if padding == 0:
+                        gene.start -= i
+                        gene.end -= i
                     check = True #Set the check to True
                     genes_in_segment[strain].append(gene) #Append the gene to the list
             

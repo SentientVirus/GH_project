@@ -32,6 +32,7 @@ for prefix in prefixes:
         tab_df = pd.read_csv(in_tab, sep = '\t')
         aln_reader = SeqIO.parse(in_aln, 'fasta')
         new_df = tab_df.copy()
+        new_df = new_df.sort_values(['strain', 'start'], ascending=[True, True])
         for record in aln_reader:
             print(record.id)
             # nogap = 0
