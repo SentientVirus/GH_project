@@ -471,7 +471,7 @@ for comparison in group_names.values():
                 # elif gene == 'S3':
                 #     color = '#fffcdc'
                     
-                if gene_no >= 28 or gene_no == 16: # Invert arrows for genes in the forward strand
+                if gene_no >= 29 or gene_no == 16: # Invert arrows for genes in the forward strand
                     startx = max(df_aln.index)
                     dx = -max(df_aln.index)
                 else: # Otherwise, plot the arrows facing toward the right
