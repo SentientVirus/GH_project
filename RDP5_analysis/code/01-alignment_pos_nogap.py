@@ -414,9 +414,6 @@ for prefix in prefixes:
                     if prefix == 'F':
                         gene.start -= i
                         gene.end -= i
-                    # if prefix == 'F':
-                    #     gene.start -= i
-                    #     gene.end -= i
                     check = True #Set the check to True
                     genes_in_segment[strain].append(gene) #Add the gene to the list of genes in the segment
                 
@@ -425,9 +422,6 @@ for prefix in prefixes:
                     gene_start = gene.start #Set the start of the gene
                     gene.start = dict_pos[strain][i][1] - gene.end + cummulength + 1 #Set the start of the gene from the end of the segment (strand has to be reversed)
                     gene.end = dict_pos[strain][i][1] - gene_start + cummulength #Same, but for the gene end
-                    # if prefix == 'F':
-                    #     gene.start -= i
-                    #     gene.end -= i
                     check = True #Set the check to True
                     genes_in_segment[strain].append(gene) #Append the gene to the list
             

@@ -197,6 +197,10 @@ for prefix in prefixes:
     all_genes = {}
     genes_in_segment = {}
     loop =  list(bcrA_loctag.keys())
+    
+    padding = 0
+    if prefix == 'A' or prefix == 'C':
+        padding = 1
 
     for strain in loop:
         segment1 = [0, 0]
@@ -227,9 +231,9 @@ for prefix in prefixes:
                         
                         if gene_obj.locus_tag == bcrA_loctag[strain]:
                             if strain != 'MP2':
-                                segment1[0] = gene_obj.start - padding
+                                segment1[0] = gene_obj.start #- padding
                             else:
-                                segment2[1] = gene_obj.end + padding
+                                segment2[1] = gene_obj.end #+ padding
                         elif gene_obj.locus_tag == ydiL_loctag[strain]:
                             if strain != 'MP2':
                                 segment1[1] = gene_obj.end
@@ -242,27 +246,24 @@ for prefix in prefixes:
                                 segment1[1] = gene_obj.end
                         elif gene_obj.locus_tag == tagU_plus2_loctags[strain]:
                             if strain != 'MP2':
-                                segment2[1] = gene_obj.end + padding
+                                segment2[1] = gene_obj.end #+ padding
                             else:
-                                segment1[0] = gene_obj.start - padding
+                                segment1[0] = gene_obj.start #- padding
                           
         dict_pos[strain] = [segment1, segment2]
             
         for gene in all_genes[strain]:
             check1 = False
             check2 = False
-            padding = 0
-            if prefix == 'A':
-                padding = 1
             if dict_pos[strain][0][0] <= gene.start < dict_pos[strain][0][1]:
                 if strain == 'MP2':
                     gene.start = gene.start - dict_pos[strain][0][0] + 1
                     gene.end = gene.end - dict_pos[strain][0][0]
                 else:
-                    segment_length = dict_pos[strain][1][1] - dict_pos[strain][1][0] + 1 + padding
+                    segment_length = dict_pos[strain][1][1] - dict_pos[strain][1][0]
                     gene_start = gene.start
-                    gene.start = dict_pos[strain][0][1] - gene.end + segment_length + 1
-                    gene.end = dict_pos[strain][0][1] - gene_start + segment_length 
+                    gene.start = dict_pos[strain][0][1] - gene.end + segment_length + 1 + padding
+                    gene.end = dict_pos[strain][0][1] - gene_start + segment_length + padding
                 
                 genes_in_segment[strain].append(gene)
                 check1 = True
@@ -270,8 +271,8 @@ for prefix in prefixes:
             elif dict_pos[strain][1][0] <= gene.start < dict_pos[strain][1][1]:
                 segment_length = dict_pos[strain][0][1] - dict_pos[strain][0][0]
                 if strain == 'MP2':
-                    gene.start = gene.start - dict_pos[strain][1][0] + segment_length + 1
-                    gene.end = gene.end - dict_pos[strain][1][0] + segment_length
+                    gene.start = gene.start - dict_pos[strain][1][0] + segment_length + 1 + padding
+                    gene.end = gene.end - dict_pos[strain][1][0] + segment_length + padding
                 else:
                     gene_start = gene.start
                     gene.start = dict_pos[strain][1][1] - gene.end + 1
@@ -287,16 +288,16 @@ for prefix in prefixes:
         with open(f'{fna_dir}/{strain}_{infile_suffix2}') as fna:
             fna_read = SeqIO.parse(fna, 'fasta')
             for record in fna_read:
-                if strain != 'MP2':
+                if strain != 'MP2': #MP2 off by 2 positions now
                     segment = record.seq[dict_pos[strain][0][0]:dict_pos[strain][0][1]] + '!'
                     middle_point = len(segment)-1
                     segment += record.seq[dict_pos[strain][1][0]:dict_pos[strain][1][1]]
                 else: # Almost fixed, there is now a single 1 kb gap in MP2, possibly transposons?
                     genome_len = len(record.seq)
                     start_s1 = genome_len - dict_pos[strain][1][1]
-                    end_s1 = genome_len - dict_pos[strain][1][0] + 1
+                    end_s1 = genome_len - dict_pos[strain][1][0]
                     start_s2 = genome_len - dict_pos[strain][0][1]
-                    end_s2 = genome_len - dict_pos[strain][0][0] + 1
+                    end_s2 = genome_len - dict_pos[strain][0][0]
                     segment = record.seq[start_s1:end_s1] + '!'
                     middle_point = len(segment)-1
                     segment += record.seq[start_s2:end_s2]
