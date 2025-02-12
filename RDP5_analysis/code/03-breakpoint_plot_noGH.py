@@ -34,7 +34,7 @@ gap3 = (21286, 23073)
 
 gaps = [gap1, gap2, gap3]
 
-vline = 15969 
+vline = 15968
 
 # =============================================================================
 # 2. Loop through inputs and define outputs
