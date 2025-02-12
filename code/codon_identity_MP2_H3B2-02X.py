@@ -21,6 +21,8 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 import matplotlib.gridspec as gridspec
 from matplotlib.lines import Line2D
+from matplotlib.ticker import MultipleLocator
+import matplotlib.font_manager as font_manager
 # =============================================================================
 # 0. Logging
 # =============================================================================
@@ -123,6 +125,11 @@ transposons = {'H3B2-02X': [False, False, False, False, False],
                'MP2': [False, False, False, False, True]}
 
 y_list = [0.25, 0.75]
+
+fontsize_max = 84
+fontsize_min = 77
+
+font = font_manager.FontProperties(family='Arial', size = fontsize_min)
 
 # =============================================================================
 # 2. Function definitions
@@ -252,7 +259,7 @@ for t_no in range(1, 6):
     gene = f'T{t_no}'
     gene_number = [key for key in gene_order if gene_order[key] == gene][0]
     if length_list[gene_number-1] == 0:
-        length_list[gene_number-1] = 100
+        length_list[gene_number-1] = 200
         
 
 # Create a dataframe assigning different values to identical codons (0),
@@ -274,10 +281,11 @@ for gene_no in range(1, len(gene_order)+1):
             
         ax = fig.add_subplot(spec[count, gene_no-1]) # Set the right row and column
         ax.set_ylim(0, 1)
-        ax.set_xlim(0, 100)
+        k = 200
+        ax.set_xlim(0, k)
         T_no = int(gene[-1])
             
-        column = df_aln.columns[l]
+        column = df_aln.columns[0]
         if type(column) == tuple:
             strain1 = column[0].split('_')[0]
             strain2 = column[1].split('_')[0]
@@ -297,18 +305,19 @@ for gene_no in range(1, len(gene_order)+1):
         # Add arrows indicating gene direction
         if count == 0: # Add this only on top of the first row
             print(f'Comparison is ... {comparison}')
-            ax.set_title(gene, fontsize = 56, style = 'italic') # Add gene names at the top of the plot
+            ax.set_title(gene, fontsize = fontsize_min, style = 'italic', 
+                         fontname = 'Arial') # Add gene names at the top of the plot
             color = 'white' # Add background color to arrows
                 
             if 4 > T_no >= 2: # Invert arrows for genes in the forward strand
-                startx = 100
-                dx = -100
+                startx = k
+                dx = -k
             else: # Otherwise, plot the arrows facing toward the right
                 startx = 0
-                dx = 100
-            ax.arrow(startx, 1.165, dx, 0, width = 0.068, head_width = 0.068, 
+                dx = k
+            ax.arrow(startx, 1.3, dx, 0, width = 0.068, head_width = 0.068, 
                      head_length = 30, length_includes_head = True, 
-                     clip_on = False, linewidth = 5, linestyle = '--',
+                     clip_on = False, linewidth = 1, linestyle = '--',
                      edgecolor = 'black', facecolor = color)
 
         if T_presence1 == 1:
@@ -319,9 +328,9 @@ for gene_no in range(1, len(gene_order)+1):
         else: circle2_col = '#F8F9F9'
         
         # circle1 = plt.Circle((0.5, (2-l)/2), 0.2, color = circle_col)
-        ax.scatter([50], y_list[0], s = 4000, edgecolor = 'black',  #formerly, y_list[l] instead of 0.5
+        ax.scatter([k//2], y_list[0], s = 6000, edgecolor = 'black',  #formerly, y_list[l] instead of 0.5
                    facecolor = circle_col)
-        ax.scatter([50], y_list[1], s = 4000, edgecolor = 'black',  #formerly, y_list[l] instead of 0.5
+        ax.scatter([k//2], y_list[1], s = 6000, edgecolor = 'black',  #formerly, y_list[l] instead of 0.5
                    facecolor = circle2_col)
         ax.set_axis_off()
             
@@ -381,11 +390,12 @@ for gene_no in range(1, len(gene_order)+1):
         # Create a plot for the gene and comparison
         ax = fig.add_subplot(spec[count, gene_no-1]) # Set the right row and column
         h3 = sns.heatmap(df_aln_dict[gene].T, cmap = cmap, cbar = False, ax = ax) # Plot
-        ax.patch.set(lw = 5, ec = 'black') # Border of the subplots
+        ax.patch.set(lw = 1, ec = 'black') # Border of the subplots
         gn = gene #.replace('rfbX', '?wzx').replace('wzyC', '?waaL').replace('GH39', '?GH39') # Change some of the gene annotations
         
         # Add arrows indicating gene direction
-        ax.set_title(gn, fontsize = 56, style = 'italic') # Add gene names at the top of the plot
+        ax.set_title(gn, fontsize = fontsize_min, style = 'italic',
+                     fontname = 'Arial') # Add gene names at the top of the plot
         color = 'white' #'#e5e5e5' # Add background color to arrows
             
         if gene_no >= 26 or gene_no == 15: # Invert arrows for genes in the forward strand
@@ -399,18 +409,20 @@ for gene_no in range(1, len(gene_order)+1):
         #          clip_on = False, linewidth = 5,
         #          edgecolor = 'black', facecolor = color)
         
-        ax.arrow(startx, -1.165*0.14, dx, 0, width = 0.068, head_width = 0.068, 
+        ax.arrow(startx, -2.165*0.14, dx, 0, width = 0.068, head_width = 0.068, 
                  head_length = 30, length_includes_head = True, 
-                 clip_on = False, linewidth = 5,
+                 clip_on = False, linewidth = 1,
                  edgecolor = 'black', facecolor = color)
             
         # Add ticks to the y axis if the gene is present in the comparison
         if count == 0:
             plt.yticks(rotation=90)
             
-        plt.tick_params(axis='x', which='major', labelsize=48) # Increase font size of ax ticks
-        ax.xaxis.set_major_locator(MultipleLocator(100))
+        plt.tick_params(axis='x', which='major', labelsize = fontsize_min) # Increase font size of ax ticks
+        ax.xaxis.set_major_locator(MultipleLocator(150))
         ax.xaxis.set_major_formatter(format_x)
+        for label in ax.get_xticklabels() :
+            label.set_fontproperties(font)
         ax.set(xlabel=None) # Remove x ax label (label on the x axis of the subplot)
         ax.set(ylabel=None) # Remove y ax label
 
@@ -422,8 +434,9 @@ for gene_no in range(1, len(gene_order)+1):
         else:
             y_ticks = get_unique_values(list(df_aln.columns))
             y_ticks = [ytick.replace('_', ' vs ') for ytick in y_ticks]
-            ax.set_yticklabels(y_ticks, fontsize = 48, rotation = 'vertical')
-            ax.set_ylabel('Comparison', fontsize = 56)
+            ax.set_yticklabels(y_ticks, fontsize = fontsize_min, 
+                               rotation = 'vertical', family = 'Arial')
+            ax.set_ylabel('Comparison', fontsize = fontsize_max, family = 'Arial')
         
         print(f'Added {gene} plot to comparison {comparison}!')
     
@@ -432,40 +445,42 @@ print(f'Plot for {comparison} saved to {outplot}!')
     
 # Add global legend
 gap_patch = mpatches.Patch(color = '#F8F9F9', label = 'Gaps', ec = 'black', 
-                           lw = 2)
+                           lw = 0.5)
 
 identity_patch = mpatches.Patch(color = '#FEFDED', label = 'Identical sites', 
-                                ec = 'black', lw = 2)
+                                ec = 'black', lw = 0.5)
 
 S_patch = mpatches.Patch(color = '#80C4E9', label = 'Synonymous sites', 
-                         ec = 'black', lw = 2)
+                         ec = 'black', lw = 0.5)
 
 NS_patch = mpatches.Patch(color = '#FF7F3E', label = 'Non-synonymous sites', 
-                          ec = 'black', lw = 2)
+                          ec = 'black', lw = 0.5)
 
 t2_patch = Line2D([], [], markeredgecolor = 'black', marker = 'o', markerfacecolor = 'black',
-                  color = 'white', ms = 50, label = 'Transposon in strain')
+                  color = 'white', ms = 80, label = 'Transposon in strain')
 
 # t1_patch = Line2D([], [], markeredgecolor = 'black', marker = 'o', markerfacecolor = '#BBBBBB', 
 #            color = 'white', ms = 50, label = 'Transposons in one strain')
 
 t0_patch = Line2D([], [], markeredgecolor = 'black', marker = 'o', markerfacecolor = '#F8F9F9', 
-           color = 'white', ms = 50, label = 'Transposon not in strain')
+           color = 'white', ms = 80, label = 'Transposon not in strain')
 
 patches = [gap_patch, identity_patch, S_patch, NS_patch, t2_patch, #t1_patch, 
            t0_patch]
 
-legend = plt.legend(handles = patches,  handlelength = 1, handleheight = 3, 
-                    title = 'Site color', loc = 'upper right', framealpha = 0, 
-                    frameon = False, fontsize = 48, ncol = 6,
-                    bbox_to_anchor = (1, 1.7))
 
-           
-plt.setp(legend.get_title(),fontsize = 56)
+font = font_manager.FontProperties(family='Arial', size = fontsize_min)
+legend = plt.legend(handles = patches,  handlelength = 0.5, handleheight = 2, 
+                    title = 'Site color', loc = 'upper right', framealpha = 0, 
+                    frameon = False, fontsize = fontsize_min, ncol = 6,
+                    bbox_to_anchor = (1, 2.1), prop = font)
+
+plt.setp(legend.get_title(),fontsize = fontsize_max, family = 'Arial')
 legend._legend_box.align = 'left'
 
 # Save plot
-fig.text(0.5, -0.1, 'Codon position', ha='center', fontsize = 56)
+fig.text(0.5, -0.2, 'Codon position', ha='center', fontsize = fontsize_max,
+         family = 'Arial')
 plt.savefig(outplot, bbox_inches='tight')
 plt.savefig(outplot.replace('.png', '.tiff'), bbox_inches='tight')
 plt.savefig(outplot.replace('.png', '.svg'), bbox_inches='tight')
