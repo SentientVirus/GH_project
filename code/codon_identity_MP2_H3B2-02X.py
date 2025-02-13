@@ -62,9 +62,9 @@ sys.stdout = open(log, 'a')
 aa_path = os.path.expanduser('~') + '/GH_project/data/fasta'
 gene_types = ['GH70', 'GH32', 'other_genes']
 neighbor = 'other_genes'
-seq_outdir = f'{aa_path}/{neighbor}/subset'
-aln_path = f'{seq_outdir}/alignments'
 comparison = 'MP2_vs_H3B2-02X'
+seq_outdir = f'{aa_path}/{neighbor}/subset/{comparison}'
+aln_path = f'{seq_outdir}/alignments'
 codon_path = os.path.expanduser('~') + '/GH_project/data/codons/other_genes/subset'
 outdir = os.path.expanduser('~') + '/GH_project/plots/substitution_subsets'
 pal2nal_path = os.path.expanduser('~') + '/GH_project/pal2nal.v14/pal2nal.pl'
@@ -128,6 +128,7 @@ y_list = [0.25, 0.75]
 
 fontsize_max = 84
 fontsize_min = 77
+k = 200
 
 font = font_manager.FontProperties(family='Arial', size = fontsize_min)
 
@@ -259,7 +260,7 @@ for t_no in range(1, 6):
     gene = f'T{t_no}'
     gene_number = [key for key in gene_order if gene_order[key] == gene][0]
     if length_list[gene_number-1] == 0:
-        length_list[gene_number-1] = 200
+        length_list[gene_number-1] = k
         
 
 # Create a dataframe assigning different values to identical codons (0),
@@ -281,7 +282,6 @@ for gene_no in range(1, len(gene_order)+1):
             
         ax = fig.add_subplot(spec[count, gene_no-1]) # Set the right row and column
         ax.set_ylim(0, 1)
-        k = 200
         ax.set_xlim(0, k)
         T_no = int(gene[-1])
             
@@ -315,7 +315,7 @@ for gene_no in range(1, len(gene_order)+1):
             else: # Otherwise, plot the arrows facing toward the right
                 startx = 0
                 dx = k
-            ax.arrow(startx, 1.3, dx, 0, width = 0.068, head_width = 0.068, 
+            ax.arrow(startx, 1.304, dx, 0, width = 0.068, head_width = 0.068, 
                      head_length = 30, length_includes_head = True, 
                      clip_on = False, linewidth = 1, linestyle = '--',
                      edgecolor = 'black', facecolor = color)
@@ -418,10 +418,11 @@ for gene_no in range(1, len(gene_order)+1):
         if count == 0:
             plt.yticks(rotation=90)
             
-        plt.tick_params(axis='x', which='major', labelsize = fontsize_min) # Increase font size of ax ticks
+        plt.tick_params(axis='x', which='major', labelsize = fontsize_min,
+                        length = 20) # Increase font size of ax ticks
         ax.xaxis.set_major_locator(MultipleLocator(150))
         ax.xaxis.set_major_formatter(format_x)
-        for label in ax.get_xticklabels() :
+        for label in ax.get_xticklabels():
             label.set_fontproperties(font)
         ax.set(xlabel=None) # Remove x ax label (label on the x axis of the subplot)
         ax.set(ylabel=None) # Remove y ax label
@@ -457,23 +458,22 @@ NS_patch = mpatches.Patch(color = '#FF7F3E', label = 'Non-synonymous sites',
                           ec = 'black', lw = 0.5)
 
 t2_patch = Line2D([], [], markeredgecolor = 'black', marker = 'o', markerfacecolor = 'black',
-                  color = 'white', ms = 80, label = 'Transposon in strain')
+                  color = 'white', ms = 75, label = 'Transposon in strain')
 
 # t1_patch = Line2D([], [], markeredgecolor = 'black', marker = 'o', markerfacecolor = '#BBBBBB', 
 #            color = 'white', ms = 50, label = 'Transposons in one strain')
 
 t0_patch = Line2D([], [], markeredgecolor = 'black', marker = 'o', markerfacecolor = '#F8F9F9', 
-           color = 'white', ms = 80, label = 'Transposon not in strain')
+           color = 'white', ms = 75, label = 'Transposon not in strain')
 
 patches = [gap_patch, identity_patch, S_patch, NS_patch, t2_patch, #t1_patch, 
            t0_patch]
 
 
-font = font_manager.FontProperties(family='Arial', size = fontsize_min)
-legend = plt.legend(handles = patches,  handlelength = 0.5, handleheight = 2, 
+legend = plt.legend(handles = patches,  handlelength = 0.35, handleheight = 1.2, 
                     title = 'Site color', loc = 'upper right', framealpha = 0, 
                     frameon = False, fontsize = fontsize_min, ncol = 6,
-                    bbox_to_anchor = (1, 2.1), prop = font)
+                    bbox_to_anchor = (1, 2), prop = font)
 
 plt.setp(legend.get_title(),fontsize = fontsize_max, family = 'Arial')
 legend._legend_box.align = 'left'
