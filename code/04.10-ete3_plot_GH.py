@@ -72,7 +72,7 @@ if not os.path.exists(outdir): #Create output directory if it does not exist
 # =============================================================================
 
 for treefile in [treefile1, treefile2]: #Loop through the tree file
-    outfile = f'{outdir}/{os.path.basename(treefile).split(".")[0]}_tree.png' #Set the name of the output
+    outfile = f'{outdir}/{os.path.basename(treefile).split(".")[0]}_no_support_tree.png' #Set the name of the output
     
     t = Tree(treefile, format = 0) #Load the tree file into a tree object
     
@@ -101,9 +101,9 @@ for treefile in [treefile1, treefile2]: #Loop through the tree file
            if n.support >= 95: #If the node support is bigger or equal than 95%
                color = 'black' #Color the support in black
            else: color = 'dimgrey' #Otherwise, color the support in grey
-           support_face = TextFace(int(n.support), fgcolor = color, #Create text for support values and set its color
-                                   ftype = 'Arial', fsize = 60) #Sent font type and size
-           n.add_face(support_face, column = 0, position = 'branch-top') #Add the text to the node
+           # support_face = TextFace(int(n.support), fgcolor = color, #Create text for support values and set its color
+           #                         ftype = 'Arial', fsize = 60) #Sent font type and size
+           # n.add_face(support_face, column = 0, position = 'branch-top') #Add the text to the node
                     
     for leaf in t.get_leaves(): #Loop through the leaves in the tree
         nleaf = leaf.name #Retrieve the leaf name

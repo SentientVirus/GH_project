@@ -56,8 +56,8 @@ leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
               'H4B411M': '#D55E00', 'H4B412M': '#0072B2', 'H4B501J': '#0072B2', 
               'H4B502X': '#0072B2', 'H4B503X': '#0072B2', 'H4B504J': '#33B18F',
               'H4B505J': '#33B18F', 'H4B507J': '#0072B2', 'H4B507X': '#0072B2', 
-              'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': 'black', 
-              'DSM': 'black'}
+              'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': '#D55E00', 
+              'DSM': '#0072B2'}
 
 treefile = os.path.expanduser('~') + '/GH_project/add_species/results/alignment/GH70_species.mafft.faa.treefile' #Full path to the tree file
 outfile = os.path.expanduser('~') + '/GH_project/add_species/plots/GH70_multispecies_tree.png' #Output image with the tree representation
@@ -82,7 +82,7 @@ ts = TreeStyle() #Create a tree style
 ts.show_branch_length = False #Hide branch lengths
 ts.show_branch_support = False #Hide support values
 ts.show_leaf_name = False #Hide leaf names
-ts.scale = 500 #Set the scale of the tree
+ts.scale = 2000 #Set the scale of the tree
 ts.scale_length = 0.2 #Set the length of the tree
 # ts.tree_width = 1 #Set the width of the branches, overwritten by the scale
 # ts.force_topology = True #Forces all the branches to be of equal length
@@ -93,8 +93,8 @@ ts.scale_length = 0.2 #Set the length of the tree
 
 ns = NodeStyle() #Create a node style
 ns['size'] = 0 #Remove node representations as circles
-ns['vt_line_width'] = 5 #Set the width of vertical lines
-ns['hz_line_width'] = 5 #Set the width of horizontal lines
+ns['vt_line_width'] = 1 #Set the width of vertical lines
+ns['hz_line_width'] = 1 #Set the width of horizontal lines
 ns['hz_line_type'] = 0 #Make horizontal lines solid
 
 for n in t.traverse(): #Loop through the nodes in the tree
@@ -104,7 +104,8 @@ for n in t.traverse(): #Loop through the nodes in the tree
            color = 'black' #Color the support value in black
        else: color = 'dimgrey' #Otherwise, color it in grey
 
-       support_face = TextFace(int(n.support), fgcolor = color, fsize = 24) #Create a text with the support value
+       support_face = TextFace(int(n.support), fgcolor = color, fsize = 24,
+                               ftype = 'Arial') #Create a text with the support value
        n.add_face(support_face, column = 0, position='branch-top') #Add the text to the corresponding node in the tree
    
 # =============================================================================
@@ -125,7 +126,7 @@ for leaf in leaves: #Loop through the leaves of the tree
         nleaf = nleaf.replace('4_', '4,') #Change it to 4, (IQtree converts , to _)
 
     color = leaf_color.get(nleaf.split('_')[0], None) #Get strain names from the leaf name and use them to get the leaf color
-    name_face = TextFace(nleaf, fgcolor = color, fsize = 40) #Create a text with locus tags
+    name_face = TextFace(nleaf, fgcolor = color, fsize = 40, ftype = 'Arial') #Create a text with locus tags
     leaf.add_face(name_face, column = 0, position = 'branch-right') #Add the text to the right leaf in the tree
     
 # =============================================================================

@@ -97,7 +97,7 @@ strain_presence = {'A0901':    [1, 1, 0, 0, 0,-1, 0, 0, 1, 0, 0],
                    'H3B2-06M': [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0],
                    'H3B2-09X': [1, 0,-1, 0, 1, 1, 0, 0, 0, 0, 0],
                    'H4B1-11J': [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0],
-                   'H4B2-02J': [0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0],
+                   'H4B2-02J': [1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0],
                    'H4B2-04J': [1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0],
                    'H4B2-05J': [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
                    'H4B2-06J': [0, 1, 0, 0, 0,-1, 0, 0, 1, 0, 0],
@@ -162,8 +162,8 @@ for treefile in treefiles: #Loop through tree files
     
     ns = NodeStyle() #Create node style
     ns['size'] = 0 #Hide nodes
-    ns['vt_line_width'] = 5 #Set width of vertical lines
-    ns['hz_line_width'] = 5 #Set width of horizontal lines
+    ns['vt_line_width'] = 4 #Set width of vertical lines
+    ns['hz_line_width'] = 4 #Set width of horizontal lines
     ns['hz_line_type'] = 0 #Horizontal lines will be solid lines
  
     for n in t.traverse(): #Loop through nodes in the tree
@@ -173,7 +173,7 @@ for treefile in treefiles: #Loop through tree files
                color = 'black' #Color the support in black
            else: color = 'dimgrey' #Otherwise, color the support in grey
            support_face = TextFace(int(n.support), fgcolor = color, #Create text for support values and set its color
-                                   ftype = 'Arial', fsize = 30) #Sent font type and size
+                                   ftype = 'Arial', fsize = 1) #Sent font type and size
            n.add_face(support_face, column = 0, position = 'branch-top') #Add the text to the node
        
     for leaf in t.get_leaves(): #Loop through the leaves sorted by phylogeny 
@@ -192,7 +192,7 @@ for treefile in treefiles: #Loop through tree files
                 text_face.margin_bottom = -9 #Reduce space between labels
                 if i == 0: #If it's the first gene name
                     ts.legend.add_face(text_face, column = i) #Add it to the plot
-                    empty_face = TextFace(' ', ftype = 'Arial', fsize=28, #Create text with empty spaces
+                    empty_face = TextFace(' '*3, ftype = 'Arial', fsize=28, #Create text with empty spaces
                                           tight_text = True)
                     ts.legend.add_face(empty_face, column = i+1) #Add these spaces to two columns (to separate NGB from the other GHs)
                     ts.legend.add_face(empty_face, column = i+2)
@@ -235,7 +235,7 @@ for treefile in treefiles: #Loop through tree files
             
             seq = 'A'*scale #Create sequence object on top to which circles are plotted
             if n == 0: #If it's the first gene (NGB)
-                seq += 'A'*40 #Increase the length of the sequence object to add space between NGB and the other genes
+                seq += 'A'*80 #Increase the length of the sequence object to add space between NGB and the other genes
             seqFace = SeqMotifFace(seq, motifs = [motifs[n]], seq_format = 'blank', #Create object with the motifs, make the sequence tract invisible
                                    gap_format = 'blank') 
             (t & f'{leaf.name}').add_face(seqFace, n+1, 'aligned') #Add each gene to a different column

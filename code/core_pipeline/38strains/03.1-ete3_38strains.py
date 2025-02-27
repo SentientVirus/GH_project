@@ -84,7 +84,7 @@ if not os.path.exists(outdir):
 # =============================================================================
 
 for treefile in treefiles: #Loop through tree files
-    outfile = f'{outdir}/{treefile.split("/")[-1].split(".treefile")[0]}.png' #Define path to the output plot
+    outfile = f'{outdir}/{treefile.split("/")[-1].split(".treefile")[0]}_no_support.png' #Define path to the output plot
     print(outfile) #Print path to output
 
     t = Tree(treefile, format = 0) #Create a tree object from the tree file
@@ -114,9 +114,9 @@ for treefile in treefiles: #Loop through tree files
            if n.support >= 95: #If the node support is bigger or equal than 95%
                color = 'black' #Color the support in black
            else: color = 'dimgrey' #Otherwise, color the support in grey
-           support_face = TextFace(int(n.support), fgcolor = color, #Create text for support values and set its color
-                                   ftype = 'Arial', fsize = 60) #Sent font type and size
-           n.add_face(support_face, column = 0, position = 'branch-top') #Add the text to the node
+           # support_face = TextFace(int(n.support), fgcolor = color, #Create text for support values and set its color
+           #                         ftype = 'Arial', fsize = 60) #Sent font type and size
+           # n.add_face(support_face, column = 0, position = 'branch-top') #Add the text to the node
        
     for leaf in t.get_leaves(): #Loop through the leaves sorted by phylogeny 
         nleaf = leaf.name.replace('-', '').upper()  #Create leaf names without the '-' symbol

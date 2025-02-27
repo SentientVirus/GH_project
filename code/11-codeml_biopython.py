@@ -40,7 +40,7 @@ sys.stdout = open(snakemake.log[0], 'a')
 # Define CodeML objects
 # =============================================================================
 
-def codeml_object(workdir, seqfile, outfile, treefile = 'empty.tree'):
+def codeml_object(workdir, seqfile, outfile, treefile = 'trees/empty.tree'):
     cml = codeml.Codeml()            #Initialize object
     cml.alignment = '/home/marina/GH_project/' + str(seqfile)     #Assign alignmentfile to object
     cml.tree = str(treefile)         #Assign tree (optional)

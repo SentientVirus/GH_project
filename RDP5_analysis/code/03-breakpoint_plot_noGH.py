@@ -17,6 +17,7 @@ from math import inf
 import os
 import numpy as np
 from scipy.signal import find_peaks
+import matplotlib.font_manager as font_manager
 
 # =============================================================================
 # 0. Define working directory
@@ -35,6 +36,8 @@ gap3 = (21286, 23073)
 gaps = [gap1, gap2, gap3]
 
 vline = 15968
+
+font = font_manager.FontProperties(family='Arial', size = 14)
 
 # =============================================================================
 # 2. Loop through inputs and define outputs
@@ -87,14 +90,14 @@ for folder in ['A', 'B']:
     
     ax.set_ylim(bottom = 0, top = max(max(y), max(conf99)) + 0.5) # Set y axis limits
     
-    ax.plot(x, conf99, color = '#FAD4C0', alpha = 0.6, zorder = 5) # Plot 99% CI
+    ax.plot(x, conf99, color = '#FAD4C0', alpha = 0.6, zorder = 5, lw = 0.5) # Plot 99% CI
     ax.fill_between(x, conf99, 0, color = '#FEE9E1', alpha = 0.5, zorder = 0) # Fill the CI
     
-    ax.plot(x, conf95, color = '#D58870', zorder = 15) # Plot the 95% CI
+    ax.plot(x, conf95, color = '#D58870', zorder = 15, lw = 0.5) # Plot the 95% CI
     ax.fill_between(x, conf95, 0, color = '#E0937A', alpha = 0.6, zorder = 10) # Fill the CI
     ax.set_ylim(bottom = 0, top = max(max(y), max(conf99)) + 0.5) # Set y axis limits
     
-    ax.plot(x, y, color = 'black', zorder = 25) # Plot breakpoint curve
+    ax.plot(x, y, color = 'black', zorder = 25, mew = 1) # Plot breakpoint curve
     
     # Add triangles pointing to potential recombination hotspots
     y_maxima = find_peaks(y, distance = 50)[0]
@@ -102,15 +105,15 @@ for folder in ['A', 'B']:
     for yval in y_maxima:
         if y[yval] > conf99[yval]:
             ax.plot(yval*2, y[yval] + 0.4, marker=(3, 0, 180), markersize=20, 
-                    mew = 2, color = '#D7FA05', markeredgecolor = 'black',
+                    mew = 1, color = '#D7FA05', markeredgecolor = 'black',
                     zorder = 55)
         elif y[yval] > conf95[yval]:
             ax.plot(yval*2, y[yval] + 0.4, marker=(3, 0, 180), markersize=20, 
-                    mew = 2, color = '#F4FEB8', markeredgecolor = 'grey', 
+                    mew = 1, color = '#F4FEB8', markeredgecolor = 'grey', 
                     zorder = 55)
             
     if folder == 'A':
-        ax.axvline(x=vline, color = 'r', linestyle = '--', linewidth = 3, zorder = 25) # Add horizontal line between segments
+        ax.axvline(x=vline, color = 'r', linestyle = '--', linewidth = 1, zorder = 25) # Add horizontal line between segments
     
     ax.tick_params(          # Remove bottom ticks from x axis
         axis = 'x',          # Axis to be modified
@@ -140,14 +143,14 @@ for folder in ['A', 'B']:
 # 8. Plot genes in region
 # =============================================================================
     ax3.set_xlim(0, max(x)) # Set ax scale
-    ax3.set_ylim(-200, 200)
+    ax3.set_ylim(-220, 220)
     ax3.margins(x = 0.01, y = 0) # Set ax margins
     ax3.set_xticks(range(min(x), max(x), 2000)) # Set ticks
     ax3.get_yaxis().set_visible(False) # Remove y axis
     
     # Add horizontal line between genomic segments
     if folder == 'A':
-        ax3.axvline(x=vline, color='r', linestyle='--', linewidth=3, zorder = 20)
+        ax3.axvline(x=vline, color='r', linestyle='--', linewidth=1, zorder = 20)
     
     # Plot CDS
     for index, gene in genes.iterrows(): # Loop through CFD
@@ -155,7 +158,7 @@ for folder in ['A', 'B']:
         basecolor = colors[index%5] # Get a color from a list of alternating colors
         basewidth = 250 # CDS arrow width
         headwidth = 250 # Width of the arrow head
-        linewidth = 2 # Edge width
+        linewidth = 1 # Edge width
         alpha = 1 # Transparency (none)
         lc = 'black' # Edge color
         
@@ -166,13 +169,13 @@ for folder in ['A', 'B']:
             gene_zorder = 1 # Plot at the back
             
         if gene['strand'] == 1: # If the gene is in the forward strand
-            ax3.arrow(gene['end'], -30, dx = gene['start'] - gene['end'], dy = 0, 
+            ax3.arrow(gene['end'], -60, dx = gene['start'] - gene['end'], dy = 0, 
                   facecolor = basecolor, length_includes_head = True, 
                   width = basewidth, shape = 'full', head_width = headwidth, 
                   edgecolor = lc, linewidth = linewidth,
                   alpha = alpha, zorder = gene_zorder)
         else: # If the gene is in the reverse strand
-            ax3.arrow(gene['start'], -30, dx = gene['end'] - gene['start'], dy = 0, 
+            ax3.arrow(gene['start'], -60, dx = gene['end'] - gene['start'], dy = 0, 
                   facecolor = basecolor, length_includes_head = True, 
                   width = basewidth, shape = 'full', head_width = headwidth, 
                   edgecolor = lc, linewidth = linewidth,
@@ -181,26 +184,26 @@ for folder in ['A', 'B']:
         hpos = gene['start']
         if gene['strand'] == 1 and gene['end']-gene['start'] > 500:
             hpos +=  headwidth
-        if gene.name == 5:
+        if gene.name == 18:
             gene_name = gene['gene_name'] + '2'
         elif gene.name == 7:
-            gene_name = 'CDS8'
+            gene_name = 'CDS1'
         elif gene.name == 9:
-            gene_name = 'CDS7'
+            gene_name = 'CDS2'
         elif gene.name == 10:
-            gene_name = 'CDS5'
-        elif gene.name == 12:
+            gene_name = 'CDS3'
+        elif gene.name == 11:
             gene_name = 'CDS4'
         elif gene.name == 13:
-            gene_name = 'CDS3'
+            gene_name = 'CDS5'
         elif gene.name == 14:
-            gene_name = 'CDS2'
+            gene_name = 'CDS7'
         elif gene.name == 16:
-            gene_name = 'CDS1'
+            gene_name = 'CDS8'
         else: gene_name = gene['gene_name']
-        ax3.annotate(gene_name, style = 'italic', rotation = 0, 
-              xy = (hpos, 120), 
-              xycoords = 'data', fontweight = 'bold', color = 'black')
+        ax3.annotate(gene_name, style = 'italic', rotation = 0, family = 'Arial',
+              xy = (hpos, 90), fontsize = 14,
+              xycoords = 'data', color = 'black')
     
     # Code to plot gaps
     for gap in gaps:
@@ -237,8 +240,14 @@ for folder in ['A', 'B']:
     left_side3.set_visible(False)
     
     # Label x and y axes
-    ax.set_ylabel('Breakpoints per 200nt window', fontsize = 16)
-    plt.xlabel('Position in the alignment', fontsize = 16)
+    ax.set_ylabel('Breakpoints per 200nt window', fontsize = 20, family = 'Arial')
+    plt.xlabel('Position in the alignment', fontsize = 20, family = 'Arial')
+    
+    for label in ax3.get_xticklabels():
+        label.set_fontproperties(font)
+        
+    for label in ax.get_yticklabels():
+        label.set_fontproperties(font)
     
     # Save figure plot¨
     plt.savefig(outfile)
