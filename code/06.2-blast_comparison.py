@@ -131,7 +131,7 @@ phylo_order = {1:'H4B4-12M', 2:'H4B5-01J', 3:'G0101', 4:'H4B2-05J',
 color_dict = {'BRS': '#84E8A7', 'GS2BRS': '#BDE384', 'GS2': '#FFE570', 
               'GS3': '#FF986F', 'GS1': '#FF707C', 'GS4': '#FFC36F',
               'S1': '#656ED4', 'S2a': '#C870FF', 'S2b': '#F87BFF', 
-              'S3': '#336E74'}
+              'S3': '#84CDE8'}
 
 
 projdir = os.path.expanduser('~') + '/GH_project'
@@ -269,7 +269,7 @@ for i in range(1, len(phylo_order.keys())+1): #Loop through strain names in the 
             protstart = int(cds.location.start) #Get CDS start
             end = int(cds.location.end) #Get CDS end
             strand = cds.location.strand #Get strand
-            color = 'skyblue' #Set color of most CDS
+            color = '#E3DAC9' #Set color of most CDS
             gene_name  = '' #Initialize gene name
             if 'gene' in cds.qualifiers.keys():
                 gene_name = cds.qualifiers['gene'][0] #When possible, add four-letter gene name
@@ -378,10 +378,10 @@ fig = gv.plotfig(dpi = 400)
 #The first two variables are the data to be plotted in the x and y axis, and therefore are empty
 handles = [
     Line2D([], [], marker="", color='black', label="Tracks", ms=20, ls="none"),
-    Line2D([], [], marker=">", color="skyblue", label="CDS", ms=20, ls="none")
+    Line2D([], [], marker=">", color='#E3DAC9', label="CDS", ms=20, ls="none")
     ]
 
-handles += [Line2D([], [], marker=">", color=color_dict[GH_type], label=f'{GH_type} glycosyl hydrolase', ms=20, ls='none') for GH_type in color_dict.keys()]
+handles += [Line2D([], [], marker=">", color=color_dict[GH_type], label=f'{GH_type} glycosyl hydrolase', ms=20, ls = 'none') for GH_type in color_dict.keys()]
 
 handles += [
     Line2D([], [], marker=">", color='black', label="Transposase", ms=20, ls="none"),
@@ -395,8 +395,8 @@ handles += [
     Line2D([], [], marker="X", color='#33B18F', label="Phylogroup B", ms=15, ls="none"),
     Line2D([], [], marker="X", color='#D55E00', label="Phylogroup C", ms=15, ls="none"),
     Line2D([], [], marker="X", color='#FF74D6', label="Phylogroup E", ms=15, ls="none"),
-    Line2D([], [], marker="X", color='#771853', label="Phylogroup F", ms=15, ls="none"),
-    Line2D([], [], marker="X", color='black', label="Not in Dyrhage et al. (2022)", ms=15, ls="none")
+    Line2D([], [], marker="X", color='#771853', label="Phylogroup F", ms=15, ls="none")
+    # Line2D([], [], marker="X", color='black', label="Not in Dyrhage et al. (2022)", ms=15, ls="none")
 ]
 
 #Assign legent to figure. bbox_to_anchor sets the position, frameon removes the 

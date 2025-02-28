@@ -89,15 +89,27 @@ phage_pos = {'MP2': (190, 500),
 #               30:'H4B4-05J', 31:'H4B1-11J', 32:'H4B4-06M', 33:'A0901', 
 #               34:'IBH001', 35:'H4B2-06J', 36:'H3B2-03M', 37:'A1404', 38:'A1001'}
 
-phylo_order = {1:'G0101', 2:'H4B2-05J', 3:'H4B2-11M', 4:'H4B5-01J', 
-              5:'H4B4-12M', 6:'H1B1-04J', 7:'H3B1-01A', 8:'H3B2-03J', 
-              9:'H4B2-04J', 10:'H3B1-04X', 11:'H3B2-02X', 12:'A1003',
-              13:'H1B3-02M', 14:'H4B4-02J', 15:'H4B5-03X', 16:'Fhon2', 
-              17:'H1B1-05A', 18:'H4B2-02J', 19:'DSMZ12361', 20:'H3B1-04J', 
-              21:'A1202', 22:'A1401', 23:'H4B5-05J', 24:'H3B2-09X', 
-              25:'H4B5-04J', 26:'A1805', 27:'MP2', 28:'G0403', 29:'H4B4-05J', 
-              30:'H3B2-06M', 31:'H4B1-11J', 32:'H4B4-06M', 33:'IBH001', 
-              34:'H4B2-06J', 35:'A0901', 36:'H3B2-03M', 37:'A1404', 38:'A1001'}
+# phylo_order = {1:'G0101', 2:'H4B2-05J', 3:'H4B2-11M', 4:'H4B5-01J', 
+#               5:'H4B4-12M', 6:'H1B1-04J', 7:'H3B1-01A', 8:'H3B2-03J', 
+#               9:'H4B2-04J', 10:'H3B1-04X', 11:'H3B2-02X', 12:'A1003',
+#               13:'H1B3-02M', 14:'H4B4-02J', 15:'H4B5-03X', 16:'Fhon2', 
+#               17:'H1B1-05A', 18:'H4B2-02J', 19:'DSMZ12361', 20:'H3B1-04J', 
+#               21:'A1202', 22:'A1401', 23:'H4B5-05J', 24:'H3B2-09X', 
+#               25:'H4B5-04J', 26:'A1805', 27:'MP2', 28:'G0403', 29:'H4B4-05J', 
+#               30:'H3B2-06M', 31:'H4B1-11J', 32:'H4B4-06M', 33:'IBH001', 
+#               34:'H4B2-06J', 35:'A0901', 36:'H3B2-03M', 37:'A1404', 38:'A1001'}
+
+phylo_order = {1:'H4B4-12M', 2:'H4B5-01J', 3:'G0101', 4:'H4B2-05J', 
+              5:'H4B2-11M', 6:'H1B1-04J', 7:'H4B5-03X', 8:'H4B4-02J', 
+              9:'H1B3-02M', 10:'H3B2-02X', 11:'H3B1-04X', 12:'A1003',
+              13:'H3B1-01A', 14:'H3B2-03J', 15:'H4B2-04J', 16:'Fhon2', 
+              17:'H4B2-02J', 18:'H1B1-05A', 19:'DSMZ12361', 20:'H3B1-04J', 
+              21:'H3B2-06M', 22:'H4B4-05J', 23:'H4B1-11J', 24:'H4B4-06M', 
+              25:'H3B2-03M', 26:'A0901', 27:'H4B2-06J', 28:'IBH001', 
+              29:'H3B2-09X', 30:'H4B5-05J', 31:'A1401', 32:'A1202', 
+              33:'H4B5-04J', 34:'MP2', 35:'A1805', 36:'G0403', 
+              37:'A1404', 38:'A1001'}
+
 
 vmin = 60 #Minimum sequence identity
 
@@ -229,23 +241,23 @@ for i in range(1, len(phylo_order.keys())+1): #Loop through strain names in the 
             protstart = int(cds.location.start) #Get CDS start
             end = int(cds.location.end) #Get CDS end
             strand = cds.location.strand #Get strand
-            color = 'skyblue' #Set color of most CDS
+            color = '#E3DAC9' #Set color of most CDS
             gene_name  = '' #Initialize gene name
             if 'gene' in cds.qualifiers.keys():
                 gene_name = cds.qualifiers['gene'][0] #When possible, add four-letter gene name
             if 'transposase' not in cds.qualifiers['product'][0]: #If the gene is not a transposon
                 if cds.qualifiers['locus_tag'][0][3:] in NGB or cds.qualifiers['locus_tag'][0] in NGB: #Check if it is in the NGB list
                     gene_name = 'NGB' #If so, add NGB as gene name
-                    color = '#c475ff' #Change the color of the CDS (purple)
+                    color = '#336E74' #Change the color of the CDS (teal)
                 #If the gene is a cas gene or endonuclease
                 elif 'restriction' in cds.qualifiers['product'][0].lower() or 'endonuclease' in cds.qualifiers['product'][0].lower() or 'HsdR' in cds.qualifiers['product'][0] or gene_name == 'cas2':
-                    color = '#eeff75' #Change color (magenta)
+                    color = '#BF6D58' #Change color (brown)
                 elif 'ABC' in cds.qualifiers['product'][0]: #If the gene is annotated as ABC transporter
-                    color = '#b8ff75' #Change color (green)
+                    color = '#8FBF58' #Change color (green)
                 elif strain in phage_pos.keys(): #If the strain has a phage
                     loc_num = int(cds.qualifiers['locus_tag'][0].split('_')[1].replace('RS', '')) #Get number of the locus tag
                     if (loc_num >= phage_pos[strain][0] and loc_num <= phage_pos[strain][1]) or (cds.qualifiers['locus_tag'][0] == 'APS55_RS08015'): #If the locus tag number corresponds to a phage
-                        color = '#7581ff' #Change color (indigo)
+                        color = '#8F58BF' #Change color (purple)
 
             elif 'transposase' in cds.qualifiers['product'][0]: #If the CDS is a tranposon
                 color = 'black' #Change color to black
@@ -256,6 +268,7 @@ for i in range(1, len(phylo_order.keys())+1): #Loop through strain names in the 
                                   text_kws = dict(color = 'black', rotation = 45, #Set label properties (label and rotation)
                                                   size = 15, ymargin = 0, #Set label properties (text size and distance from the CDS)
                                                   vpos = 'top', hpos = 'left')) #Set label properties (vertical and horizontal position)
+
         segment.add_sublabel(f'{segment.start:,} - {segment.end:,} bp')  #Add text indicating segment range to the plot
 
         track.align_label = True #Align track label (strain name) to track
@@ -301,9 +314,11 @@ for i in range(1, len(phylo_order.keys())): #Loop through strains in the order i
     if phylo_order[i] in ['A1202', 'MP2', 'H4B5-04J', 'A0901']: #If the query strain has a phage
         subject_check = True #Set the two-segment check to True
         subject_pos = (subject_pos[0], subject_pos[1] + 36000) #Add 36kb to the end of the segment
-    elif phylo_order[i+1] in ['A1202', 'MP2', 'H4B5-04J', 'A0901']: #If the subject has a phage
+    if phylo_order[i+1] in ['A1202', 'MP2', 'H4B5-04J', 'A0901']: #If the subject has a phage
         query_check = True #Set the two-segment check to True
         query_pos = (query_pos[0], query_pos[1] + 36000) #Add 36kb to the end of the segment
+        
+    print(strain1_name, strain2_name, query_check, subject_check)
     
     # Figure out how to loop through segments to drop genes (idea: compare strain name with tab df and retrieve those tracks, then loop through segments)
     tab_df = tab_df.drop(tab_df.index[tab_df['q. end'] < query_pos[0]]) #Drop CDS that start after the end of the query segment
@@ -330,12 +345,19 @@ for i in range(1, len(phylo_order.keys())): #Loop through strains in the order i
         seg2_q = seg2_q.reset_index() #Reset the index of the dataframe
     if subject_check: #If there are two segments to plot for the subject
         seg1_s = tab_df.copy() #Copy tab_df
-        seg1_s = seg1_s.drop(seg1_s.index[seg1_s['s. end'] > subject_pos[0] + 16000]) #Set the first segment to start + 16kb
+        seg1_s = seg1_s.drop(seg1_s.index[seg1_s['s. start'] > subject_pos[0] + 16000]) #Set the first segment to start + 16kb
+        seg1_s = seg1_s.drop(seg1_s.index[seg1_s['q. end'] > query_pos[0] + 16000])
         seg1_s = seg1_s.reset_index() #Reset the index of the dataframe
         seg2_s = tab_df.copy() #Copy tab_df
-        seg2_s = seg2_s.drop(seg2_s.index[seg2_s['s. start'] < subject_pos[1] - 24000]) #Set the second segment to end - 24kb
+        seg2_s = seg2_s.drop(seg2_s.index[seg2_s['s. end'] < subject_pos[1] - 24000]) #Set the second segment to end - 24kb
+        seg2_s.loc[seg2_s['s. start'] < subject_pos[1] - 24000, 's. start'] = subject_pos[1] - 24000
+        if query_check:
+            seg2_s.loc[seg2_s['q. start'] < query_pos[1] - 24000, 'q. start'] = query_pos[1] - 24000
         seg2_s = seg2_s.reset_index() #Reset the index of the dataframe
     
+    # if strain1_name == 'A0901':
+    #     raise ValueError('Stop here!!!')
+        
     if subject_check == False and query_check == False: #If none of the strains in the comparison has multiple segments
         for j in range(len(tab_df)):
             #Get strain names from dataframe and shorten name of DSM
@@ -353,7 +375,7 @@ for i in range(1, len(phylo_order.keys())): #Loop through strains in the order i
             gv.add_link(link1, link2, color = 'grey', inverted_color = 'red', 
                         v = identity, vmin = vmin, curve = True, alpha = 0.7) #Curve makes the matches form curves
             
-    elif query_check == True: #If the query strain has two segments
+    elif query_check == True and subject_check == False: #If the query strain has two segments
         for j in range(len(seg1_q)): #Do two comparisons, one for each segment
             link1 = (seg1_q.loc[j, 'query acc.ver'], 'region1', seg1_q.loc[j, 'q. start'], seg1_q.loc[j, 'q. end'])
             link2 = (seg1_q.loc[j, 'subject acc.ver'], 'region1', seg1_q.loc[j, 's. start'], seg1_q.loc[j, 's. end'])
@@ -367,7 +389,7 @@ for i in range(1, len(phylo_order.keys())): #Loop through strains in the order i
             gv.add_link(link1, link2, color = 'grey', inverted_color = 'red', 
                         v = identity, vmin = vmin, curve = True, alpha = 0.7)
     
-    elif subject_check == True: #If the subject strain has two segments
+    elif subject_check == True and query_check == False: #If the subject strain has two segments
         for j in range(len(seg1_s)): #Do two comparisons, one for each segment
             link1 = (seg1_s.loc[j, 'query acc.ver'], 'region1', seg1_s.loc[j, 'q. start'], seg1_s.loc[j, 'q. end'])
             link2 = (seg1_s.loc[j, 'subject acc.ver'], 'region1', seg1_s.loc[j, 's. start'], seg1_s.loc[j, 's. end'])
@@ -376,6 +398,20 @@ for i in range(1, len(phylo_order.keys())): #Loop through strains in the order i
                         v = identity, vmin = vmin, curve = True, alpha = 0.7)
         for j in range(len(seg2_s)):
             link1 = (seg2_s.loc[j, 'query acc.ver'], 'region1', seg2_s.loc[j, 'q. start'], seg2_s.loc[j, 'q. end'])
+            link2 = (seg2_s.loc[j, 'subject acc.ver'], 'region2', seg2_s.loc[j, 's. start'], seg2_s.loc[j, 's. end'])
+            identity = seg2_s.loc[j, '% identity']
+            gv.add_link(link1, link2, color = 'grey', inverted_color = 'red', 
+                        v = identity, vmin = vmin, curve = True, alpha = 0.7)
+            
+    elif subject_check == True and query_check == True:
+        for j in range(len(seg1_s)): #Do two comparisons, one for each segment
+            link1 = (seg1_s.loc[j, 'query acc.ver'], 'region1', seg1_s.loc[j, 'q. start'], seg1_s.loc[j, 'q. end'])
+            link2 = (seg1_s.loc[j, 'subject acc.ver'], 'region1', seg1_s.loc[j, 's. start'], seg1_s.loc[j, 's. end'])
+            identity = seg1_s.loc[j, '% identity']
+            gv.add_link(link1, link2, color = 'grey', inverted_color = 'red', 
+                        v = identity, vmin = vmin, curve = True, alpha = 0.7)
+        for j in range(len(seg2_s)):
+            link1 = (seg2_s.loc[j, 'query acc.ver'], 'region2', seg2_s.loc[j, 'q. start'], seg2_s.loc[j, 'q. end'])
             link2 = (seg2_s.loc[j, 'subject acc.ver'], 'region2', seg2_s.loc[j, 's. start'], seg2_s.loc[j, 's. end'])
             identity = seg2_s.loc[j, '% identity']
             gv.add_link(link1, link2, color = 'grey', inverted_color = 'red', 
@@ -391,11 +427,11 @@ fig = gv.plotfig(dpi = 400) #Plot the figure with a resolution of 400 dpi
 #The first two variables are the data to be plotted in the x and y axis, and therefore are empty
 handles = [
     Line2D([], [], marker='', color='black', label='Tracks', ms=20, ls='none'),
-    Line2D([], [], marker='>', color='skyblue', label='CDS', ms=20, ls='none'),
-    Line2D([], [], marker='>', color='#c475ff', label='NGB glycosyl hydrolase', ms=20, ls='none'),
-    Line2D([], [], marker='>', color='#7581ff', label='Phage genes', ms=20, ls='none'),
-    Line2D([], [], marker='>', color='#b8ff75', label='ABC transporters', ms=20, ls='none'),
-    Line2D([], [], marker='>', color='#eeff75', label='CRISPR endonucleases', ms=20, ls='none'),
+    Line2D([], [], marker='>', color='#E3DAC9', label='CDS', ms=20, ls='none'),
+    Line2D([], [], marker='>', color='#336E74', label='NGB glycosyl hydrolase', ms=20, ls='none'),
+    Line2D([], [], marker='>', color='#8F58BF', label='Phage genes', ms=20, ls='none'),
+    Line2D([], [], marker='>', color='#8FBF58', label='ABC transporters', ms=20, ls='none'),
+    Line2D([], [], marker='>', color='#BF6D58', label='CRISPR endonucleases', ms=20, ls='none'),
     Line2D([], [], marker='>', color='black', label='Transposase', ms=20, ls='none'),
     Line2D([], [], marker='', color='black', label='', ms=20, ls='none'),
     Line2D([], [], marker='', color='black', label='Matches', ms=20, ls='none'),
