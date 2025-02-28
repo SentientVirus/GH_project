@@ -117,7 +117,7 @@ with open(out_faa) as fasta_seqs:
 # =============================================================================
 # 4. Generate plot
 # =============================================================================
-mv = MsaViz(out_mafft, wrap_length=120, show_count=True)
+mv = MsaViz(out_mafft, start = 1666, wrap_length=180, show_count=True)
 mv.savefig(out_aln_fig)
 mv.savefig(out_aln_fig.replace('png', 'svg'))
 mv.savefig(out_aln_fig.replace('png', 'tiff'))
