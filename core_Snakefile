@@ -1,5 +1,5 @@
-#This pipeline requires Mafft, iqtree, pal2nal and palm. It also requires Python3 with biopython and pandas.
-configfile: 'config.yml'
+#Code by Marina Mota-Merlo
+#This pipeline requires MAFFT, IQtree, PAL2NAL and PAML. It also requires Python3 with Biopython and Pandas.
 import os
 
 def get_files(path_to_files, term = '0.faa'):
