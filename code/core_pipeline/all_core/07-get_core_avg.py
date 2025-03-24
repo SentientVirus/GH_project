@@ -3,11 +3,16 @@
 """
 Created on Fri Nov 19 09:18:40 2021
 
-This script calculares general statistics for all core genes based
+This script calculates general statistics for all core genes based
 on the files where pairwise substitution rates were calculated.
 
 @author: Marina Mota-Merlo
 """
+
+# =============================================================================
+# 0. Import required modules
+# =============================================================================
+
 import os
 from numpy import mean, median
 import pandas as pd
@@ -15,6 +20,7 @@ import pandas as pd
 # =============================================================================
 # 1. Define input variables and paths
 # =============================================================================
+
 #to_exclude = ['A1001', 'A1404'] #Strains to exclude from GS1
         
 codeml_dir = os.path.expanduser('~') + '/GH_project/all_core/results' #Input folder
