@@ -6,15 +6,16 @@
 Created on Tue June 21 2022
 
 Script from https://github.com/faylward/dnds, slightly modified by Julia 
-Pedersen and Marina Mota. It parses the CodeML output and calculates some
+Pedersen and Marina Mota-Merlo. It parses the CodeML output and calculates some
 statistics for each subset of genes.
 
 """
 
-
+# =============================================================================
+# 0. Import required modules
+# =============================================================================
 
 import re, logging, traceback
-
 from numpy import mean, median
 
 # =============================================================================

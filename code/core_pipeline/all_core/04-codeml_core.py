@@ -8,15 +8,15 @@ pairwise substitution rates between the cores genes in the different strains.
 @author: Marina Mota Merlo
 """
 
+# =============================================================================
+# 0. Import required modules
+# =============================================================================
+
 import os, logging, traceback
-
-##CodeML in BioPython
-
-import Bio
 import Bio.Phylo.PAML.codeml as codeml
 
 # =============================================================================
-# Logging
+# 0. Logging
 # =============================================================================
 print('The script is running...')
 logging.basicConfig(filename = snakemake.log[0], level = logging.INFO,
@@ -37,8 +37,9 @@ sys.excepthook = handle_exception
 sys.stdout = open(snakemake.log[0], 'a')
 
 print('Start logging...')
+
 # =============================================================================
-# Define CodeML objects
+# 1. Define CodeML objects
 # =============================================================================
 
 def codeml_object(workdir, seqfile, outfile, treefile = 'trees/empty.tree'):
@@ -51,7 +52,7 @@ def codeml_object(workdir, seqfile, outfile, treefile = 'trees/empty.tree'):
     return cml
 
 # =============================================================================
-# Set CodeML options (same role as control file codeml.ctl)
+# 2. Set CodeML options (same role as control file codeml.ctl)
 # =============================================================================
 
 def set_codeml_options(cml, rmd, seq, mdl = 1, noise = 0, verb = False, cf = 2, icd = 0):
@@ -72,21 +73,26 @@ def set_codeml_options(cml, rmd, seq, mdl = 1, noise = 0, verb = False, cf = 2, 
     return cml
 
 # =============================================================================
-# Apply these functions to snakemake pipeline
+# 3. Apply these functions to the Snakemake pipeline
 # =============================================================================
+
+#Create output directory if it doesn't exist
 if not os.path.exists(snakemake.output.outdir):
     os.makedirs(snakemake.output.outdir)
 
-for i in range(len(snakemake.output.outfiles)):
-    sub_outdir = os.path.dirname(snakemake.output.outfiles[i])
+for i in range(len(snakemake.output.outfiles)): #Loop through output files
+    sub_outdir = os.path.dirname(snakemake.output.outfiles[i]) #Retrieve the path to the output file
     print(sub_outdir)
 
+    #Create the path to the output file if it doesn't exist
     if not os.path.exists(sub_outdir):
         os.makedirs(sub_outdir)
 
+    #Create a CodeML object and set the CodeML parameters
     cml = codeml_object(sub_outdir, snakemake.input[i],
                         snakemake.output.outfiles[i], snakemake.input[-1])
     cml = set_codeml_options(cml, -2, 1)
     print(cml.alignment)
-    ##Run CodeML
+    
+    #Run CodeML
     cml.run(verbose = True, parse = False)
