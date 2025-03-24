@@ -1,28 +1,6 @@
 #This pipeline requires Mafft, iqtree, pal2nal and palm. It also requires Python3 with biopython and pandas.
 configfile: 'config.yml'
 import os
-#rule msa_gtf:
-#	input:
-#		prot = 'core_genes/{gnrl}_prot.fasta',
-#		gene = 'core_genes/{gnrl}_genes.fasta'
-#	output:
-#		prot = 'alignments/core_genes/{gnrl}_prot.mafft.fasta',
-#		gene = 'alignments/core_genes/{gnrl}_genes.mafft.fasta'
-#	threads: 16
-#	shell:
-#		'mafft-linsi --thread {threads} {input.prot} > {output.prot} && mafft-linsi --thread {threads} {input.gene} > {output.gene}'
-
-#rule iqtree_gtf:
-#	input:
-#		prot = 'alignments/core_genes/{gnrl}_prot.mafft.fasta',
-#		gene = 'alignments/core_genes/{gnrl}_genes.mafft.fasta'
-#	output:
-#		prot = 'alignments/core_genes/{gnrl}_prot.txt',
-#		gene = 'alignments/core_genes/{gnrl}_genes.txt',
-#		tree = 'alignments/core_genes/{gnrl}_prot.mafft.fasta.treefile'
-#	threads: 64
-#	shell:
-#		'iqtree -nt {threads} -s {input.prot} -st AA -m LG+G4+F+G -v > {output.prot} && iqtree -s {input.gene} -st DNA -m GTR+G4+F -v > {output.gene}'
 
 def get_files(path_to_files, term = '0.faa'):
     faa = [f'{path_to_files}/{file}' for file in os.listdir(path_to_files) if file.endswith(term)]
@@ -66,10 +44,10 @@ rule mafft:
 
 rule pal2nal:
 	input:
-		aln1 = get_aln_files(get_files('all_core/fasta')),  #'untrimmed_core/{gnrl}_prot.fasta',
-		aln2 = get_files('all_core/fasta', '.fna')  #'untrimmed_core/{gnrl}_genes.fasta'
+		aln1 = get_aln_files(get_files('all_core/fasta')),
+		aln2 = get_files('all_core/fasta', '.fna')
 	output:
-		get_pal2nal('all_core/fasta', 'all_core/codons')  #'data/codons/core_genes/{gnrl}_codon.pal2nal'
+		get_pal2nal('all_core/fasta', 'all_core/codons')
 	threads: 2
         shell:
 		"""
@@ -85,13 +63,12 @@ rule pal2nal:
 
 rule codeml_exe:
 	input:
-		get_pal2nal('all_core/fasta', 'all_core/codons'), #"data/codons/core_genes/{gnrl}_codon.pal2nal",
+		get_pal2nal('all_core/fasta', 'all_core/codons'),
 		'trees/empty.tree'
 	output:
                 outdir = directory('all_core/results'), 
                 outfiles = get_CodeML()  #'results/core_genes/{gnrl}/{gnrl}.txt"
 	threads: 1
-	#params:	outdir = "/home/marina/GH_project/results/core_genes/{gnrl}"
         log: 'logs/python/all_codeml.log'
         conda: 'envs/environment.yml'
 	script: 
@@ -99,120 +76,13 @@ rule codeml_exe:
 		
 rule run_parser:
 	input:
-		txt = get_CodeML() #'results/core_genes/{gnrl}/{gnrl}.txt'
+		txt = get_CodeML()
 	output:
-		dNdS = get_parsed(ext = 'dNdS.tsv'), #'results/core_genes/{gnrl}/dNdS.tsv',
-		stats = get_parsed(ext = 'stats.tsv') #'results/core_genes/{gnrl}/stats.tsv'
+		dNdS = get_parsed(ext = 'dNdS.tsv'),
+		stats = get_parsed(ext = 'stats.tsv')
 	threads: 1
         log: 'logs/python/parse_codeml.log'
         conda: 'envs/environment.yml'
 	script:
 		'code/core_pipeline/all_core/05-parse_codeml.py'
 
-#rule parse_representatives:
-#        input:
-#                txt = 'results/core_genes/{gnrl}/{gnrl}.txt'
-#        output:
-#                dNdS = 'results/core_genes/repr/{gnrl}_dNdS.tsv',
-#                stats = 'results/core_genes/repr/{gnrl}_stats.tsv'
-#        params: repr = config['extended_repset']
-#        log: 'logs/python/parse_rep_{gnrl}.log'
-#        threads: 1
-#        script:
-#                'parse_codeml_representatives.py'
-
-rule GS1_representatives:
-        input:
-                txt = 'results/core_genes/{gnrl}/{gnrl}.txt'
-        output:
-                dNdS = 'results/core_genes/GH_repr/GS1_{gnrl}_dNdS.tsv',
-                stats = 'results/core_genes/GH_repr/GS1_{gnrl}_stats.tsv'
-        params: repr = config['GS1_repr']                                                                                                                           
-        log: 'logs/python/parse_rep_GS1_{gnrl}.log'
-        threads: 1
-        script:
-                'code/parse_codeml_representatives.py'
-
-rule GS2_representatives:
-        input:
-                txt = 'results/core_genes/{gnrl}/{gnrl}.txt'
-        output:
-                dNdS = 'results/core_genes/GH_repr/GS2_{gnrl}_dNdS.tsv',
-                stats = 'results/core_genes/GH_repr/GS2_{gnrl}_stats.tsv'
-        params: repr = config['GS2_repr']
-        log: 'logs/python/parse_rep_GS2_{gnrl}.log'
-        threads: 1
-        script:
-                'code/parse_codeml_representatives.py'
-
-rule BRS_representatives:
-        input:
-                txt = 'results/core_genes/{gnrl}/{gnrl}.txt'
-        output:
-                dNdS = 'results/core_genes/GH_repr/BRS_{gnrl}_dNdS.tsv',
-                stats = 'results/core_genes/GH_repr/BRS_{gnrl}_stats.tsv'
-        params: repr = config['BRS_repr']
-        log: 'logs/python/parse_rep_BRS_{gnrl}.log'
-        threads: 1
-        script:
-                'code/parse_codeml_representatives.py'
-
-rule S1_representatives:
-        input:
-                txt = 'results/core_genes/{gnrl}/{gnrl}.txt'
-        output:
-                dNdS = 'results/core_genes/GH_repr/S1_{gnrl}_dNdS.tsv',
-                stats = 'results/core_genes/GH_repr/S1_{gnrl}_stats.tsv'
-        params: repr = config['S1_repr']
-        log: 'logs/python/parse_rep_S1_{gnrl}.log'
-        threads: 1
-        script:
-                'code/parse_codeml_representatives.py'
-
-rule S2a_representatives:
-        input:
-                txt = 'results/core_genes/{gnrl}/{gnrl}.txt'
-        output:
-                dNdS = 'results/core_genes/GH_repr/S2a_{gnrl}_dNdS.tsv',
-                stats = 'results/core_genes/GH_repr/S2a_{gnrl}_stats.tsv'
-        params: repr = config['S2a_repr']
-        log: 'logs/python/parse_rep_S2a_{gnrl}.log'
-        threads: 1
-        script:
-                'code/parse_codeml_representatives.py'
-
-rule S2b_representatives:
-        input:
-                txt = 'results/core_genes/{gnrl}/{gnrl}.txt'
-        output:
-                dNdS = 'results/core_genes/GH_repr/S2b_{gnrl}_dNdS.tsv',
-                stats = 'results/core_genes/GH_repr/S2b_{gnrl}_stats.tsv'
-        params: repr = config['S2b_repr']
-        log: 'logs/python/parse_rep_S2b_{gnrl}.log'
-        threads: 1
-        script:
-                'code/parse_codeml_representatives.py'
-
-rule S3_representatives:
-        input:
-                txt = 'results/core_genes/{gnrl}/{gnrl}.txt'
-        output:
-                dNdS = 'results/core_genes/GH_repr/S3_{gnrl}_dNdS.tsv',
-                stats = 'results/core_genes/GH_repr/S3_{gnrl}_stats.tsv'
-        params: repr = config['S3_repr']
-        log: 'logs/python/parse_rep_S3_{gnrl}.log'
-        threads: 1
-        script:
-                'code/parse_codeml_representatives.py'
-
-rule NGB_representatives:
-        input:
-                txt = 'results/core_genes/{gnrl}/{gnrl}.txt'
-        output:
-                dNdS = 'results/core_genes/GH_repr/NGB_{gnrl}_dNdS.tsv',
-                stats = 'results/core_genes/GH_repr/NGB_{gnrl}_stats.tsv'
-        params: repr = config['NGB_repr']
-        log: 'logs/python/parse_rep_NGB_{gnrl}.log'
-        threads: 1
-        script:
-                'code/parse_codeml_representatives.py'
