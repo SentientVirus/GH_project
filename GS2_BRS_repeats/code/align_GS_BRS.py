@@ -117,7 +117,27 @@ with open(out_faa) as fasta_seqs:
 # =============================================================================
 # 4. Generate plot
 # =============================================================================
-mv = MsaViz(out_mafft, start = 1666, wrap_length=180, show_count=True)
+mv = MsaViz(out_mafft, color_scheme = 'Flower', start = 1666, wrap_length=180)#, 
+            #show_count = True, show_consensus = True)
+
+first_motif = range(2308, 2315)
+second_motif = range(1817, 1827)
+third_motif = range(1853, 1865)
+fourth_motif = range(1935, 1948)
+fifth_motif = range(1774, 1787)
+sixth_motif = range(2242, 2254)
+seventh_motif = range(2004, 2013)
+
+mv.add_markers([1667, 2460], color = 'black', marker = 'v')
+mv.add_markers(first_motif, color = 'black', marker = '$1$')
+mv.add_markers(second_motif, color = 'black', marker = '$2$')
+mv.add_markers(third_motif, color = 'black', marker = '$3$')
+mv.add_markers(fourth_motif, color = 'black', marker = '$4$')
+mv.add_markers(fifth_motif, color = 'black', marker = '$5$')
+mv.add_markers(sixth_motif, color = 'black', marker = '$6$')
+mv.add_markers(seventh_motif, color = 'black', marker = '$7$')
+mv.add_text_annotation((2470, 2782), 'Serine-rich repeats', text_size = 12,
+                       text_color = '#C04000', range_color = '#C04000')
 mv.savefig(out_aln_fig)
 mv.savefig(out_aln_fig.replace('png', 'svg'))
 mv.savefig(out_aln_fig.replace('png', 'tiff'))
