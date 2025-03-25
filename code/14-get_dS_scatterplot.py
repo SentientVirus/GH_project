@@ -21,8 +21,14 @@ core_ds = f'{workdir}/all_core/results/global/core_pairwise_metrics.tsv' #'core_
 outplot = f'{workdir}/plots/scatter/GH_types_scatterplot.png' #Output file
 coredir = f'{workdir}/all_core'
 
-GH_types = ['GS1', 'GS2', 'BRS', 'NGB', 'S2a', 'S3'] #Gene types to be plotted
+GH_types = ['GS1', 'GS2', 'BRS', 'NGB'] #, 'S2a', 'S3'] #Gene types to be plotted
 to_exclude = ['A1001', 'A1404']
+
+tick_fontsize = 14 #Fontsize (ax tick labels)
+fontsize = 16 #Fontsize (legend)
+fontsize_title = 24 #Fontsize (titles)
+fontsize_subtitle = 20 #Fontsize (ax labels)
+plt.rcParams['font.family'] = 'Arial'
 
 def replace_strain_name(locus_tag):
     """Function to change locus tags that do not correspond with strain names
@@ -65,27 +71,27 @@ with open(core_ds) as core: #Open the file with core dS values
             core_dn_dict[tuple(sorted((strain1, strain2)))] = row['mean_dN'] #Use sorted strain names as key and core pairwise dN as value
         
 #Create a plot with two rows and six columns, where all columns in a row share y axis
-fig, axs = plt.subplots(6, 6, constrained_layout = False, sharey = 'row', 
+fig, axs = plt.subplots(4, 4, constrained_layout = False, sharey = 'row', 
                         figsize=(18, 18))
 
-axs[0, 0].set_ylabel('Core ${d_S}$', fontsize = 12) #Add a title to the y axis of the dS scatter plot
-axs[1, 0].set_ylabel('Count', fontsize = 12) #Add a title to the y axis of the dS histogram
-axs[2, 0].set_ylabel('Core ${d_N}$', fontsize = 12) #Add a title to the y axis of the dN scatter plot
-axs[3, 0].set_ylabel('Count', fontsize = 12) #Add a title to the y axis of the dN histogram
-axs[4, 0].set_ylabel('${d_N}$', fontsize = 12) #Add a title to the y axis of the dN vs dS scatter plot
-axs[5, 0].set_ylabel('Core ${d_N}$') #Add a title to the y axis of the dN vs dS scatter plot
-fig.text(0.5, 0.754, 'Pairwise ${d_S}$', ha = 'center', fontsize = 12) #Add title of the x axis of dS scatter plots
-fig.text(0.5, 0.623, 'Difference to core ${d_S}$', ha = 'center', fontsize = 12) #Add title of the x axis of the dS histograms
-fig.text(0.5, 0.4925, 'Pairwise ${d_N}$', ha = 'center', fontsize = 12) #Add title of the x axis of dN scatter plots
-fig.text(0.5, 0.362, 'Difference to core ${d_N}$', ha = 'center', fontsize = 12) #Add title of the x axis of the dN histograms
-fig.text(0.5, 0.231, '${d_S}$', ha = 'center', fontsize = 12) #Add title of the dN vs dS scatterplot
-fig.text(0.5, 0.1, 'Core ${d_S}$', ha = 'center', fontsize = 12) #Add title of the core dN vs dS scatterplot
+axs[2, 0].set_ylabel('Core ${d_S}$', fontsize = fontsize_subtitle) #Add a title to the y axis of the dS scatter plot
+# axs[1, 0].set_ylabel('Count', fontsize = fontsize_subtitle) #Add a title to the y axis of the dS histogram
+axs[3, 0].set_ylabel('Core ${d_N}$', fontsize = fontsize_subtitle) #Add a title to the y axis of the dN scatter plot
+# axs[3, 0].set_ylabel('Count', fontsize = fontsize_subtitle) #Add a title to the y axis of the dN histogram
+axs[0, 0].set_ylabel('${d_N}$', fontsize = fontsize_subtitle) #Add a title to the y axis of the dN vs dS scatter plot
+axs[1, 0].set_ylabel('Core ${d_N}$', fontsize = fontsize_subtitle) #Add a title to the y axis of the dN vs dS scatter plot
+fig.text(0.51, 0.69, '${d_S}$', ha = 'center', fontsize = fontsize_subtitle) #Add title of the x axis of dN vs dS scatter plots
+# fig.text(0.5, 0.623, 'Difference to core ${d_S}$', ha = 'center', fontsize = fontsize_subtitle) #Add title of the x axis of the dS histograms
+fig.text(0.51, 0.49, 'Core ${d_S}$', ha = 'center', fontsize = fontsize_subtitle) #Add title of the x axis of core dN vs dS scatter plots
+# fig.text(0.5, 0.362, 'Difference to core ${d_N}$', ha = 'center', fontsize = fontsize_subtitle) #Add title of the x axis of the dN histograms
+fig.text(0.51, 0.29, 'Pairwise ${d_S}$', ha = 'center', fontsize = fontsize_subtitle) #Add title of the dS scatterplot
+fig.text(0.51, 0.09, 'Pairwise ${d_N}$', ha = 'center', fontsize = fontsize_subtitle) #Add title of the dN scatterplot
 plt.subplots_adjust(hspace = 0.3, wspace = 0.2) #Adjust horizontal and vertical padding between plots
 
 for i in range(len(GH_types)): #Loop through gene types
     GH = GH_types[i] #Name of the gene type
     core_dir = f'{coredir}/{GH}/results'
-    axs[0, i].set_title(GH, fontsize = 14) #Use the name of the gene as the title of the scatter plots
+    axs[0, i].set_title(GH, fontsize = fontsize_title) #Use the name of the gene as the title of the scatter plots
     
     label_list = [] #Create an empty list to store labels (not used)
     x_list = [] #Create a list to store pairwise dS values
@@ -141,35 +147,35 @@ for i in range(len(GH_types)): #Loop through gene types
     over_y = [dN_list[j] for j in range(len(dN_list)) if x_list[j] > dN_list[j]]
     
     #Plot values < core dS and values > core dS separately to color them differently
-    axs[0, i].scatter(subx, suby, alpha = 0.2)
-    axs[0, i].scatter(overx, overy, alpha = 0.2)
+    axs[2, i].scatter(subx, suby, alpha = 0.2)
+    axs[2, i].scatter(overx, overy, alpha = 0.2)
     
-    axs[2, i].scatter(sub_dN, sub_dN_y, alpha = 0.2)
-    axs[2, i].scatter(over_dN, over_dN_y, alpha = 0.2)
+    axs[3, i].scatter(sub_dN, sub_dN_y, alpha = 0.2)
+    axs[3, i].scatter(over_dN, over_dN_y, alpha = 0.2)
     
-    axs[4, i].scatter(sub_x, sub_y, alpha = 0.2)
-    axs[4, i].scatter(over_x, over_y, alpha = 0.2)
+    axs[0, i].scatter(sub_x, sub_y, alpha = 0.2)
+    axs[0, i].scatter(over_x, over_y, alpha = 0.2)
 
     #Set the x axes limits of the scatter plots to 0-1.5 and the y axis lower limit to 0
-    axs[0, i].set_xlim(0, 1.5)
-    axs[0, i].set_ylim(0)
-    
-    axs[4, i].set_xlim(0, 1.5)
-    axs[4, i].set_ylim(0, 0.45)
-    
-    axs[5, i].set_xlim(0, 1.5)
-    axs[5, i].set_ylim(0, 0.45)
-    
-    if GH not in ['GS1', 'GS2', 'BRS']:
-        axs[2, i].set_xlim(0, 0.075)
-        # axs[2, i].xaxis.set_major_formatter(FormatStrFormatter('%g'))
-    else: axs[2, i].set_xlim(0, 0.25)
+    axs[2, i].set_xlim(0, 1.5)
     axs[2, i].set_ylim(0)
     
+    axs[0, i].set_xlim(0, 1.5)
+    axs[0, i].set_ylim(0, 0.45)
+    
+    axs[1, i].set_xlim(0, 1.5)
+    axs[1, i].set_ylim(0, 0.45)
+    
+    if GH not in ['GS1', 'GS2', 'BRS']:
+        axs[3, i].set_xlim(0, 0.075)
+        # axs[2, i].xaxis.set_major_formatter(FormatStrFormatter('%g'))
+    else: axs[3, i].set_xlim(0, 0.25)
+    axs[3, i].set_ylim(0)
+    
     #Plot a diagonal line where y = x
-    axs[0, i].plot([0, 1], [0, 1], color = 'black')
     axs[2, i].plot([0, 1], [0, 1], color = 'black')
-    axs[4, i].plot([0, 1], [0, 1], color = 'black')
+    axs[3, i].plot([0, 1], [0, 1], color = 'black')
+    axs[0, i].plot([0, 1], [0, 1], color = 'black')
     # axs[4, i].plot([0, 1], [0, 1], color = 'black')
     #Plot the differences between x and y separately depending of if they are > 0
     sub_dif = [dif for dif in dif_list if dif <= 0]
@@ -178,17 +184,17 @@ for i in range(len(GH_types)): #Loop through gene types
     sub_dN_dif = [dif for dif in dN_dif_list if dif <= 0]
     over_dN_dif = [dif for dif in dN_dif_list if dif > 0]
     
-    #Set the limit of the x axis of the histogram plots
-    axs[1, i].set_xlim(-0.3, 1.5)
-    axs[3, i].set_xlim(-0.01, 0.24)
-    #Plot values >0 and <0 separately, set number of bars in the histogram
-    axs[1, i].hist(sorted(sub_dif), bins = int((max(sub_dif)-min(sub_dif))//0.0625))
-    axs[1, i].hist(sorted(over_dif), bins = int((max(over_dif)-min(over_dif))//0.0625))
-    axs[3, i].hist(sorted(sub_dN_dif), bins = 1)
-    axs[3, i].hist(sorted(over_dN_dif), bins = int(((max(over_dN_dif)-min(over_dN_dif))*8)//0.0625))
-    #Add a vertical line over 0
-    axs[1, i].axvline(0, color = 'black')
-    axs[3, i].axvline(0, color = 'black')
+    # #Set the limit of the x axis of the histogram plots
+    # axs[1, i].set_xlim(-0.3, 1.5)
+    # axs[3, i].set_xlim(-0.01, 0.24)
+    # #Plot values >0 and <0 separately, set number of bars in the histogram
+    # axs[1, i].hist(sorted(sub_dif), bins = int((max(sub_dif)-min(sub_dif))//0.0625))
+    # axs[1, i].hist(sorted(over_dif), bins = int((max(over_dif)-min(over_dif))//0.0625))
+    # axs[3, i].hist(sorted(sub_dN_dif), bins = 1)
+    # axs[3, i].hist(sorted(over_dN_dif), bins = int(((max(over_dN_dif)-min(over_dN_dif))*8)//0.0625))
+    # #Add a vertical line over 0
+    # axs[1, i].axvline(0, color = 'black')
+    # axs[3, i].axvline(0, color = 'black')
     
     dS_corelist = [] #Create an empty list to store core dS values
     dN_corelist = [] #Create an empty list to store core dN values
@@ -214,11 +220,13 @@ for i in range(len(GH_types)): #Loop through gene types
     over_ycore = [dN_corelist[j] for j in range(len(dN_corelist)) if dS_corelist[j] > dN_corelist[j]]
     
     #Make scatterplots of core dN vs core dS
-    axs[5, i].scatter(sub_xcore, sub_ycore, alpha = 0.2, s = 15)
-    axs[5, i].scatter(over_xcore, over_ycore, alpha = 0.2, s = 15)
-    axs[5, i].plot([0, 1], [0, 1], color = 'black') #Add line where x = y
+    axs[1, i].scatter(sub_xcore, sub_ycore, alpha = 0.2, s = 15)
+    axs[1, i].scatter(over_xcore, over_ycore, alpha = 0.2, s = 15)
+    axs[1, i].plot([0, 1], [0, 1], color = 'black') #Add line where x = y
     
-    [axs[k, i].xaxis.set_major_formatter(FormatStrFormatter('%g')) for k in range(0,6)] #Remove decimals to the left
+    [axs[k, i].xaxis.set_major_formatter(FormatStrFormatter('%g')) for k in range(0,4)] #Remove decimals to the left
+    
+    [axs[m, i].tick_params(axis='both', which='major', labelsize = tick_fontsize) for m in range(0, 4)] #Increase tick label font size
     
 # Add global legend
 subtitle1 = Line2D([], [], marker = '', color = 'black', label = 'Scatter plots', 
@@ -247,22 +255,27 @@ rect_over = mpatches.Patch(color = '#FF7F0E', label = 'x > 0', ec = 'white',
 line_hist = Line2D([0, 1], [1, 0], marker = '$|$', color = 'black', 
                    label = 'x = 0', markersize = 10, alpha = 1, linewidth = 0) #Vertical line
 
-patches = [subtitle1, sub_patch, over_patch, line_patch, subtitle2, rect_sub, rect_over, line_hist] #List with all elements of the legend
+patches = [subtitle1, sub_patch, over_patch, line_patch] #, subtitle2, rect_sub, rect_over, line_hist] #List with all elements of the legend
 
 legend = plt.legend(handles = patches,  handlelength = 0.6, handleheight = 1.5, 
                     loc = 'upper right', framealpha = 0, 
-                    frameon = False, fontsize = 12, bbox_to_anchor = (2.1, 7.71)) #Add legend to plot
+                    frameon = False, fontsize = fontsize, bbox_to_anchor = (2, 5.1)) #Add legend to plot
            
 #Set legend headers to bold
 legend.get_texts()[0].set_fontweight('bold')
-legend.get_texts()[0].set_fontsize(14)
+legend.get_texts()[0].set_fontsize(fontsize_title)
 legend.get_texts()[0].set_position((-20, 0))
-legend.get_texts()[4].set_fontweight('bold')
-legend.get_texts()[4].set_fontsize(14)
-legend.get_texts()[4].set_position((-20, 0))
+
+#Adjust legend font size
+for i in range(1, 4):
+    legend.get_texts()[i].set_fontsize(fontsize_subtitle)
+# legend.get_texts()[4].set_fontweight('bold')
+# legend.get_texts()[4].set_fontsize(fontsize_title)
+# legend.get_texts()[4].set_position((-20, 0))
 legend._legend_box.align = 'left' #Align legend text to the left
     
 plt.savefig(outplot, bbox_inches = 'tight') #Save the image as PNG
 plt.savefig(outplot.replace('.png', '.tiff'), bbox_inches = 'tight') #Save the image as TIFF
+plt.savefig(outplot.replace('.png', '.pdf'), bbox_inches = 'tight') #Save the image as PDF
 plt.savefig(outplot.replace('.png', '.svg'), bbox_inches = 'tight') #Save the image as SVG
     
