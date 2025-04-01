@@ -59,8 +59,8 @@ leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
               'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': '#D55E00', 
               'DSM': '#0072B2'}
 
-treefile = os.path.expanduser('~') + '/GH_project/add_species/results/alignment/GH70_species.mafft.faa.treefile' #Full path to the tree file
-outfile = os.path.expanduser('~') + '/GH_project/add_species/plots/GH70_multispecies_tree.png' #Output image with the tree representation
+treefile = os.path.expanduser('~') + '/GH_project/add_species/results/alignment/blastp_species.mafft.faa.treefile' #Full path to the tree file
+outfile = os.path.expanduser('~') + '/GH_project/add_species/plots/blastp_multispecies_tree.png' #Output image with the tree representation
 outdir = os.path.dirname(outfile) #Output directory
 
 if not os.path.exists(outdir): #If the output directory does not exist

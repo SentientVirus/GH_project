@@ -21,9 +21,9 @@ import os
 # 1. Define paths to input files
 # =============================================================================
 
-in_file = os.path.expanduser('~') + '/GH_project/add_species/results/interproscan/GH70_species.tsv' #File with domain annotations
-fasta_file = os.path.expanduser('~') + '/GH_project/add_species/files/ingroups.faa' #File with full-protein sequences
-outfile = os.path.expanduser('~') + '/GH_project/add_species/results/domains/ingroup_domains.faa' #Output file with domain sequences
+in_file = os.path.expanduser('~') + '/GH_project/add_species/results/interproscan/blastp_species.tsv' #File with domain annotations
+fasta_file = os.path.expanduser('~') + '/GH_project/add_species/files/blastp_formatted.faa' #File with full-protein sequences
+outfile = os.path.expanduser('~') + '/GH_project/add_species/results/domains/blastp_domains.faa' #Output file with domain sequences
 outdir = os.path.dirname(outfile) #Output directory
 GH70_text = 'Glycosyl hydrolase family 70' #String that indicates the presence of a GH70 domain
 

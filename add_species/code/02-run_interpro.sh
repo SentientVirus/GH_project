@@ -1,7 +1,7 @@
 threads=16 #No. of threads to be used
-in_og="files/ingroups.faa" #Input fasta file with complete protein sequences
-out_og="results/interproscan/GH70_species.tsv" #Output file
-annot_log="logs/01-interproscan.log" #Log file
+in_og="files/blastp_formatted.faa" #Input fasta file with complete protein sequences
+out_og="results/interproscan/blastp_species.tsv" #Output file
+annot_log="logs/01-interproscan_blastp.log" #Log file
 
 mkdir -p $(dirname -- $annot_log) #Create the log directory if it doesn't exist
 mkdir -p $(dirname -- $out_og) #Create the output directory if it doesn't exist
