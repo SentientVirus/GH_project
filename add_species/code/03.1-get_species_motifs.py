@@ -61,12 +61,13 @@ def search_motif(seq_str, num):
     Output: Motifs'''
     
     #Regular expressions for each motif
-    motif_list = ['', r'[MNAVTE]D(.{1,1})V(.{1,1})[ND][QL]', r'(.{1,1})R(.{1,1})DA(.{2,2})[DNFSH][MVIYL][DHNS]',
-                  r'[HY][VLI][QSHNATV][LIY][LVNI]E(.*?)(([WGPS](.{3,3})[DGTSEV])|(SLEAAT))',
-                  r'[FIY][MVSIL][TRHN][SNAV]HD(.{1,2})[RAVISEP][NKQ](.{2,2})[IVL]',
-                  r'[EDA][FLM][LV][LVI][AG][VNMSD][DQ][LIVE][AD]N[SQ]N[PVT]', 
-                  r'[LW]G[IVF](.{3,3})[EQW][FLM][AP][PG][HQAS]Y',
-                  r'[MVTS][VTI][PT][TRQ][VMITL][YF]YGD'] 
+    motif_list = ['', r'[MNAVTED]D(.{1,1})V(.{1,1})[ND][QL]', 
+                  r'(.{1,1})R(.{1,1})DA(.{2,2})[DNFSHY][MVIYL][DHNSK]',
+                  r'[HY][VLI][QSHNATV][LVIY][LVNI]E(.*?)(([WGPS](.{3,3})[MDGTSEV])|(SLEAAT))',
+                  r'[FIYM][AMTVSIL][TRHN][SNAV]HD(.{1,2})[RAVISEPT][NKQ](.{2,2})[IVL]',
+                  r'[EDA][FLYM][LV][LVI][AG][VNMSD][DQ][LIVE][AD][NL][SQ]N[PVT]', 
+                  r'[LW]G[IVF](.{3,3})[GEQW][FLM][AP][PG][HQAS][YF]',
+                  r'[MVTS][VTI][PT][TRQ][VMITL][YF]Y[GS]D'] 
     
     motifs = [] #Create empty list to store the motifs
     motif_info = re.finditer(motif_list[num], seq_str) #Find all the possible matches to the motif in the protein
@@ -87,8 +88,8 @@ def search_motif(seq_str, num):
 # 0. Input definitions
 # =============================================================================
 
-infile1 = os.path.expanduser('~') + '/GH_project/add_species/files/ingroups.faa' #Fasta file with full-protein sequences
-infile2 = os.path.expanduser('~') + '/GH_project/add_species/files/other_outgroups.faa' #Second file with extra sequences
+infile1 = os.path.expanduser('~') + '/GH_project/add_species/files/blastp_formatted.faa' #Fasta file with full-protein sequences
+infile2 = os.path.expanduser('~') + '/GH_project/add_species/files/gtfB-like_outgroups.faa' #Second file with extra sequences
 outdir = os.path.expanduser('~') + '/GH_project/add_species/results/motifs' #Output directory
 output_file = 'other_species_GH70_motif_presence.tsv' #Output file with motif presence/absence
 output_file2 = 'other_species_GH70_motifs.tsv' #Output file with motif sequences and positions
@@ -116,25 +117,23 @@ for infile in [infile1, infile2]: #Loop through input files
         aa_seqs = SeqIO.parse(handle, 'fasta') #Parse file contents
         for fasta in aa_seqs: #Loop through fasta records in the file
             print(fasta.id) #Print the id of the fasta record
-            if ('Dsr' in fasta.id or 'falk' in fasta.id) and not fasta.id.endswith('_2'): #If the id includes certain annotations
+            if 'DSR' in fasta.id: #If the id includes certain annotations
                 tag_type[fasta.id] = 'DSR' #Assign the DRS (dextransucrase) gene type
-            elif fasta.id.endswith('_2') or 'Brs' in fasta.id: #Do the same for other gene types
+            elif 'BRS' in fasta.id: #Do the same for other gene types
                 tag_type[fasta.id] = 'BRS' #Branching sucrase
                 to_add = re.search(fasta.id, r'a1,[0-9]') #Search for the subtype of BRS
                 if to_add != None:  #If the subtype is indicated
                     tag_type[fasta.id] += to_add #Add it to the BRS tag
-            elif 'Asr' in fasta.id: 
+            elif 'ASR' in fasta.id: 
                 tag_type[fasta.id] = 'ASR' #Alternansucrase
-            elif 'Rsr' in fasta.id:
+            elif 'RSR' in fasta.id:
                 tag_type[fasta.id] = 'RSR' #Reuteransucrase
-            elif 'Msr' in fasta.id: 
+            elif 'MSR' in fasta.id: 
                 tag_type[fasta.id] = 'MSR' #Mutansucrase
             elif '4,6_gtf' in fasta.id:
                 tag_type[fasta.id] = 'GTFB_4,6' #4,6-glucanotransferase, GtfB-like
             elif '4,3_gtf' in fasta.id:
                 tag_type[fasta.id] = 'GTFB_4,3' #4,3-glucanotransferase, GtfB-like
-            elif '_E' in fasta.id or '_P' in fasta.id:
-                tag_type[fasta.id] = 'GTFC' #GtfC-like
             else: tag_type[fasta.id] = 'ND' #Not determined (unknown)
 
             name, sequence = fasta.id, str(fasta.seq) #Get the name and sequence of the gene

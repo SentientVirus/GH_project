@@ -71,7 +71,7 @@ if not os.path.exists(outdir): #If the output directory does not exist
 # =============================================================================
 
 t = Tree(treefile, format = 0) #Load the tree into a Tree object
-outnode = t.get_common_ancestor('AOR73699.1_4_3_gtf_L_fermentum', 'AAU08014.2_4_6_gtf_L_reuteri') #Retrieve the outgroup node
+outnode = t.get_common_ancestor('AOR73699.1_4_3_GTFB_L_fermentum', 'AAU08014.2_4_6_GTFB_L_reuteri') #Retrieve the outgroup node
 t.set_outgroup(outnode) #Root the tree on the outgroup node
 
 # =============================================================================
@@ -123,7 +123,10 @@ for leaf in leaves: #Loop through the leaves of the tree
     elif 'K2W83' in leaf.name: #If K2W83 is in the locus tag
         nleaf = nleaf.replace('K2W83_RS', 'DSM_') #Change it to DSM
     if '4_' in nleaf: #If the gene name includes 4_
-        nleaf = nleaf.replace('4_', '4,') #Change it to 4, (IQtree converts , to _)
+        nleaf = nleaf.replace('4_', 'α-4,') #Change it to 4, (IQtree converts , to _)
+        # nleaf = nleaf.replace('gtf', 'GTFB')
+    elif 'a1_' in nleaf:
+        nleaf = nleaf.replace('a1_', 'α-1,')
 
     color = leaf_color.get(nleaf.split('_')[0], None) #Get strain names from the leaf name and use them to get the leaf color
     name_face = TextFace(nleaf, fgcolor = color, fsize = 40, ftype = 'Arial') #Create a text with locus tags

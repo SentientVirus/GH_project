@@ -21,15 +21,17 @@ import os, pandas as pd
 
 workdir = os.path.expanduser('~') + '/GH_project/add_species/blast_results'
 hitfile = f'{workdir}/GS2_H1B3-02M_Lactobacillaceae.csv'
+hitfile0 = f'{workdir}/GS1_H1B3-02M_Lactobacillaceae.csv'
 hitfile1 = f'{workdir}/BRS_H1B3-02M_Lactobacillaceae.csv'
 hitfile2 = f'{workdir}/NGB_H1B3-02M_Lactobacillaceae.csv'
-hitfile3 = f'{workdir}/GS4_A1003_Lactobacillaceae.csv'
-extra_hitfiles = [hitfile1, hitfile2, hitfile3]
+#hitfile3 = f'{workdir}/GS4_A1003_Lactobacillaceae.csv'
+extra_hitfiles = [hitfile0, hitfile1, hitfile2] #, hitfile3]
 descfile = f'{workdir}/GS2_H1B3-02M_hit_descriptions.csv'
-descfile1 = f'{workdir}/GS2_H1B3-02M_hit_descriptions.csv'
+descfile0 = f'{workdir}/GS1_H1B3-02M_hit_descriptions.csv'
+descfile1 = f'{workdir}/BRS_H1B3-02M_hit_descriptions.csv'
 descfile2 = f'{workdir}/NGB_H1B3-02M_hit_descriptions.csv'
-descfile3 = f'{workdir}/GS4_A1003_hit_descriptions.csv'
-extra_descfiles = [descfile1, descfile2, descfile3]
+#descfile3 = f'{workdir}/GS4_A1003_hit_descriptions.csv'
+extra_descfiles = [descfile0, descfile1, descfile2] #, descfile3]
 outfile = f'{workdir}/blastp_results.csv'
 
 # =============================================================================
@@ -72,7 +74,7 @@ for i in range(len(extra_hitfiles)):
                            11: 'Bit score', 12: '% Positives'
                            }, inplace=True)
     
-    add_df = extra_df[~extra_df['Subject accession'].isin(hit_df['Subject accession'])]
+    add_df = extra_df[~extra_df['Subject accession'].isin(df['Subject accession'])]
     
     if len(add_df) > 0:
         with open(desc_file) as desc:
