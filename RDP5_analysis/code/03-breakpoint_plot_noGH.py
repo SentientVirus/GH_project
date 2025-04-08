@@ -73,14 +73,14 @@ for folder in ['A', 'B']:
     y = df[' Recombination breakpoint number (200nt win)']
     conf95 = df[' Upper 95% CI']
     conf99 = df[' Upper 99% CI']
-    
+
 # =============================================================================
 # 5. Create a plot with 3 subplots
 # =============================================================================
     f, (ax2, ax, ax3) = plt.subplots(3, 1, figsize = (26, 8), 
                                      gridspec_kw={'height_ratios': [1, 8.8, 1.2]})
     
-    f.subplots_adjust(wspace=0, hspace=0) # Remove space between subplots´
+    f.subplots_adjust(wspace=0, hspace=0) # Remove space between subplots
     
 # =============================================================================
 # 6. Plot confidence intervals and putative breakpoints
@@ -101,6 +101,7 @@ for folder in ['A', 'B']:
     
     # Add triangles pointing to potential recombination hotspots
     y_maxima = find_peaks(y, distance = 50)[0]
+    y_maxima = np.append(y_maxima, 10635) # Add a peak that is not detected by the function
     
     for yval in y_maxima:
         if y[yval] > conf99[yval]:
