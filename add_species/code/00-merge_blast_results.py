@@ -5,6 +5,7 @@ Created on Fri Mar 28 16:14:23 2025
 
 This script takes two files from BLAST, one with alignment hits and another
 from hit descriptions, and it merges the information together.
+Environment: alignment_tree.yml
 
 @author: Marina Mota-Merlo
 """

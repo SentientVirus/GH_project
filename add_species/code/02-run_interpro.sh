@@ -1,3 +1,4 @@
+#Environment: alignment_tree.yml
 threads=16 #No. of threads to be used
 workdir="/home/marina/GH_project/add_species"
 in_og=$workdir"/files/blastp_formatted.faa" #Input fasta file with complete protein sequences

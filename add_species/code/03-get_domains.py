@@ -5,6 +5,7 @@ Created on Thu May  2 19:34:41 2024
 
 Script to retrieve domain amino acid sequences of GH70 proteins, including 
 proteins from other species that are related to A. kunkeei.
+Environment: alignment_tree.yml
 
 @author: Marina Mota-Merlo
 """

@@ -1,4 +1,4 @@
-#OBS! This script requires to activate the Conda environment codeml-run
+#Environment: alignment_tree.yml
 threads=48 #No. of threads
 basedir=~/GH_project/add_species #Working directory
 parentdir=~/GH_project #Parent directory of the working directory

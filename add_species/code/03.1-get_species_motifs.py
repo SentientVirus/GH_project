@@ -6,6 +6,7 @@ Modified on the 12th of July 2024 from the code to retrieve the motifs from
 GH70 genes. In the original script, an environment with Mafft and Pal2nal was 
 used first to get the codon alignments of the sequences. In this case, such an
 alignment is not needed as input.
+Environment: alignment_tree.yml
 
 @author: Marina Mota-Merlo
 """
