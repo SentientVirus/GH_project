@@ -17,6 +17,7 @@ Environment: ete3.yml
 from ete3 import Tree, TreeStyle, NodeStyle, SeqMotifFace, TextFace
 import re
 import os
+import random
 
 # =============================================================================
 # 1. Define input variables and formatting variables
@@ -107,7 +108,7 @@ for n in t.traverse(): #Loop through the nodes in the tree
 
        support_face = TextFace(int(n.support), fgcolor = color, fsize = 24,
                                ftype = 'Arial') #Create a text with the support value
-       n.add_face(support_face, column = 0, position='branch-top') #Add the text to the corresponding node in the tree
+       #n.add_face(support_face, column = 0, position='branch-top') #Add the text to the corresponding node in the tree
    
 # =============================================================================
 # 4. Modify the style of the leaf names in the tree
@@ -132,6 +133,53 @@ for leaf in leaves: #Loop through the leaves of the tree
     color = leaf_color.get(nleaf.split('_')[0], None) #Get strain names from the leaf name and use them to get the leaf color
     name_face = TextFace(nleaf, fgcolor = color, fsize = 40, ftype = 'Arial') #Create a text with locus tags
     leaf.add_face(name_face, column = 0, position = 'branch-right') #Add the text to the right leaf in the tree
+    
+pairs = {'GS1': ('H4B505J_12880', 'A1001_12310'), 
+         'GS2': ('H4B504J_13480', 'H4B204J_13350_2'),
+         'GS3': ('H4B406M_13450', 'H4B111J_13560'),
+         'BRS2': ('H4B505J_12890', 'H3B209X_13350'),
+         'BRS3': ('H3B104J_13020_1', 'A1401_12760'),
+         'BRS4': ('H4B204J_13340', 'LDX55_06330'),
+         'NGB': ('H4B504J_05510', 'H1B105A_04750'),
+         'NGB2': ('H4B111J_04920', 'H3B209X_04660')}
+# colors = ['#336E74', '#FF707C', '#FFE570', '#FF986F', '#FFC36F', '#BDE384', 
+#           '#84E8A7', '#656ED4', '#C870FF', '#F87BFF', '#84CDE8']
+colors = ['#FF707C', '#FFE570', '#FF986F', '#84E8A7', '#84E8A7', '#84E8A7',
+          '#336E74', '#336E74']
+node_list = []
+node_content = t.get_cached_content()
+for key in pairs.keys():
+    to_collapse = t.get_common_ancestor(pairs[key][0], pairs[key][1])
+    node_list.append(to_collapse)
+    to_collapse.name = key
+    
+for i in range(len(node_list)):
+    ns2 = NodeStyle() #Create a node style
+    ns2['shape'] = 'sphere'
+    ns2['size'] = len(node_content[node_list[i]]) * 10
+    ns2['fgcolor'] = colors[i]
+    ns2['draw_descendants'] = False
+    node_list[i].set_style(ns2)
+    
+GS_text = TextFace('GS', fsize = 36, ftype = 'Arial')
+BRS_text = TextFace('BRS', fsize = 36, ftype = 'Arial')
+texts = [GS_text, BRS_text]
+text_colors = ['#F7CBCB', '#D0F7CB'] #'#D2CCF8']
+for j in range(len(texts)):
+    texts[j].margin_top = 0
+    texts[j].margin_right = 20
+    texts[j].margin_left = 20
+    texts[j].margin_bottom = 0
+    texts[j].background.color = text_colors[j]
+    
+GS_nodes = [node for node in t.get_leaves() if 'SR_' in node.name]
+BRS_nodes = [node for node in t.get_leaves() if 'BRS_' in node.name]
+for n in GS_nodes:
+    n.add_face(GS_text, column = 0, position = 'branch-top')
+    
+for n in BRS_nodes:
+    n.add_face(BRS_text, column = 0, position = 'branch-top')
+
     
 # =============================================================================
 # 5. Change final details of tree formatting and save the tree to a file

@@ -92,14 +92,14 @@ for gene in gene_no.keys():
         unique_loci2 = np.array([locus.split('_')[0] if locus not in BRSb else locus.split('_')[0] + 'b' for locus in unique_loci])
         
     for index, row in file_info.iterrows(): #Loop through the dictionary
-        n = np.where(unique_loci == row['locus1'])[0] #Get position of the matrix the first locus tag is
-        m = np.where(unique_loci == row['locus2'])[0] #Get position in the matrix of the second locus tag
-        plot_matrix[n, m] = row['dS'] #Assign the dS value to the right pair
-        plot_matrix[m, n] = row['dN'] #Assign the dN value to the right pair
+        l1 = np.where(unique_loci == row['locus1'])[0] #Get position of the matrix of the first locus tag
+        l2 = np.where(unique_loci == row['locus2'])[0] #Get position in the matrix of the second locus tag
+        plot_matrix[l1, l2] = row['dS'] #Assign the dS value to the right pair
+        plot_matrix[l2, l1] = row['dN'] #Assign the dN value to the right pair
     plot_matrix[plot_matrix > vmax] = vmax #If the value > 1.5, convert it to 1.5
     
     for axis in ['top','bottom','left','right']: #Loop through the four sides of the figure frame
-        ax[axn].spines[axis].set_linewidth(4) #Include the width of the border
+        ax[axn].spines[axis].set_linewidth(4) #Set the width of the border
 
     ax[axn].imshow(plot_matrix, vmin=vmin, vmax = vmax, cmap ='magma') #Plot the data as a heatmap
 

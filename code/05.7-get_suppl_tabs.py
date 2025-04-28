@@ -54,7 +54,7 @@ def correct_loctag(locus_tag):
     return corrected
 
 class gbk_entry:
-    def __init__(self, gene_name, ID, accession = 'None', strand = '-', start = 0, end = 0, representative = False):
+    def __init__(self, gene_name, ID, accession = 'None', strand = '-', start = 0, end = 0, GH_len = '', representative = False):
         #Assign properties to the object
         self.gene_name = gene_name
         self.ID = ID
@@ -78,6 +78,7 @@ class gbk_entry:
         self.start = start
         self.end = end
         self.length = end - start
+        self.GH_len = GH_len
         self.representative = representative
     def update_repr(self, rep_list): #Function to determine if the gene is in a representative strain
         if self.strain in rep_list:
@@ -146,10 +147,11 @@ GS4 = snakemake.params.GS4
 BRS = snakemake.params.BRS
 NGB = snakemake.params.NGB
 short = snakemake.params.short
-S1 = snakemake.params.S1
+S1 = snakemake.params.S1 + ['G0417_12900', 'G0417_12910']
 S2a = snakemake.params.S2a
 S2b = snakemake.params.S2b
 S3 = snakemake.params.S3
+outgroup_file = snakemake.params.outgroup_file
 
 representatives = snakemake.params.representatives
 
@@ -181,8 +183,8 @@ for GH_type in type_list: #Loop through gene types
         #Add headers
         out_tab.write('Strain\tGene_name\tLocus_tag\tLocus_id\t')
         out_tab.write('Protein_id\tStrand\tStart\tEnd\tLength\t')
-        out_tab.write('Signal_peptide\tGH70_domains\tGB_domains\t')
-        out_tab.write('Representative\n')
+        out_tab.write('Signal_peptide\tGH_domains\tGH_domain_length\t')
+        out_tab.write('GB_domains\tRepresentative\n')
         
     for locus_tag in var: #Loop through locus tags in the list
         gbk = gbk_entry(GH_type, locus_tag) #Create an empty object
@@ -197,6 +199,7 @@ for GH_type in type_list: #Loop through gene types
             
             for row in annot: #Loop through rows in the file
                 to_compare = row[0].upper().replace('-', '') #Modify locus tags to remove - symbols
+
                 #Manually provide the right locus tags for MP2
                 if to_compare == 'MP2_13360':
                     to_compare = 'APS55_RS03845'
@@ -214,11 +217,16 @@ for GH_type in type_list: #Loop through gene types
                             domain_dict[to_compare][3] += 1 #Add +1 to the cell wall-binding domain count
                         elif 'Glycosyl hydrolase family 70' in row[5]: #If the domain is GH70
                             domain_dict[to_compare][1] += 1 #Add +1 to the GH domain count
+                            gbk.GH_len += f'{int(row[7])-int(row[6])}+' #Assign GH domain length
                     elif row[3] == 'SMART' and 'glyco_32' in row[5]: #If the annotation comes from SMART and the domain is GH32
                         domain_dict[to_compare][1] += 1 #Add +1 to the GH32 domain count
+                        gbk.GH_len = f'{int(row[7])-int(row[6])}+' #Assign GH domain length
                     if 'signal peptide' in row[5]: #If the domain is a signal peptide
                         domain_dict[to_compare][0] = True #Set the signal peptide presence to True
         gbk.update_domains(domain_dict[gbk.ID]) #Add the domains to the object
+        gbk.GH_len = gbk.GH_len[:-1]
+        if gbk.GH_len == '':
+            gbk.GH_len = '0'
         
         if gbk.strain in ['DSMZ12361', 'IBH001', 'MP2']: #If the strain is not from Dyrhage et al. (2022)
             #Change the locus tag to the ID, and vice-versa
@@ -232,5 +240,4 @@ for GH_type in type_list: #Loop through gene types
             out_tab.write(f'{gbk.strain}\t{gbk.gene_name}\t{gbk.locus_tag}\t')
             out_tab.write(f'{gbk.ID}\t{gbk.accession}\t{gbk.strand}\t{gbk.start}\t')
             out_tab.write(f'{gbk.end}\t{gbk.length}\t{gbk.SP}\t{gbk.GH}\t')
-            out_tab.write(f'{gbk.GB}\t{gbk.representative}\n')
-            
+            out_tab.write(f'{gbk.GH_len}\t{gbk.GB}\t{gbk.representative}\n')

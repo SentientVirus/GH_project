@@ -68,12 +68,12 @@ with open(in_faa) as fasta_seqs:
 # =============================================================================
 # 3. Generate plot
 # =============================================================================
-mv = MsaViz(out_mafft, color_scheme = 'Flower', start = 1, end = 400, wrap_length=100)#, 
+mv = MsaViz(out_mafft, color_scheme = 'Flower', start = 1, end = 500, wrap_length=100)#, 
             # show_count = True, show_consensus = True)
 
-mv.add_text_annotation((6, 46), 'Signal peptide', text_size = 12,
+mv.add_text_annotation((7, 53), 'Signal peptide', text_size = 12,
                         text_color = 'black', range_color = 'black')
-mv.add_text_annotation((287, 400), 'GH70 domain', text_size = 12,
+mv.add_text_annotation((369, 500), 'GH70 domain', text_size = 12,
                         text_color = 'black', range_color = 'black')
 mv.savefig(out_aln_fig)
 mv.savefig(out_aln_fig.replace('png', 'svg'))

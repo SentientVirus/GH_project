@@ -66,7 +66,7 @@ def set_codeml_options(cml, rmd, seq, mdl = 1, noise = 0, verb = False, cf = 2, 
     cml.set_options(fix_kappa = 0)    #0: Kappa not fixed
     cml.set_options(kappa = 2)        #Value of initial/fixed kappa
     cml.set_options(fix_omega = 0)    #Estimate omega
-    cml.set_options(omega = 0.7)      #Initial omega (check)
+    cml.set_options(omega = 0.7)      #Initial omega
     
     return cml
 

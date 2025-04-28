@@ -1,4 +1,4 @@
-name: codeml-run
+name: alignment_tree
 channels:
   - bioconda/label/cf201901
   - bioconda

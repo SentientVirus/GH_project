@@ -38,7 +38,7 @@ rule retrieve_sequences:
     input:
         expand("gbks/{strain}_1.gbk", strain = config["strains"] + config["extra_strains"])
     log: "logs/python/GHs.log"
-    conda: "envs/biopython_env.yml"
+    conda: "envs/alignment_tree.yml"
     script:
         "code/02-retrieve_GH70_domains.py" #"retrieve_GH70s.py"
 
@@ -48,7 +48,7 @@ rule retrieve_full_sequences:
     input:
         expand("gbks/{strain}_1.gbk", strain = config["strains"] + config["extra_strains"])
     log: "logs/python/GH70s.log"
-    conda: "envs/biopython_env.yml"
+    conda: "envs/alignment_tree.yml"
     script:
         "code/03-retrieve_full_GH70s.py"
 
@@ -82,7 +82,7 @@ rule separate_GHs:
         GH70s = ["GS1", "GS2", "GS3", "GS4", "BRS", "BRS2", "BRS3", "BRS_clade", "NGB", "short"],
         GH32s = ["S1", "S2", "S2a", "S2b", "S3"]
     log: "logs/python/subtypes.log"
-    conda: "envs/biopython_env.yml"
+    conda: "envs/alignment_tree.yml"
     script:
         "code/04-separate_genes.py"
 
@@ -91,7 +91,7 @@ rule get_neighboring_genes:
         expand("data/fasta/other_genes/a_kunkeei_{gname}.{ext}", gname = config["neighbors"], ext = ["faa", "fna"])
     input:
         expand("/home/marina/Akunkeei_files/gbff/modified_gbff/{strain}_genomic.gbff", strain = config["extended_repset"])
-    conda: "envs/biopython_env.yml"
+    conda: "envs/alignment_tree.yml"
     log: "logs/python/neighbors.log"
     params: gene_names = config["neighbors"]
     script:
@@ -234,18 +234,18 @@ rule iqtree_gtf:
     threads: 12
     conda: "envs/environment.yml"
     log: "logs/iqtree/repset_trees.log"
-# Former models: LG+G4+F and GTR+G4+F 
+# Former models: LG+G4+F and GTR+G4+F, then -mset Q.pfam,LG,WAG,JTT
     shell:
 #		'iqtree -s {input.prot} -st AA -m LG+C10+F -bb 1000 -alrt 1000 -v > {output.prot} && iqtree -s {input.gene} -st DNA -m GTR+G4+F -bb 1000 -alrt 1000 -v > {output.gene}'
         """
         mkdir -p data/fasta/GH70/trees && mkdir -p data/fasta/GH32/trees
         for i in {input.prot_GH70};
         do
-        iqtree -nt AUTO -ntmax {threads} -s $i -st AA -mset Q.pfam,LG,WAG,JTT -bb 1000 -bnni >> {log}
+        iqtree -nt AUTO -ntmax {threads} -s $i -st AA -msub nuclear -bb 1000 -bnni >> {log}
         done
         for j in {input.prot_GH32};
         do
-        iqtree -nt AUTO -ntmax {threads} -s $j -st AA -mset Q.pfam,LG,WAG,JTT -bb 1000 -bnni >> {log}
+        iqtree -nt AUTO -ntmax {threads} -s $j -st AA -msub nuclear -bb 1000 -bnni >> {log}
         done
         for k in {input.gene_GH70};
         do
@@ -255,7 +255,7 @@ rule iqtree_gtf:
         do
         iqtree -nt AUTO -ntmax {threads} -s $l -st DNA -m MFP -bb 1000 -bnni >> {log}
         done
-        iqtree -nt AUTO -ntmax {threads} -s {input.out_GH70} -st AA -mset Q.pfam,LG,WAG,JTT -bb 1000 -bnni >> {log}
+        iqtree -nt AUTO -ntmax {threads} -s {input.out_GH70} -st AA -msub nuclear -bb 1000 -bnni >> {log}
         mv data/fasta/GH70/*.f*a.* data/fasta/GH70/trees
         mv data/fasta/GH32/*.f*a.* data/fasta/GH32/trees
         """ 
@@ -463,7 +463,7 @@ rule presence_absence_tab:
         S2a = config["S2a"],
         S2b = config["S2b"],
         S3 = config["S3"]
-    conda: "envs/biopython_env.yml"
+    conda: "envs/alignment_tree.yml"
     log: "logs/python/presence_absence.log"
     script:
         "code/04.8-count_GHs.py"
@@ -484,7 +484,7 @@ rule plot_delregion:
         S2a = config["S2a"],
         S2b = config["S2b"],
         S3 = config["S3"]
-    conda: "envs/biopython_env.yml"
+    conda: "envs/alignment_tree.yml"
     log: "logs/python/plot_delregion.log"
     script: "code/15-ete3_delregion_plot.py"
 
@@ -504,8 +504,9 @@ rule suppl_tab:
         S2a = config["S2a"],
         S2b = config["S2b"],
         S3 = config["S3"],
+        outgroup_file = "outgroups/interproscan/outgroup_domains.tsv",
         representatives = config["representatives"]
-    conda: "envs/biopython_env.yml"
+    conda: "envs/alignment_tree.yml"
     log: "logs/python/suppl_tab.log"
     script: "code/05.7-get_suppl_tabs.py"
 
@@ -516,6 +517,6 @@ rule retrieve_interpro:
     input:
         expand("gbks/{strain}_1.gbk", strain = config["strains"] + config["extra_strains"])
     log: "logs/python/interpro_GHs.log"
-    conda: "envs/biopython_env.yml"
+    conda: "envs/alignment_tree.yml"
     script:
         "code/02.9-retrieve_GH_interpro.py"
