@@ -440,7 +440,7 @@ legend = fig.legend(handles = patches,  handlelength = 0.6, handleheight = 1.5,
 #Set legend headers to bold
 legend.get_texts()[0].set_fontweight('bold')
 legend.get_texts()[0].set_fontsize(fontsize_title)
-legend.get_texts()[0].set_position((0, 0))
+legend.get_texts()[0].set_position((-20, 0))
 
 #Adjust legend font size
 for i in range(1, 3):
