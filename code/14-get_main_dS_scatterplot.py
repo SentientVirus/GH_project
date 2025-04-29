@@ -8,8 +8,6 @@ Created on Tue Oct 22 14:24:33 2024
 import os
 import pandas as pd
 from matplotlib import pyplot as plt
-from matplotlib.ticker import FormatStrFormatter
-import matplotlib.patches as mpatches
 from matplotlib.lines import Line2D
 import numpy as np
 from scipy.stats import pearsonr
@@ -23,8 +21,8 @@ core_ds = f'{workdir}/all_core/results/global/core_pairwise_metrics.tsv' #'core_
 outplot = f'{workdir}/plots/scatter/GH_types_scatterplot.png' #Output file
 coredir = f'{workdir}/all_core'
 
-GH_types = ['GS1', 'GS2', 'BRS', 'NGB'] #, 'S2a', 'S3'] #Gene types to be plotted
-to_exclude = ['A1001', 'A1404']
+GH_types = ['GS1', 'GS2', 'BRS', 'NGB'] #Gene types to be plotted
+to_exclude = ['A1001', 'A1404'] #Strains to exclude from the comparisons
 
 tick_fontsize = 14 #Fontsize (ax tick labels)
 fontsize = 16 #Fontsize (legend)
@@ -82,19 +80,9 @@ fig.patch.set_facecolor('white')
 plt.subplots_adjust(hspace = 0.3, top = 1, bottom = 0.07, wspace = 0.25)
 
 axs[1, 0].set_ylabel('Core ${d_S}$', fontsize = fontsize_subtitle) #Add a title to the y axis of the dS scatter plot
-# # axs[1, 0].set_ylabel('Count', fontsize = fontsize_subtitle) #Add a title to the y axis of the dS histogram
-# axs[3, 0].set_ylabel('Core ${d_N}$', fontsize = fontsize_subtitle) #Add a title to the y axis of the dN scatter plot
-# # axs[3, 0].set_ylabel('Count', fontsize = fontsize_subtitle) #Add a title to the y axis of the dN histogram
 axs[0, 0].set_ylabel('${d_N}$', fontsize = fontsize_subtitle) #Add a title to the y axis of the dN vs dS scatter plot
-# axs[1, 0].set_ylabel('Core ${d_N}$', fontsize = fontsize_subtitle) #Add a title to the y axis of the dN vs dS scatter plot
 fig.text(0.51, 0.54, '${d_S}$', ha = 'center', fontsize = fontsize_subtitle) #Add title of the x axis of dN vs dS scatter plots
-fig.text(0.51, 0.01, '${d_S}$', ha = 'center', fontsize = fontsize_subtitle) #Add title of the x axis of dN vs dS scatter plots
-# # fig.text(0.5, 0.623, 'Difference to core ${d_S}$', ha = 'center', fontsize = fontsize_subtitle) #Add title of the x axis of the dS histograms
-# fig.text(0.51, 0.49, 'Core ${d_S}$', ha = 'center', fontsize = fontsize_subtitle) #Add title of the x axis of core dN vs dS scatter plots
-# # fig.text(0.5, 0.362, 'Difference to core ${d_N}$', ha = 'center', fontsize = fontsize_subtitle) #Add title of the x axis of the dN histograms
-# fig.text(0.51, 0.29, 'Pairwise ${d_S}$', ha = 'center', fontsize = fontsize_subtitle) #Add title of the dS scatterplot
-# fig.text(0.51, 0.09, 'Pairwise ${d_N}$', ha = 'center', fontsize = fontsize_subtitle) #Add title of the dN scatterplot
-# plt.subplots_adjust(hspace = 0.3, wspace = 0.2) #Adjust horizontal and vertical padding between plots
+fig.text(0.51, 0.01, '${d_S}$', ha = 'center', fontsize = fontsize_subtitle) #Add title of the x axis of core dS vs dS scatter plots
 
 for i in range(len(GH_types)): #Loop through gene types
     GH = GH_types[i] #Name of the gene type
@@ -115,61 +103,34 @@ for i in range(len(GH_types)): #Loop through gene types
     label_list = [] #Create an empty list to store labels (not used)
     x_list = [] #Create a list to store pairwise dS values
     y_list = [] #Create a list to store core pairwise dS values
-    dif_list = [] #Create a list to store the difference between x and y
-    dN_list = []
-    dN_y_list = []
-    dN_dif_list = []
+    dN_list = [] #Create a list to store pairwise dN values
+
     
     with open(f'{pairwise_ds}/{GH}/dNdS.tsv') as gene: #Open file with dS values
         df2 = pd.read_csv(gene, sep = '\t') #Load file as a dataframe
         for index2, row2 in df2.iterrows(): #Loop through rows in the dataframe
             label = f'{row2["locus1"]}-{row2["locus2"]}' #Create a label with the locus tags in the comparison
             x = row2['dS'] #Get pairwise dS
-            dN = row2['dN']
+            dN = row2['dN'] #Get pairwise dN
             strain1 = replace_strain_name(row2['locus1']) #Get the name of the first strain
             strain2 = replace_strain_name(row2['locus2']) #Get the name of the second strain
             if strain1 == strain2: #If both genes are in the same strain
                 y = 0 #Core dS is 0
-                dN_y = 0
             else: 
                 y = core_ds_dict[tuple(sorted((strain1, strain2)))] #Otherwise, store core dS in a dictionary
-                dN_y = core_dn_dict[tuple(sorted((strain1, strain2)))]
             
-            # #Set all dS values above 1.5 to 1.5
-            # if x > 1.5:
-            #     x = 1.5
-            # if y > 1.5:
-            #     y = 1.5
-                
-            # if x <= 1.5 and y <= 1.5:
             label_list.append(label) #Add label to the label list
             x_list.append(x) #Add x to the pairwise dS list
             y_list.append(y) #Add y to the core pairwise dS list
-            dif_list.append(x - y) #Store the difference between x and y in a list
-            dN_list.append(dN)
-            dN_y_list.append(dN_y)
-            dN_dif_list.append(dN - dN_y) #Store the difference between dN (pairwise) and dN (core) in a list
+            dN_list.append(dN) #Add dN to the pairwise dN list
             
-    #Retrieve values < core dS and values > core dS separately
-    subx = [x_list[j] for j in range(len(y_list)) if x_list[j] <= y_list[j]]
-    suby = [y_list[j] for j in range(len(y_list)) if x_list[j] <= y_list[j]]
-    overx = [x_list[j] for j in range(len(y_list)) if x_list[j] > y_list[j]]
-    overy = [y_list[j] for j in range(len(y_list)) if x_list[j] > y_list[j]]
-    
-    sub_dN = [dN_list[j] for j in range(len(dN_y_list)) if dN_list[j] <= dN_y_list[j]]
-    sub_dN_y = [dN_y_list[j] for j in range(len(dN_y_list)) if dN_list[j] <= dN_y_list[j]]
-    over_dN = [dN_list[j] for j in range(len(dN_y_list)) if dN_list[j] > dN_y_list[j]]
-    over_dN_y = [dN_y_list[j] for j in range(len(dN_y_list)) if dN_list[j] > dN_y_list[j]]
-    
-    sub_x = [x_list[j] for j in range(len(dN_list)) if x_list[j] <= dN_list[j]]
-    sub_y = [dN_list[j] for j in range(len(dN_list)) if x_list[j] <= dN_list[j]]
-    over_x = [x_list[j] for j in range(len(dN_list)) if x_list[j] > dN_list[j]]
-    over_y = [dN_list[j] for j in range(len(dN_list)) if x_list[j] > dN_list[j]]
-    
+    #Create lists to color the plot under x == y
     x_pos = [x for x in range(120)]
     y_pos = [y for y in range(120)]
+    where_param = [y_pos[i] == x_pos[i] for i in range(len(y_pos))] #Comparison between x and y
     
-    if i == 0:
+    if i == 0: #If the gene is GS1
+        #Divide the data to plot into intervals
         x1_list = [x_list[n] for n in range(len(x_list)) if x_list[n] <= 1.5]
         dN1_list = [dN_list[n] for n in range(len(x_list)) if x_list[n] <= 1.5]
         y1_list = [y_list[n] for n in range(len(x_list)) if x_list[n] <= 1.5]
@@ -177,17 +138,18 @@ for i in range(len(GH_types)): #Loop through gene types
         dN2_list = [dN_list[n] for n in range(len(x_list)) if x_list[n] > 1.5]
         y2_list = [y_list[n] for n in range(len(x_list)) if x_list[n] > 1.5]
         
-        axs[0, i].scatter(x1_list, dN1_list, alpha = 0.8, s = 20, c = [color]*len(x1_list), edgecolors = 'black', zorder = 10)
-        r1 = pearsonr(x1_list, dN1_list)
-        slope1, intercept1 = np.polyfit(x1_list, dN1_list, 1)
+        axs[0, i].scatter(x1_list, dN1_list, alpha = 0.8, s = 20, c = [color]*len(x1_list), edgecolors = 'black', zorder = 10) #Add scatter plot (dS vs dN)
+        r1 = pearsonr(x1_list, dN1_list) #Calculate the Pearson correlation coefficient
+        slope1, intercept1 = np.polyfit(x1_list, dN1_list, 1) #Perform linear regression
+        #Add linear regression to the plot
         axs[0, i].axline(xy1=(0, intercept1), color = 'k', slope=slope1, label=f'$y = {slope1:.3f}x {intercept1:+.3f}$\n$R² = {r1[0]**2:.3f}, p$-$value = {r1[1]:.3f}$', zorder = 5)
-        axs[0, i].legend(loc = 'upper right', frameon = False)
-        axs[0, i].plot([0, 1], [0, 1], color = 'lightgrey')
-        axs[0, i].set_xlim(0, 1.5)
-        axs[0, i].set_ylim(0, 0.2)
-        axs[0, i].fill_between(y_pos, x_pos, where=y_pos == x_pos, interpolate=False, color='white', alpha = 0.5)
+        axs[0, i].legend(loc = 'upper right', frameon = False) #Add legend to the linear regression at the upper right corner and without a frame
+        axs[0, i].plot([0, 1], [0, 1], color = 'lightgrey') #Plot a line where x = y
+        axs[0, i].set_xlim(0, 1.5) #Set limits to the x axis
+        axs[0, i].set_ylim(0, 0.2) #Set limits to the y axis
+        axs[0, i].fill_between(y_pos, x_pos, where=where_param, interpolate=False, color='white', alpha = 0.5) #Add white shading where x > y
         
-        axs[0, i+1].scatter(x2_list, dN2_list, alpha = 0.8, s = 20, c = [color]*len(x2_list), edgecolors = 'black', zorder = 10)
+        axs[0, i+1].scatter(x2_list, dN2_list, alpha = 0.8, s = 20, c = [color]*len(x2_list), edgecolors = 'black', zorder = 10) #Add scatter plot (dS vs core dS comparison)
         r2 = pearsonr(x2_list, dN2_list)
         slope2, intercept2 = np.polyfit(x2_list, dN2_list, 1)
         axs[0, i+1].axline(xy1=(0, intercept2), color = 'k', slope=slope2, label=f'$y = {slope2:.3f}x {intercept2:+.3f}$\n$R² = {r2[0]**2:.3f}, p$-$value = {r2[1]:.3f}$', zorder = 5)
@@ -195,8 +157,9 @@ for i in range(len(GH_types)): #Loop through gene types
         axs[0, i+1].plot([0, 1], [0, 1], color = 'lightgrey')
         axs[0, i+1].set_xlim(1.5, 2.5)
         axs[0, i+1].set_ylim(0, 0.2)
-        axs[0, i+1].fill_between(y_pos, x_pos, where=y_pos == x_pos, interpolate=False, color='white', alpha = 0.5)
+        axs[0, i+1].fill_between(y_pos, x_pos, where=where_param, interpolate=False, color='white', alpha = 0.5)
         
+        #Same comparisons, but for the next data interval
         axs[1, i].scatter(x1_list, y1_list, alpha = 0.8, s = 20, c = [color]*len(x1_list), edgecolors = 'black', zorder = 10)
         r2_1 = pearsonr(x1_list, y1_list)
         slope2_1, intercept2_1 = np.polyfit(x1_list, y1_list, 1)
@@ -205,7 +168,7 @@ for i in range(len(GH_types)): #Loop through gene types
         axs[1, i].plot([0, 1], [0, 1], color = 'lightgrey')
         axs[1, i].set_xlim(0, 1.5)
         axs[1, i].set_ylim(0, 0.5)
-        axs[1, i].fill_between(y_pos, x_pos, where=y_pos == x_pos, interpolate=False, color='white', alpha = 0.5)
+        axs[1, i].fill_between(y_pos, x_pos, where=where_param, interpolate=False, color='white', alpha = 0.5)
         
         axs[1, i+1].scatter(x2_list, y2_list, alpha = 0.8, s = 20, c = [color]*len(x2_list), edgecolors = 'black', zorder = 10)
         r2_2 = pearsonr(x2_list, y2_list)
@@ -215,11 +178,12 @@ for i in range(len(GH_types)): #Loop through gene types
         axs[1, i+1].plot([0, 1], [0, 1], color = 'lightgrey')
         axs[1, i+1].set_xlim(1.5, 2.5)
         axs[1, i+1].set_ylim(0, 0.5)
-        axs[1, i+1].fill_between(y_pos, x_pos, where=y_pos == x_pos, interpolate=False, color='white', alpha = 0.5)
+        axs[1, i+1].fill_between(y_pos, x_pos, where=where_param, interpolate=False, color='white', alpha = 0.5)
         
-        [axs[m, k].tick_params(axis='both', which='major', labelsize = tick_fontsize) for m in range(0, 2) for k in range(i, i+2)] #Increase tick label font size
+        #Increase font size of tick labels
+        [axs[m, k].tick_params(axis='both', which='major', labelsize = tick_fontsize) for m in range(0, 2) for k in range(i, i+2)]
     
-    elif i == 1:
+    elif i == 1: #Same thing, but if the gene is BRS
         x1_list = [x_list[n] for n in range(len(x_list)) if x_list[n] <= 1.5]
         dN1_list = [dN_list[n] for n in range(len(x_list)) if x_list[n] <= 1.5]
         y1_list = [y_list[n] for n in range(len(x_list)) if x_list[n] <= 1.5]
@@ -235,7 +199,7 @@ for i in range(len(GH_types)): #Loop through gene types
         axs[0, i+1].plot([0, 1], [0, 1], color = 'lightgrey')
         axs[0, i+1].set_xlim(0, 1.5)
         axs[0, i+1].set_ylim(0, 0.2)
-        axs[0, i+1].fill_between(y_pos, x_pos, where=y_pos == x_pos, interpolate=False, color='white', alpha = 0.5)
+        axs[0, i+1].fill_between(y_pos, x_pos, where=where_param, interpolate=False, color='white', alpha = 0.5)
         
         axs[0, i+2].scatter(x2_list, dN2_list, alpha = 0.8, s = 20, c = [color]*len(x2_list), edgecolors = 'black', zorder = 10)
         r2 = pearsonr(x2_list, dN2_list)
@@ -245,7 +209,7 @@ for i in range(len(GH_types)): #Loop through gene types
         axs[0, i+2].plot([0, 1], [0, 1], color = 'lightgrey')
         axs[0, i+2].set_xlim(1.5, 7)
         axs[0, i+2].set_ylim(0, 0.2)
-        axs[0, i+2].fill_between(y_pos, x_pos, where=y_pos == x_pos, interpolate=False, color='white', alpha = 0.5)
+        axs[0, i+2].fill_between(y_pos, x_pos, where=where_param, interpolate=False, color='white', alpha = 0.5)
         
         axs[1, i+1].scatter(x1_list, y1_list, alpha = 0.8, s = 20, c = [color]*len(x1_list), edgecolors = 'black', zorder = 10)
         r2_1 = pearsonr(x1_list, y1_list)
@@ -255,7 +219,7 @@ for i in range(len(GH_types)): #Loop through gene types
         axs[1, i+1].plot([0, 1], [0, 1], color = 'lightgrey')
         axs[1, i+1].set_xlim(0, 1.5)
         axs[1, i+1].set_ylim(0, 0.5)
-        axs[1, i+1].fill_between(y_pos, x_pos, where=y_pos == x_pos, interpolate=False, color='white', alpha = 0.5)
+        axs[1, i+1].fill_between(y_pos, x_pos, where=where_param, interpolate=False, color='white', alpha = 0.5)
         
         axs[1, i+2].scatter(x2_list, y2_list, alpha = 0.8, s = 20, c = [color]*len(x2_list), edgecolors = 'black', zorder = 10)
         r2_2 = pearsonr(x2_list, y2_list)
@@ -265,11 +229,11 @@ for i in range(len(GH_types)): #Loop through gene types
         axs[1, i+2].plot([0, 1], [0, 1], color = 'lightgrey')
         axs[1, i+2].set_xlim(1.5, 7)
         axs[1, i+2].set_ylim(0, 0.5)
-        axs[1, i+2].fill_between(y_pos, x_pos, where=y_pos == x_pos, interpolate=False, color='white', alpha = 0.5)
+        axs[1, i+2].fill_between(y_pos, x_pos, where=where_param, interpolate=False, color='white', alpha = 0.5)
         
-        [axs[m, k].tick_params(axis='both', which='major', labelsize = tick_fontsize) for m in range(0, 2) for k in range(i+1, i+3)] #Increase tick label font size
+        [axs[m, k].tick_params(axis='both', which='major', labelsize = tick_fontsize) for m in range(0, 2) for k in range(i+1, i+3)] 
         
-    elif i == 2:
+    elif i == 2: #Same thing for BRS (three intervals instead of 2)
         x1_list = [x_list[n] for n in range(len(x_list)) if x_list[n] <= 1.5]
         dN1_list = [dN_list[n] for n in range(len(x_list)) if x_list[n] <= 1.5]
         y1_list = [y_list[n] for n in range(len(x_list)) if x_list[n] <= 1.5]
@@ -288,7 +252,7 @@ for i in range(len(GH_types)): #Loop through gene types
         axs[0, i+2].plot([0, 1], [0, 1], color = 'lightgrey')
         axs[0, i+2].set_xlim(0, 1.5)
         axs[0, i+2].set_ylim(0, 0.2)
-        axs[0, i+2].fill_between(y_pos, x_pos, where=y_pos == x_pos, interpolate=False, color='white', alpha = 0.5)
+        axs[0, i+2].fill_between(y_pos, x_pos, where=where_param, interpolate=False, color='white', alpha = 0.5)
         
         axs[0, i+3].scatter(x2_list, dN2_list, alpha = 0.8, s = 20, c = [color]*len(x2_list), edgecolors = 'black', zorder = 10)
         r2 = pearsonr(x2_list, dN2_list)
@@ -298,7 +262,7 @@ for i in range(len(GH_types)): #Loop through gene types
         axs[0, i+3].plot([0, 1], [0, 1], color = 'lightgrey')
         axs[0, i+3].set_xlim(1.5, 30)
         axs[0, i+3].set_ylim(0, 0.3)
-        axs[0, i+3].fill_between(y_pos, x_pos, where=y_pos == x_pos, interpolate=False, color='white', alpha = 0.5)
+        axs[0, i+3].fill_between(y_pos, x_pos, where=where_param, interpolate=False, color='white', alpha = 0.5)
         
         axs[0, i+4].scatter(x3_list, dN3_list, alpha = 0.8, s = 20, c = [color]*len(x3_list), edgecolors = 'black', zorder = 10)
         r3 = pearsonr(x3_list, dN3_list)
@@ -308,7 +272,7 @@ for i in range(len(GH_types)): #Loop through gene types
         axs[0, i+4].plot([0, 1], [0, 1], color = 'lightgrey')
         axs[0, i+4].set_xlim(108, 111)
         axs[0, i+4].set_ylim(0, 0.3)
-        axs[0, i+4].fill_between(y_pos, x_pos, where=y_pos == x_pos, interpolate=False, color='white', alpha = 0.5)
+        axs[0, i+4].fill_between(y_pos, x_pos, where=where_param, interpolate=False, color='white', alpha = 0.5)
         
         axs[1, i+2].scatter(x1_list, y1_list, alpha = 0.8, s = 20, c = [color]*len(x1_list), edgecolors = 'black', zorder = 10)
         r2_1 = pearsonr(x1_list, y1_list)
@@ -318,7 +282,7 @@ for i in range(len(GH_types)): #Loop through gene types
         axs[1, i+2].plot([0, 1], [0, 1], color = 'lightgrey')
         axs[1, i+2].set_xlim(0, 1.5)
         axs[1, i+2].set_ylim(0, 0.5)
-        axs[1, i+2].fill_between(y_pos, x_pos, where=y_pos == x_pos, interpolate=False, color='white', alpha = 0.5)
+        axs[1, i+2].fill_between(y_pos, x_pos, where=where_param, interpolate=False, color='white', alpha = 0.5)
         
         axs[1, i+3].scatter(x2_list, y2_list, alpha = 0.8, s = 20, c = [color]*len(x2_list), edgecolors = 'black', zorder = 10)
         r2_2 = pearsonr(x2_list, y2_list)
@@ -328,7 +292,7 @@ for i in range(len(GH_types)): #Loop through gene types
         axs[1, i+3].plot([0, 1], [0, 1], color = 'lightgrey')
         axs[1, i+3].set_xlim(1.5, 30)
         axs[1, i+3].set_ylim(0, 0.5)
-        axs[1, i+3].fill_between(y_pos, x_pos, where=y_pos == x_pos, interpolate=False, color='white', alpha = 0.5)
+        axs[1, i+3].fill_between(y_pos, x_pos, where=where_param, interpolate=False, color='white', alpha = 0.5)
         
         axs[1, i+4].scatter(x3_list, y3_list, alpha = 0.8, s = 20, c = [color]*len(x3_list), edgecolors = 'black')
         r2_3 = pearsonr(x3_list, y3_list)
@@ -338,34 +302,11 @@ for i in range(len(GH_types)): #Loop through gene types
         axs[1, i+4].plot([0, 1], [0, 1], color = 'lightgrey')
         axs[1, i+4].set_xlim(108, 111)
         axs[1, i+4].set_ylim(0, 0.5)
-        axs[1, i+4].fill_between(y_pos, x_pos, where=y_pos == x_pos, interpolate=False, color='white', alpha = 0.5)
+        axs[1, i+4].fill_between(y_pos, x_pos, where=where_param, interpolate=False, color='white', alpha = 0.5)
     
-        [axs[m, k].tick_params(axis='both', which='major', labelsize = tick_fontsize) for m in range(0, 2) for k in range(i+2, i+5)] #Increase tick label font size
-    #Plot values < core dS and values > core dS separately to color them differently
-    # axs[1, i].scatter(subx, suby, alpha = 0.2)
-    # axs[1, i].scatter(overx, overy, alpha = 0.2)
+        [axs[m, k].tick_params(axis='both', which='major', labelsize = tick_fontsize) for m in range(0, 2) for k in range(i+2, i+5)]
     
-    # axs[0, i].scatter(sub_x, sub_y, alpha = 0.2)
-    # axs[0, i].scatter(over_x, over_y, alpha = 0.2)
-    
-
-    #Set the x axes limits of the scatter plots to 0-1.5 and the y axis lower limit to 0
-    # if i < 3:
-    #     axs[1, i].set_xlim(0, 1.5)
-    #     axs[0, i].set_xlim(0, 1.5)
-    # else:
-    #     axs[1, i].set_xlim(0, 0.6)
-    #     axs[0, i].set_xlim(0, 0.6)
-
-    # axs[1, i].set_ylim(0, 0.5)
-    # axs[0, i].set_ylim(0, 0.14)
-    
-#     if GH not in ['GS1', 'GS2', 'BRS']:
-#         axs[3, i].set_xlim(0, 0.075)
-#         # axs[2, i].xaxis.set_major_formatter(FormatStrFormatter('%g'))
-#     else: axs[3, i].set_xlim(0, 0.25)
-#     axs[3, i].set_ylim(0)
-    elif i == 3:
+    elif i == 3: #Same thing for NGB (only one interval)
         ni = i+4
         axs[1, ni].set_xlim(0, 0.6)
         axs[0, ni].set_xlim(0, 0.6)
@@ -379,59 +320,32 @@ for i in range(len(GH_types)): #Loop through gene types
         axs[0, ni].axline(xy1=(0, intercept), color = 'k', slope=slope, label=f'$y = {slope:.3f}x {intercept:+.3f}$\n$R² = {r[0]**2:.3f}, p$-$value = {r[1]:.3f}$', zorder = 5)
         axs[0, ni].legend(loc = 'upper right', frameon = False)
         axs[0, ni].plot([0, 1], [0, 1], color = 'lightgrey')
-        # axs[0, i].set_xlabel(f'R = {r[0]:.3f}, p-value = {r[1]:.3f}', fontsize = fontsize_subtitle)
-        axs[0, ni].fill_between(y_pos, x_pos, where=y_pos == x_pos, interpolate=False, color='white', alpha = 0.5)
+        axs[0, ni].fill_between(y_pos, x_pos, where=where_param, interpolate=False, color='white', alpha = 0.5)
         
-        #Plot a diagonal line where y = x
         axs[1, ni].scatter(x_list, y_list, alpha = 0.8, s = 20, c = [color]*len(x_list), edgecolors = 'black', zorder = 10)
         r2 = pearsonr(x_list, y_list)
         slope2, intercept2 = np.polyfit(x_list, y_list, 1)
         axs[1, ni].axline(xy1=(0, intercept), color = 'k', slope=slope, label=f'$y = {slope2:.3f}x {intercept2:+.3f}$\n$R² = {r2[0]**2:.3f}, p$-$value = {r2[1]:.3f}$', zorder = 5)
         axs[1, ni].legend(loc = 'upper right', frameon = False)
         axs[1, ni].plot([0, 1], [0, 1], color = 'lightgrey')
-        axs[1, ni].fill_between(y_pos, x_pos, where=y_pos == x_pos, interpolate=False, color='white', alpha = 0.5)
+        axs[1, ni].fill_between(y_pos, x_pos, where=where_param, interpolate=False, color='white', alpha = 0.5)
         
-        [axs[m, ni].tick_params(axis='both', which='major', labelsize = tick_fontsize) for m in range(0, 2)] #Increase tick label font size
+        [axs[m, ni].tick_params(axis='both', which='major', labelsize = tick_fontsize) for m in range(0, 2)]
 
-#     #Plot the differences between x and y separately depending of if they are > 0
-#     sub_dif = [dif for dif in dif_list if dif <= 0]
-#     over_dif = [dif for dif in dif_list if dif > 0]
-    
-    
-#     dS_corelist = [] #Create an empty list to store core dS values
-# #     dN_corelist = [] #Create an empty list to store core dN values
-#     for core_gene in os.listdir(core_dir): #Loop through files in the input directory
-#         if os.path.isdir(f'{core_dir}/{core_gene}'):
-#             indir = f'{core_dir}/{core_gene}'
-#             for file in os.listdir(indir):
-#                 if file == 'dNdS.tsv': #If the file includes dN and dS calues
-#                     print(f'{indir}/{file}')
-#                     df = pd.read_csv(f'{indir}/{file}', sep = '\t') #Read the file as a dataframe
-#                     for index, row in df.iterrows(): #Loop through the dataframe
-#                         check = any(strain in row['locus1'] for strain in to_exclude) or any(strain in row['locus2'] for strain in to_exclude) #Check that basal strains are not present
-#                         if not check and not (GH == 'GS1' and ('A1003' in row['locus1'] or 'A1003' in row['locus2'])): #Check that gene GS4 is not present
-#                             dS = min(1.5, row['dS']) #Get dS (set maximum of 1.5)
-#                             # dN = min(1.5, row['dN']) #Get dN (set maximum of 1.5)
-#                             dS_corelist.append(dS) #Append dS to list
-#                             # dN_corelist.append(dN) #Append dN to list
-    
-    # [axs[k, i].xaxis.set_major_formatter(FormatStrFormatter('%g')) for k in range(0, 2)] #Remove decimals to the left
-    
-    
 # Add global legend
 subtitle1 = Line2D([], [], marker = '', color = 'black', label = 'Scatter plots', 
                     ms = 0, ls = 'none') #Title of the scatter plot legends
 
 sub_patch = Line2D([0], [0], marker = 'o', color = 'black', label = 'Parwise ${d_S}$',
                         markerfacecolor = 'slategrey', markersize = 10, 
-                        alpha = 0.8, linewidth = 0) #Circular marker in blue
+                        alpha = 0.8, linewidth = 0) #Circular marker in grey
 
 line_patch = Line2D([0, 1], [1, 0], marker = '$/$', color = 'lightgrey', 
                     label = 'x = y', markersize = 20, alpha = 1, linewidth = 0) #Diagonal line marker
 
 
 
-patches = [subtitle1, sub_patch, line_patch] #, subtitle2, rect_sub, rect_over, line_hist] #List with all elements of the legend
+patches = [subtitle1, sub_patch, line_patch] #List with all elements of the legend
 
 legend = fig.legend(handles = patches,  handlelength = 0.6, handleheight = 1.5, 
                     loc = 'upper right', framealpha = 0, 
@@ -444,10 +358,7 @@ legend.get_texts()[0].set_position((-20, 0))
 
 #Adjust legend font size
 for i in range(1, 3):
-    legend.get_texts()[i].set_fontsize(fontsize_subtitle)
-# # legend.get_texts()[4].set_fontweight('bold')
-# # legend.get_texts()[4].set_fontsize(fontsize_title)
-# # legend.get_texts()[4].set_position((-20, 0))
+    legend.get_texts()[i].set_fontsize(fontsize_subtitle) #Increase the legend fontsize
 legend._legend_box.align = 'left' #Align legend text to the left
     
 plt.savefig(outplot, bbox_inches = 'tight') #Save the image as PNG
