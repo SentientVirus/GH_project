@@ -251,7 +251,7 @@ for i in range(len(GH_types)): #Loop through gene types
         axs[0, i+2].legend(loc = 'upper right', frameon = False)
         axs[0, i+2].plot([0, 1], [0, 1], color = 'lightgrey')
         axs[0, i+2].set_xlim(0, 1.5)
-        axs[0, i+2].set_ylim(0, 0.2)
+        axs[0, i+2].set_ylim(0, 0.3)
         axs[0, i+2].fill_between(y_pos, x_pos, where=where_param, interpolate=False, color='white', alpha = 0.5)
         
         axs[0, i+3].scatter(x2_list, dN2_list, alpha = 0.8, s = 20, c = [color]*len(x2_list), edgecolors = 'black', zorder = 10)
