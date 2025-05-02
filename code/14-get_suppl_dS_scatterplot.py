@@ -172,6 +172,7 @@ for i in range(len(GH_types)): #Loop through gene types
     axs[0, i*2+1].set_ylim(0, 0.5)
     axs[0, i*2+1].fill_between(y_pos, x_pos, where=where_param, interpolate=False, color='white', alpha = 0.5)
     
+    axs[1, i*2+1].set_xticks([]) #Remove ticks from the empty axis
     gs = axs[1, i*2].get_gridspec() #Get the grid information for the core dN vs dN plot
     for ax in axs[1, i*2:i*2+1]: #Loop through the axes to be merged
         ax.remove() #Remove them
