@@ -8,7 +8,7 @@ in_fasta=$basedir"/results/domains/blastp_species.faa" #Fasta file with both A. 
 alignment=$basedir"/results/alignment/blastp_species.mafft.faa" #Output alignment
 aln_log=$basedir"/logs/04.1-alignment_blastp.log" #Mafft log file
 tree_log=$basedir"/logs/04.2-tree_blastp.log" #IQtree log file
-outgroups=$basedir"/files/gtfB-like_outgroups.faa" #File with outgroups
+outgroups=$basedir"/files/outgroup_domains.faa" #File with outgroups
 
 mkdir -p $basedir/logs #Create log directory if it doesn't exist
 mkdir -p $(dirname -- $alignment) #Create alignment directory if it doesn't exist

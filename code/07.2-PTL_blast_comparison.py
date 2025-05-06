@@ -146,13 +146,13 @@ def get_tabs(phylo_dict, folder_path, outpath):
     for i in range(1, len(phylo_dict)):
         strain1_file = f'{folder_path}/{phylo_dict[i]}_genomic.fna'
         strain2_file = f'{folder_path}/{phylo_dict[i+1]}_genomic.fna'
-        outfile = f'{outpath}/{i}.tab'
+        outfile = f'{outpath}/PTL_{i}.tab'
         cline_input = cline_blast(cmd = 'blastn', query = strain2_file, 
                                   subject = strain1_file, remote = False, 
                                   out = outfile, outfmt = 7)
         os.system(str(cline_input));
         
-# get_tabs(phylo_order, folder_path, outpath)
+get_tabs(phylo_order, folder_path, outpath)
 
 # =============================================================================
 # In this section, we establish the start and end positions for every strain
@@ -318,7 +318,7 @@ for i in range(1, len(phylo_order.keys())+1): #Loop through strain names in the 
 # Here I modify sligthly the tab files that I created.
 # =============================================================================
 for i in range(1, len(phylo_order.keys())): #Loop through strains in the order in which they will be plotted     
-    with open(f'{outpath}/{i}.tab') as tabfile: #Open Blast comparison file for each strain
+    with open(f'{outpath}/PTL_{i}.tab') as tabfile: #Open Blast comparison file for each strain
         k = 0 #Initialize parameter to retrieve column names
         for line in tabfile: #Loop through lines in tab file
                 k += 1 #Increase the value of k
@@ -333,7 +333,7 @@ for i in range(1, len(phylo_order.keys())): #Loop through strains in the order i
     header_list = [header.strip().strip('\n') for header in header_list] #Remove spaces and line breaks from beginning
     
     #Read Blast comparisons as tab-separated file, skip 5 rows and don't set the remaining rows as headers
-    file_df = pd.read_csv(f'{outpath}/{i}.tab', sep = '\t', skiprows = 5, header = None)
+    file_df = pd.read_csv(f'{outpath}/PTL_{i}.tab', sep = '\t', skiprows = 5, header = None)
     file_df = file_df[:-1] #Remove the last row, that also contains a comment
     file_df.columns = header_list #Add column names
     strain2 = file_df.values[0, 0] #Retrieve the accession of the query strain

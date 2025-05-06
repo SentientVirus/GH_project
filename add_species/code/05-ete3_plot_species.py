@@ -108,7 +108,7 @@ for n in t.traverse(): #Loop through the nodes in the tree
 
        support_face = TextFace(int(n.support), fgcolor = color, fsize = 24,
                                ftype = 'Arial') #Create a text with the support value
-       #n.add_face(support_face, column = 0, position='branch-top') #Add the text to the corresponding node in the tree
+       n.add_face(support_face, column = 0, position='branch-top') #Add the text to the corresponding node in the tree
    
 # =============================================================================
 # 4. Modify the style of the leaf names in the tree

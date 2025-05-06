@@ -60,14 +60,14 @@ def search_motif(seq_str, num):
     '''Function to search for any motifs by using string patterns
     Input: Amino acid sequence
     Output: Motifs'''
-    
+
     #Regular expressions for each motif
-    motif_list = ['', r'[MNAVTED]D(.{1,1})V(.{1,1})[ND][QL]', 
+    motif_list = ['', r'[MNAVTEDG]D(.{1,1})V(.{1,1})[ND][QL]', 
                   r'(.{1,1})R(.{1,1})DA(.{2,2})[DNFSHY][MVIYL][DHNSK]',
-                  r'[HY][VLI][QSHNATV][LVIY][LVNI]E(.*?)(([WGPS](.{3,3})[MDGTSEV])|(SLEAAT))',
+                  r'[HY][VLI][QSHNATV][MLVIY][LVNI]E(.*?)(([WGPS](.{3,3})[MDGTSEV])|(SLEAAT))',
                   r'[FIYM][AMTVSIL][TRHN][SNAV]HD(.{1,2})[RAVISEPT][NKQ](.{2,2})[IVL]',
                   r'[EDA][FLYM][LV][LVI][AG][VNMSD][DQ][LIVE][AD][NL][SQ]N[PVT]', 
-                  r'[LW]G[IVF](.{3,3})[GEQW][FLM][AP][PG][HQAS][YF]',
+                  r'[LW]G[IVF](.{3,3})[GEQW][FLM][AP][APG][HQAS][YF]',
                   r'[MVTS][VTI][PT][TRQ][VMITL][YF]Y[GS]D'] 
     
     motifs = [] #Create empty list to store the motifs
