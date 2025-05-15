@@ -73,7 +73,7 @@ if not os.path.exists(outdir): #If the output directory does not exist
 # =============================================================================
 
 t = Tree(treefile, format = 0) #Load the tree into a Tree object
-outnode = t.get_common_ancestor('AOR73699.1_4_3_GTFB_L_fermentum', 'AAU08014.2_4_6_GTFB_L_reuteri') #Retrieve the outgroup node
+outnode = t.get_common_ancestor('AOR73699.1_4_3_GTFB_Limosilactobacillus_fermentum', 'AAU08014.2_4_6_GTFB_Limosilactobacillus_reuteri') #Retrieve the outgroup node
 t.set_outgroup(outnode) #Root the tree on the outgroup node
 
 # =============================================================================
@@ -108,7 +108,7 @@ for n in t.traverse(): #Loop through the nodes in the tree
 
        support_face = TextFace(int(n.support), fgcolor = color, fsize = 24,
                                ftype = 'Arial') #Create a text with the support value
-       n.add_face(support_face, column = 0, position='branch-top') #Add the text to the corresponding node in the tree
+       # n.add_face(support_face, column = 0, position='branch-top') #Add the text to the corresponding node in the tree
    
 # =============================================================================
 # 4. Modify the style of the leaf names in the tree
@@ -130,22 +130,31 @@ for leaf in leaves: #Loop through the leaves of the tree
     elif 'a1_' in nleaf:
         nleaf = nleaf.replace('a1_', 'α-1,')
 
-    color = leaf_color.get(nleaf.split('_')[0], None) #Get strain names from the leaf name and use them to get the leaf color
+    if '_Apilactobacillus_' in leaf.name:
+        color = '#F1690E'
+    # elif 'Limosilactobacillus_reuteri' in leaf.name or 'L_fermentum' in leaf.name:
+    #     color = '#350CA6'
+    # elif 'Leuconostoc_mesenteroides' in leaf.name or 'L_citreum' in leaf.name:
+    #     color = '#7F0797'
+    elif '_Streptococcus_' in leaf.name:
+        color = '#09569A'
+    elif 'Enterococcus_faecium' in leaf.name:
+        color = '#0B7551'
+    # elif '_P_myokoensis' in leaf.name or '_F_' in leaf.name or '_Nicoliella_' in leaf.name or '_Convinina_' in leaf.name:
+    #     color = '#52312E'
+    else: color = '#CF0D61'
+    #color = leaf_color.get(nleaf.split('_')[0], None) #Get strain names from the leaf name and use them to get the leaf color
     name_face = TextFace(nleaf, fgcolor = color, fsize = 40, ftype = 'Arial') #Create a text with locus tags
     leaf.add_face(name_face, column = 0, position = 'branch-right') #Add the text to the right leaf in the tree
     
-pairs = {'GS1': ('H4B505J_12880', 'A1001_12310'), 
-         'GS2': ('H4B504J_13480', 'H4B204J_13350_2'),
+pairs = {'GS1': ('H4B505J_12880', 'A1003_12540'), 
+         'GS2': ('H4B504J_13480', 'H4B505J_12900'),
          'GS3': ('H4B406M_13450', 'H4B111J_13560'),
-         'BRS2': ('H4B505J_12890', 'H3B209X_13350'),
-         'BRS3': ('H3B104J_13020_1', 'A1401_12760'),
-         'BRS4': ('H4B204J_13340', 'LDX55_06330'),
-         'NGB': ('H4B504J_05510', 'H1B105A_04750'),
-         'NGB2': ('H4B111J_04920', 'H3B209X_04660')}
+         'BRS': ('H4B505J_12890', 'LDX55_06330'),
+         'NGB': ('H4B504J_05510', 'WP_353317313.1_Apilactobacillus_apinorum')}
 # colors = ['#336E74', '#FF707C', '#FFE570', '#FF986F', '#FFC36F', '#BDE384', 
 #           '#84E8A7', '#656ED4', '#C870FF', '#F87BFF', '#84CDE8']
-colors = ['#FF707C', '#FFE570', '#FF986F', '#84E8A7', '#84E8A7', '#84E8A7',
-          '#336E74', '#336E74']
+colors = ['#FF707C', '#FFE570', '#FF986F', '#84E8A7', '#336E74'] #, '#FFC36F']
 node_list = []
 node_content = t.get_cached_content()
 for key in pairs.keys():
@@ -186,6 +195,20 @@ for n in BRS_nodes:
 # =============================================================================
 
 t.ladderize(1) #Reverse the order in which the leaves of the tree are plotted
+GS_BRS = t.get_common_ancestor('H1B302M_12890', 'WP_249510840.1_Apilactobacillus_apisilvae')
+GS_BRS.ladderize(0)
+GS1 = t.get_common_ancestor('WP_353322098.1_Apilactobacillus_apinorum', 'WP_260116903.1_Nicoliella_spurrieriana')
+GS1.ladderize(1)
+GSA = t.get_common_ancestor('BAA14241.1_MSR_Streptococcus_sobrinus', 'WP_323728076.1_Streptococcus_sp_G418')
+GSA.ladderize(1)
+GSB = t.get_common_ancestor('WP_186432386.1_Oenococcus_oeni', 'WP_261912693.1_Lentilactobacillus_hilgardii')
+GSB.ladderize(1)
+GSC = t.get_common_ancestor('WP_273750349.1_Leuconostoc_mesenteroides', 'WP_172692410.1_Latilactobacillus_sakei')
+GSC.ladderize(1)
+GSD = t.get_common_ancestor('WP_010690266.1_Ligilactobacillus_animalis', 'WP_273774597.1_Limosilactobacillus_reuteri')
+GSD.ladderize(1)
+BRS = t.get_common_ancestor('WP_080732772.1_Leuconostoc_mesenteroides', 'WP_248720543.1_Convivina_intestini')
+BRS.ladderize(1)
 # t.convert_to_ultrametric() #Convert the tree to a cladogram
 t.render(outfile, tree_style = ts) #Save the tree to a PNG image
 t.render(outfile.replace('png', 'svg'), tree_style = ts) #Save the tree to an SVG image
