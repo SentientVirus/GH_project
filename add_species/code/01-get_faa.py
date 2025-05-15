@@ -110,7 +110,7 @@ records = []
 with open(outfile) as handle:
     for record in SeqIO.parse(handle, 'fasta'):
         species = record.description.split('[')[1]
-        genus = species[0]
+        genus = species.split(' ')[0]
         epithet = species.split(' ')[1][:-1]
         if len(species.split(' ')) > 2 and epithet == 'sp':
             epithet += f'_{species.split(" ")[2][:-1]}'
