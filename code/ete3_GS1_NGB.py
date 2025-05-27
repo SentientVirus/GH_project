@@ -3,14 +3,6 @@
 """
 Created on Tue Feb 25 18:37:42 2025
 
-@author: marina
-"""
-
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Dec 20 11:06:54 2021
-
 This script creates plots of the domains of GH70 and GH32 proteins
 next to a strain phylogeny. To plot a specific gene type, the script has
 to be manually updated.
@@ -67,7 +59,7 @@ leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
               'H4B502X': '#0072B2', 'H4B503X': '#0072B2', 'H4B504J': '#33B18F',
               'H4B505J': '#33B18F', 'H4B507J': '#0072B2', 'H4B507X': '#0072B2', 
               'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': '#D55E00', 
-              'DSM': '#0072B2'}
+              'DSMZ': '#0072B2'}
 
 workdir = os.path.expanduser('~') + '/GH_project'
 GH_dir = f'{workdir}/data/fasta/GH70/trees'
@@ -154,7 +146,7 @@ for GH_type in ['GS1', 'NGB']:
             elif 'APS55' in nleaf: #If APS55 is in the locus tag
                 nleaf = nleaf.replace('APS55', 'MP2') #Change it to MP2
             elif 'K2W83' in leaf.name: #If K2W83 is in the locus tag
-                nleaf = nleaf.replace('K2W83', 'DSM') #Change it to DSM
+                nleaf = nleaf.replace('K2W83', 'DSMZ') #Change it to DSMZ
             
             mleaf = nleaf.split('_')[0]
             color = leaf_color.get(mleaf.replace('-', '').upper(), None) #Get strain names from the leaf name and use them to get the leaf color 
