@@ -249,41 +249,52 @@ for treefile in treefiles: #Loop through tree files
                 #     ts.legend.add_face(empty_face, column = len(names)+2) #Add it after the last gene (to center gene names better)
         
         motifs = ['']*len(names) #Create an empty list of motifs to plot
+        # extra_motifs = ['']*len(names)
         seqFace = SeqMotifFace('A'*300, motifs = '', seq_format = 'blank', #Create an empty motif to add space between leaf names and presence/absence 
                                gap_format = 'blank')
         (t & f'{leaf.name}').add_face(seqFace, 0, 'aligned') #Add empty motif to the first column
         
         for n in range(len(names)): #Loop through gene names
-            motifs[n] = [5, 55, 'o', None, 50, '', '', ''] #Start adding info to plot a motif
-            motifs[n][5] = colors[n] #Update edge colors according to gene type
+            motifs[n] = [5, 55, '()', None, 50, '', '', ''] #Start adding info to plot a motif
+            # extra_motifs[n] = [0, 0, '()', None, 0, 'white', 'white', '']
+            motifs[n][5] = 'black' #colors[n] #Update edge colors according to gene type
             motifs[n][6] = colors[n] #Update fill colors according to gene type
-            
+            # extra_motif = False
             # if n == 0: #Uncomment to add gene type on circles
             #     motifs[n][7] = f'Arial|18|white|{names[n]}' 
             # else:
             #     motifs[n][7] = f'Arial|18|black|{names[n]}'
-                
+            
             if strain_presence[leaf.name][n] == 0: #If the gene is absent
-                motifs[n][0] = 15 #Set start position of circle
-                motifs[n][1] = 45 #Set end position of circle (equal to end - start)
-                motifs[n][4] = 30 #Set height of circle
-                motifs[n][5] = '#E7E7E7' #Set edge color to light grey
-                motifs[n][6] = '#E7E7E7' #Set fill color to light grey
+                # motifs[n][0] = 15 #Set start position of circle
+                # motifs[n][1] = 45 #Set end position of circle (equal to end - start)
+                # motifs[n][2] = 'o' #Change shape to square
+                # motifs[n][4] = 30 #Set height of circle
+                motifs[n][5] = 'black' #'#E7E7E7' #Set edge color to light grey
+                motifs[n][6] = 'white' #'#E7E7E7' #Set fill color to light grey
                 # motifs[n][7] = 'Arial|18|black|'
             elif strain_presence[leaf.name][n] == -1: #If the gene is partially present, perhaps lost
-                motifs[n][0] = 10 #Set start position of circle
-                motifs[n][1] = 50 #Set end position of circle
-                motifs[n][4] = 40 #Set height of circle (equal to end - start)
-                motifs[n][5] = 'darkgrey' #Set edge color to dark grey
-                motifs[n][6] = 'darkgrey' #Set fill color to dark grey
+                # motifs[n][0] = 10 #Set start position of circle
+                # motifs[n][1] = 50 #Set end position of circle
+                motifs[n][2] = '<>' #Change shape to diamond
+                # motifs[n][4] = 40 #Set height of circle (equal to end - start)
+                # motifs[n][5] = 'darkgrey' #Set edge color to dark grey
+                # motifs[n][6] = f'rgradient:{colors[n]}' #Set fill color to dark grey
                 # motifs[n][7] = 'Arial|18|black|'
+            #     extra_motif = True
+            # if extra_motif:
+            #     extra_motifs[n][0] = 5 #Set start position of circle
+            #     extra_motifs[n][1] = 55 #Set end position of circle
+            #     extra_motifs[n][4] = 50 #Set end position of circle
+            #     extra_motifs[n][5] = 'black'
             
             seq = 'A'*scale #Create sequence object on top to which circles are plotted
             if n == 0: #If it's the first gene (NGB)
                 seq += 'A'*80 #Increase the length of the sequence object to add space between NGB and the other genes
             seqFace = SeqMotifFace(seq, motifs = [motifs[n]], seq_format = 'blank', #Create object with the motifs, make the sequence tract invisible
-                                   gap_format = 'blank') 
+                                    gap_format = 'blank') 
             (t & f'{leaf.name}').add_face(seqFace, n+1, 'aligned') #Add each gene to a different column
+            # (t & f'{leaf.name}').add_face(seqFace2, n+1, 'aligned') #Add each gene to a different column
 
         
     t.ladderize(1) #Reorder the nodes to keep the order consistent in all plots
