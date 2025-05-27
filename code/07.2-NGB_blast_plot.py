@@ -216,7 +216,7 @@ for i in range(1, len(phylo_order.keys())+1): #Loop through strain names in the 
         segments = dict(region1=(pos[strain][0], pos[strain][0]+16000), region2=(pos[strain][1]+12000, pos[strain][1]+36000)) #Add two segments, skipping 36kb between them
     else:
         segments = dict(region1=(pos[strain][0], pos[strain][1])) #Otherwise, get the complete 40kb segment
-    track = gv.add_feature_track(name = genbk.name.replace('_genomic', '').replace('Z12361', ''), #Create track (use DSM as strain name for DSMZ12361)
+    track = gv.add_feature_track(name = genbk.name.replace('_genomic', '').replace('12361', ''), #Create track (use DSMZ as strain name for DSMZ12361)
                                  segments = segments, #Add segments to track
                                  label_kws = dict(color = leaf_color[strain.replace('-', '')])) #Add strain name color based on phylogroup
     
@@ -360,9 +360,9 @@ for i in range(1, len(phylo_order.keys())): #Loop through strains in the order i
         
     if subject_check == False and query_check == False: #If none of the strains in the comparison has multiple segments
         for j in range(len(tab_df)):
-            #Get strain names from dataframe and shorten name of DSM
-            strain1_name = tab_df.loc[j, 'query acc.ver'].replace('Z12361', '')
-            strain2_name = tab_df.loc[j, 'subject acc.ver'].replace('Z12361', '')
+            #Get strain names from dataframe and shorten name of DSMZ
+            strain1_name = tab_df.loc[j, 'query acc.ver'].replace('12361', '')
+            strain2_name = tab_df.loc[j, 'subject acc.ver'].replace('12361', '')
             
             #Define the percentage of identity (to color the links)
             identity = tab_df.loc[j, '% identity']

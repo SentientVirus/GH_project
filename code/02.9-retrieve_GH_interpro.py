@@ -134,7 +134,7 @@ def save_annot(directory, strains, outdir, gene_names, prefix = 'GH70'):
                     loctag = full_loctag.replace('LDX55', 'IBH001')
                 elif 'K2W83_RS' in loctag:
                     full_loctag = loctag
-                    loctag = full_loctag.replace('K2W83_RS', 'DSM_')
+                    loctag = full_loctag.replace('K2W83_RS', 'DSMZ_')
                 elif loctag == 'MP2_13350':
                     print("MP2's GS1 retrieved")
                     full_loctag = 'APS55_RS03850'

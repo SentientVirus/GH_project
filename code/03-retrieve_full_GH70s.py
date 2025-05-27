@@ -96,7 +96,7 @@ def get_GH32(directory, strains, domain_annot):
                 if domain_annot in line and (('RS' in line[0] and int(val) > 10**3) or ('RS' not in line[0] and int(line[0].split('_')[1]) > 10**4)): #Take only locus tags > 10000
                     loctag = line[0].replace('-', '') 
                     if 'K2W83_RS' in loctag:
-                        loctag.replace('K2W83_RS', 'DSM_')
+                        loctag.replace('K2W83_RS', 'DSMZ_')
                     gene_names.append(loctag)
     return gene_names
  

@@ -3,7 +3,7 @@
 """
 Created on Thu Apr 13 11:45:45 2023
 
-Script that was used for the Interproscan annotations of strains DSM 12361 and
+Script that was used for the Interproscan annotations of strains DSMZ 12361 and
 IBH001. It changes the column with protein IDs in the Interproscan output to 
 a column with locus tags, so that these files can be navigated using the same
 scripts as for the A. kunkeei annotations made by Dyrhage et al. (2022).

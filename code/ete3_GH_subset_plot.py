@@ -79,7 +79,7 @@ leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
               'H4B502X': '#0072B2', 'H4B503X': '#0072B2', 'H4B504J': '#33B18F',
               'H4B505J': '#33B18F', 'H4B507J': '#0072B2', 'H4B507X': '#0072B2', 
               'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': '#D55E00', 
-              'DSM': '#0072B2'}
+              'DSMZ': '#0072B2'}
 
 # =============================================================================
 # Set target region and load input files
@@ -104,7 +104,7 @@ def replace_strain_name(locus_tag):
     locus_tag : str
         The locus tag to be overwritten."""
         
-    locus_tag = locus_tag.replace('LDX55', 'IBH001').replace('APS55', 'MP2').replace('K2W83', 'DSM').replace('RS', '').replace('FHON', 'Fhon').replace('AKU', '')
+    locus_tag = locus_tag.replace('LDX55', 'IBH001').replace('APS55', 'MP2').replace('K2W83', 'DSMZ').replace('RS', '').replace('FHON', 'Fhon').replace('AKU', '')
     return locus_tag
 
 def remove_minus(strains):

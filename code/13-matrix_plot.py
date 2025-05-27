@@ -33,7 +33,7 @@ vmax = 1.5 #Maximum (saturated) dN or dS
 fig_width = 34 #Width of the output figure
 fig_height = 30 #Height of the output figure
 
-replace_str = {'K2W83_RS': 'DSM_', 'APS55_RS': 'MP2_', 'LDX55_': 'IBH001_'} #Dictionary to edit the locus tags
+replace_str = {'K2W83_RS': 'DSMZ_', 'APS55_RS': 'MP2_', 'LDX55_': 'IBH001_'} #Dictionary to edit the locus tags
 
 # =============================================================================
 # 2. Create output directory, output figure and colorbar

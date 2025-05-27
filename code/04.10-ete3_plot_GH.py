@@ -57,7 +57,7 @@ leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
               'H4B502X': '#0072B2', 'H4B503X': '#0072B2', 'H4B504J': '#33B18F',
               'H4B505J': '#33B18F', 'H4B507J': '#0072B2', 'H4B507X': '#0072B2', 
               'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': '#D55E00', 
-              'DSM': '#0072B2'}
+              'DSMZ': '#0072B2'}
 
 workdir = os.path.expanduser('~') + '/GH_project' #Working directory
 treefile1 = f'{workdir}/data/fasta/GH70/trees/GH70_functional_outgroup_repset.mafft.faa.treefile' #Path to the tree file for GH70
@@ -111,8 +111,8 @@ for treefile in [treefile1, treefile2]: #Loop through the tree file
             nleaf = nleaf.replace('LDX55', 'IBH001') #Change the string to IBH001
         elif 'APS55' in nleaf: #Same for MP2
             nleaf = nleaf.replace('APS55_RS', 'MP2_')
-        elif 'K2W83' in leaf.name: #Same for DSM
-            nleaf = nleaf.replace('K2W83_RS', 'DSM_')
+        elif 'K2W83' in leaf.name: #Same for DSMZ
+            nleaf = nleaf.replace('K2W83_RS', 'DSMZ_')
             
         if nleaf[-2:] == '_2' or nleaf[-2:] == '_1': #If the gene name ends with _1/2 (multi-GH70 domains)
             mleaf = nleaf[:-2] #Remove that from the locus tag used to retrieve the phylogroup color

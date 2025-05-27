@@ -261,7 +261,7 @@ for file in GH_files:
                 elif strain == 'LDX55':
                     strain = 'IBH001'
                 elif strain == 'K2W83':
-                    strain = 'DSM12361'
+                    strain = 'DSMZ12361'
             
             else:
                 strain = os.path.basename(file).split('_')[0]

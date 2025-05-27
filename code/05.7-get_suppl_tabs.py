@@ -50,7 +50,7 @@ def correct_loctag(locus_tag):
     in most figures and tables.
     Input: locus_tag (the locus tag to be modified)
     Output: corrected (the modified locus tag)'''
-    corrected = locus_tag.replace('APS55_RS', 'MP2_').replace('K2W83_RS', 'DSM_').replace('LDX55', 'IBH001').replace('AKU', '')
+    corrected = locus_tag.replace('APS55_RS', 'MP2_').replace('K2W83_RS', 'DSMZ_').replace('LDX55', 'IBH001').replace('AKU', '')
     return corrected
 
 class gbk_entry:

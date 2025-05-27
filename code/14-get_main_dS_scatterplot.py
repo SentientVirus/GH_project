@@ -43,7 +43,7 @@ def replace_strain_name(locus_tag):
         The locus tag to be overwritten."""
      
     #Modify locus tags to fit strain names    
-    locus_tag = locus_tag.replace('LDX55', 'IBH001').replace('APS55', 'MP2').replace('K2W83', 'DSM').replace('RS', '').replace('FHON', 'fhon').replace('AKU', '')
+    locus_tag = locus_tag.replace('LDX55', 'IBH001').replace('APS55', 'MP2').replace('K2W83', 'DSMZ').replace('RS', '').replace('FHON', 'fhon').replace('AKU', '')
     
     #Get strain from locus tag
     strain = locus_tag.split('_')[0] #Get the text before _ in the locus tag

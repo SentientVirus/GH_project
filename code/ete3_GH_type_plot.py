@@ -79,7 +79,7 @@ leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
               'H4B502X': '#0072B2', 'H4B503X': '#0072B2', 'H4B504J': '#33B18F',
               'H4B505J': '#33B18F', 'H4B507J': '#0072B2', 'H4B507X': '#0072B2', 
               'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': '#D55E00', 
-              'DSMZ12361': '#0072B2', 'DSM': '#0072B2'}
+              'DSMZ12361': '#0072B2', 'DSMZ': '#0072B2'}
 
 #Highlighted gene colors for GS1-2 and BRS, faint colors for the rest
 # gene_colors = {'GS1': '#FF7575', 'GS2': '#FF75B6', 'BRS': '#E875FF',
@@ -142,7 +142,7 @@ def replace_strain_name(locus_tag):
     locus_tag : str
         The locus tag to be overwritten."""
         
-    locus_tag = locus_tag.replace('LDX55', 'IBH001').replace('APS55', 'MP2').replace('K2W83', 'DSM').replace('RS', '').replace('FHON', 'Fhon').replace('AKU', '')
+    locus_tag = locus_tag.replace('LDX55', 'IBH001').replace('APS55', 'MP2').replace('K2W83', 'DSMZ').replace('RS', '').replace('FHON', 'Fhon').replace('AKU', '')
     return locus_tag
 
 def remove_minus(strains):
@@ -258,11 +258,11 @@ for GH in GH70_types + GH32_types: #Loop through gene types
                         gene_locus = gene_locus.replace('_13350', '_03850').replace('_13360', '_03845') #Make extra changes to the locus tags
                     pos = (int(line[6])*3, int(line[7])*3) #Get the position of the domains
                     if gene_locus in domain_dict.keys() and domain_dict[gene_locus] != pos: #If the locus tag is already stored
-                        if 'DSM' not in domain_file: #And DSM is not in the file name
+                        if 'DSMZ' not in domain_file: #And DSMZ is not in the file name
                             domain_dict[f'{gene_locus}_1'] = domain_dict[gene_locus] #The position of the BRS domain is the previously stored one
                             del domain_dict[gene_locus] #Remove locus tag from dictionary keys
                             gene_locus = f'{gene_locus}_2' #The new position is the position of GS2
-                        else: #If DSM is in the file name
+                        else: #If DSMZ is in the file name
                             domain_dict[f'{gene_locus}_2'] = domain_dict[gene_locus] #The previously stored position corresponds to GS2
                             del domain_dict[gene_locus] #Remove locus tag key
                             gene_locus = f'{gene_locus}_1' #The newly stored position corresponds to BRS

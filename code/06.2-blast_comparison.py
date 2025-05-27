@@ -244,7 +244,7 @@ for i in range(1, len(phylo_order.keys())+1): #Loop through strain names in the 
     genbank_file = f'{folder_path2}/{strain}_genomic.gbff' #Get GenBank file based on strain name
     genbk = gbk_read(genbank_file) #Read GenBank file with PyGenomeViz
     segments = dict(region1=(pos[strain][0], pos[strain][1])) #Retrieve the segment to be plotted
-    track = gv.add_feature_track(name = genbk.name.replace('_genomic', '').replace('Z12361', ''), #Create track (use DSM as strain name for DSMZ12361)
+    track = gv.add_feature_track(name = genbk.name.replace('_genomic', '').replace('Z12361', ''), #Create track (use DSMZ as strain name for DSMZ12361)
                                  segments = segments, #Add segments to track
                                  label_kws = dict(color = leaf_color[strain.replace('-', '')])) #Add strain name color based on phylogroup
     for segment in track.segments: #Loop through segments in the track
@@ -354,9 +354,9 @@ for i in range(1, len(phylo_order.keys())): #Loop through strains in the order i
     tab_df = tab_df.reset_index() #Reset the index of the dataframe
     
     for j in range(len(tab_df)):
-        #Get strain names from dataframe and shorten name of DSM
-        strain1_name = tab_df.loc[j, 'query acc.ver'].replace('Z12361', '')
-        strain2_name = tab_df.loc[j, 'subject acc.ver'].replace('Z12361', '')
+        #Get strain names from dataframe and shorten name of DSMZ
+        strain1_name = tab_df.loc[j, 'query acc.ver'].replace('12361', '')
+        strain2_name = tab_df.loc[j, 'subject acc.ver'].replace('12361', '')
         
         #Define the percentage of identity (to color the links)
         identity = tab_df.loc[j, '% identity']

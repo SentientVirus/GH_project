@@ -117,13 +117,13 @@ def get_strain_name(locus_tag, get_strain = False):
     locus_tag : str
         The locus tag to be overwritten."""
         
-    locus_tag = locus_tag.replace('LDX55', 'IBH001').replace('APS55', 'MP2').replace('K2W83', 'DSM').replace('RS', '').replace('FHON', 'Fhon').replace('AKU', '')
+    locus_tag = locus_tag.replace('LDX55', 'IBH001').replace('APS55', 'MP2').replace('K2W83', 'DSMZ').replace('RS', '').replace('FHON', 'Fhon').replace('AKU', '')
     if get_strain:
         locus_tag = locus_tag.split('_')[0]
         if locus_tag[0] == 'H':
             locus_tag = locus_tag[:4] + '-' + locus_tag[4:]
-        elif 'DSM' in locus_tag:
-            locus_tag = locus_tag.replace('DSM', 'DSMZ12361')
+        elif 'DSMZ' in locus_tag:
+            locus_tag = locus_tag.replace('DSMZ', 'DSMZ12361')
     return locus_tag
 
 def get_tabs(phylo_dict, folder_path, outpath):
@@ -229,7 +229,7 @@ for GH_type in GH_types:
         genbank_file = f'{folder_path2}/{strain}_genomic.gbff' #Get GenBank file based on strain name
         genbk = gbk_read(genbank_file) #Read GenBank file with PyGenomeViz
         segments = dict(region1=(pos[locus][0], pos[locus][1])) #Retrieve the segment to be plotted
-        track = gv.add_feature_track(name = get_strain_name(locus), #Create track (use DSM as strain name for DSMZ12361)
+        track = gv.add_feature_track(name = get_strain_name(locus), #Create track (use DSMZ as strain name for DSMZ12361)
                                      segments = segments, #Add segments to track
                                      label_kws = dict(color = leaf_color[strain.replace('-', '')])) #Add strain name color based on phylogroup
         for segment in track.segments: #Loop through segments in the track

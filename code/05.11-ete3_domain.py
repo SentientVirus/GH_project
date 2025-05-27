@@ -190,7 +190,7 @@ for GH_type in GH_types: #Loop through GH types
         elif 'APS55' in nleaf:
             nleaf = nleaf.replace('APS55_RS', 'MP2_')
         elif 'K2W83' in leaf.name:
-            nleaf = nleaf.replace('K2W83_RS', 'DSM_')
+            nleaf = nleaf.replace('K2W83_RS', 'DSMZ_')
         
         #Use a different leaf name to retrieve Fhon2 from the color dictionary
         mleaf = nleaf
