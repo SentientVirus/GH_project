@@ -47,7 +47,7 @@ def replace_strain_name(locus_tag):
         The locus tag to be overwritten."""
      
     #Modify locus tags to fit strain names    
-    locus_tag = locus_tag.replace('LDX55', 'IBH001').replace('APS55', 'MP2').replace('K2W83', 'DSMZ').replace('RS', '').replace('FHON', 'fhon').replace('AKU', '')
+    locus_tag = locus_tag.replace('LDX55', 'IBH001').replace('APS55', 'MP2').replace('K2W83', 'DSM').replace('RS', '').replace('FHON', 'fhon').replace('AKU', '')
     
     #Get strain from locus tag
     strain = locus_tag.split('_')[0] #Get the text before _ in the locus tag
@@ -84,12 +84,12 @@ fig.patch.set_facecolor('white')
 
 plt.subplots_adjust(hspace = 0.3, top = 1, bottom = 0.07, wspace = 0.15)
 
-axs[2, 0].set_ylabel('Core ${d_S}$', fontsize = fontsize_subtitle) #Add a title to the y axis of the dS scatter plot
-axs[1, 0].set_ylabel('Core ${d_N}$', fontsize = fontsize_subtitle) #Add a title to the y axis of the dS scatter plot
+axs[1, 0].set_ylabel('Core ${d_S}$', fontsize = fontsize_subtitle) #Add a title to the y axis of the dS scatter plot
+axs[2, 0].set_ylabel('Core ${d_N}$', fontsize = fontsize_subtitle) #Add a title to the y axis of the dS scatter plot
 axs[0, 0].set_ylabel('${d_N}$', fontsize = fontsize_subtitle) #Add a title to the y axis of the dN vs dS scatter plot
 fig.text(0.51, 0.69, '${d_S}$', ha = 'center', fontsize = fontsize_subtitle) #Add title of the x axis of dN vs dS scatter plots
-fig.text(0.51, 0.35, 'Core ${d_S}$', ha = 'center', fontsize = fontsize_subtitle) #Add title of the x axis of core dN vs dS scatter plots
-fig.text(0.51, 0.01, '${d_S}$', ha = 'center', fontsize = fontsize_subtitle) #Add title of the x axis of core dS vs dS scatter plots
+fig.text(0.51, 0.35, '${d_S}$', ha = 'center', fontsize = fontsize_subtitle) #Add title of the x axis of core dN vs dS scatter plots
+fig.text(0.51, 0.01, 'Core ${d_S}$', ha = 'center', fontsize = fontsize_subtitle) #Add title of the x axis of core dS vs dS scatter plots
 
 for i in range(len(GH_types)): #Loop through gene types
     GH = GH_types[i] #Name of the gene type
@@ -147,7 +147,8 @@ for i in range(len(GH_types)): #Loop through gene types
     r1 = pearsonr(x1_list, dN1_list) #Calculate the Pearson correlation coefficient
     slope1, intercept1 = np.polyfit(x1_list, dN1_list, 1) #Perform linear regression
     #Add linear regression to the plot
-    axs[0, i].axline(xy1=(0, intercept1), color = 'darkorange', slope=slope1, label=f'$y = {slope1:.3f}x {intercept1:+.3f}$\n$R² = {r1[0]**2:.3f}, p$-$value = {r1[1]:.3f}$', zorder = 5)
+    int_no = int(-5)
+    axs[0, i].axline(xy1=(0, intercept1), color = 'darkorange', slope=slope1, label=f'$y = {slope1:.3f}x {intercept1:+.3f}$\n$R² = {r1[0]**2:.3f}, p$-$value < 10⁻⁵$', zorder = 5)
     axs[0, i].legend(loc = 'upper right', frameon = False) #Add legend to the linear regression at the upper right corner and without a frame
     axs[0, i].plot([0, 1], [0, 1], color = 'lightgrey') #Plot a line where x = y
     axs[0, i].set_xlim(0, 1.5) #Set limits to the x axis
@@ -158,26 +159,26 @@ for i in range(len(GH_types)): #Loop through gene types
     axs[0, i].fill_between(y_pos, x_pos, where=where_param, interpolate=False, color='white', alpha = 0.5) #Add white shading where x > y
     
     #Core dN vs core dS
-    axs[1, i].scatter(y2_list, dN_y1_list, alpha = 0.8, s = 20, c = [color]*len(y2_list), edgecolors = 'black', zorder = 10)
+    axs[2, i].scatter(y2_list, dN_y1_list, alpha = 0.8, s = 20, c = [color]*len(y2_list), edgecolors = 'black', zorder = 10)
     r2 = pearsonr(y2_list, dN_y1_list)
     slope2, intercept2 = np.polyfit(y2_list, dN_y1_list, 1)
-    axs[1, i].axline(xy1=(0, intercept2), color = 'darkorange', slope=slope2, label=f'$y = {slope2:.3f}x {intercept2:+.3f}$\n$R² = {r2[0]**2:.3f}, p$-$value = {r2[1]:.3f}$', zorder = 5)
-    axs[1, i].legend(loc = 'upper right', frameon = False)
-    axs[1, i].plot([0, 1], [0, 1], color = 'lightgrey')
-    axs[1, i].set_xlim(0, 0.42)
-    axs[1, i].set_ylim(0, 0.02)
-    axs[1, i].fill_between(y_pos, x_pos, where=where_param, interpolate=False, color='white', alpha = 0.5)
-    
-    #Core dS vs dS
-    axs[2, i].scatter(x1_list, y1_list, alpha = 0.8, s = 20, c = [color]*len(x1_list), edgecolors = 'black', zorder = 10)
-    r3 = pearsonr(x1_list, y1_list)
-    slope3, intercept3 = np.polyfit(x1_list, y1_list, 1)
-    axs[2, i].axline(xy1=(0, intercept3), color = 'darkorange', slope=slope3, label=f'$y = {slope3:.3f}x {intercept3:+.3f}$\n$R² = {r3[0]**2:.3f}, p$-$value = {r3[1]:.3f}$', zorder = 5)
+    axs[2, i].axline(xy1=(0, intercept2), color = 'darkorange', slope=slope2, label=f'$y = {slope2:.3f}x {intercept2:+.3f}$\n$R² = {r2[0]**2:.3f}, p$-$value < 10⁻⁵$', zorder = 5)
     axs[2, i].legend(loc = 'upper right', frameon = False)
     axs[2, i].plot([0, 1], [0, 1], color = 'lightgrey')
-    axs[2, i].set_xlim(0, 1.5)
-    axs[2, i].set_ylim(0, 0.5)
+    axs[2, i].set_xlim(0, 0.42)
+    axs[2, i].set_ylim(0, 0.02)
     axs[2, i].fill_between(y_pos, x_pos, where=where_param, interpolate=False, color='white', alpha = 0.5)
+    
+    #Core dS vs dS
+    axs[1, i].scatter(x1_list, y1_list, alpha = 0.8, s = 20, c = [color]*len(x1_list), edgecolors = 'black', zorder = 10)
+    r3 = pearsonr(x1_list, y1_list)
+    slope3, intercept3 = np.polyfit(x1_list, y1_list, 1)
+    axs[1, i].axline(xy1=(0, intercept3), color = 'darkorange', slope=slope3, label=f'$y = {slope3:.3f}x {intercept3:+.3f}$\n$R² = {r3[0]**2:.3f}, p$-$value = {r3[1]:.3f}$', zorder = 5)
+    axs[1, i].legend(loc = 'upper right', frameon = False)
+    axs[1, i].plot([0, 1], [0, 1], color = 'lightgrey')
+    axs[1, i].set_xlim(0, 1.5)
+    axs[1, i].set_ylim(0, 0.5)
+    axs[1, i].fill_between(y_pos, x_pos, where=where_param, interpolate=False, color='white', alpha = 0.5)
     # if i == 3:
     #     # axs[0, i].set_ylim(0, 0.04) #Set limits to the y axis
     #     axs[2, i].set_xlim(0, 0.6) #Set limits to the x axis
