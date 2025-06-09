@@ -6,6 +6,9 @@ Script to retrieve the plotting information for the CDS of the genes
 in a region of interest so that they can be later plotted next to
 the tree in ete3.
 
+Note: Unzip the .zip files with SignalP6 slow predictions before running this
+script.
+
 @author: Marina Mota-Merlo
 """
 
@@ -14,7 +17,7 @@ the tree in ete3.
 # =============================================================================
 import os
 import csv
-import pathlib
+import pandas as pd
 
 # =============================================================================
 # 1. Define classes to store domain and protein information.
@@ -77,6 +80,14 @@ short_genes = ['A0901_14250', 'A1001_13210', 'A1003_13400', 'A1202_14500',
                'H4B503X_13610', 'H4B504J_14270', 'H4B505J_13820', 
                'LDX55_06780', 'APS55_RS03400']
 
+rep_strains = ['A0901', 'A1001', 'A1003', 'A1202', 'A1401', 'A1404', 'A1805', 
+               'DSMZ12361', 'fhon2', 'G0101', 'G0403', 'H1B1-04J', 'H1B1-05A', 
+               'H1B3-02M', 'H3B1-01A', 'H3B1-04J', 'H3B1-04X', 'H3B2-02X', 
+               'H3B2-03J', 'H3B2-03M', 'H3B2-06M', 'H3B2-09X', 'H4B1-11J', 
+               'H4B2-02J', 'H4B2-04J', 'H4B2-05J', 'H4B2-06J', 'H4B2-11M', 
+               'H4B4-02J', 'H4B4-05J', 'H4B4-06M', 'H4B4-12M', 'H4B5-01J', 
+               'H4B5-03X', 'H4B5-04J', 'H4B5-05J', 'IBH001', 'MP2']
+
 workdir = os.path.expanduser('~') + '/GH_project' #Working directory
 indir = f'{workdir}/interproscan' #Directory with inputs
 outdir = f'{workdir}/data/tabs'
@@ -86,31 +97,53 @@ GH_types = ['GH70', 'GH32'] #List of glycosyl hydrolase domains
 
 short_tree = f'{workdir}/data/fasta/GH70/trees/complete_short_repset.mafft.faa.treefile'
 
+signalp_dir = f'{workdir}/signalp_pred/slow'
+
 if not os.path.exists(outdir): #If the output directory doesn't exist
     os.makedirs(outdir) #Create it
 
 # =============================================================================
 # 3. Save information to file
 # =============================================================================
-for GH_type in GH_types: #Loop through GH types
-    ref_tree = f'{workdir}/data/fasta/{GH_type}/trees/{GH_type}_functional_repset.mafft.faa.treefile' #Load reference tree of GH70 genes
-    if GH_type == 'GH32': #If the genes have GH32 domains
-        ref_tree = ref_tree.replace('functional_', '') #Set the right name of the input treefile
+signalp_dict = {}
+signalp = {}
+ref_tree1 = f'{workdir}/data/fasta/GH70/trees/GH70_functional_repset.mafft.faa.treefile' #Load reference tree of GH70 genes
+ref_tree2 = f'{workdir}/data/fasta/GH32/trees/GH32_repset.mafft.faa.treefile' #Set the right name of the input treefile
+
+dom_out1 = f'{outdir}/GH70_domain_file.txt' #Set the path to the output file
+
+for GH_type in GH_types:
+    signalp_inputs = f'{signalp_dir}/{GH_type}'
+    for filename in os.listdir(signalp_inputs):
+        if filename.endswith('plot.txt'):
+            with open(f'{signalp_inputs}/{filename}') as sp:
+                locus = filename.replace('output_', '').replace('_plot.txt', '')
+                df = pd.read_csv(sp, sep = '\t', skiprows = 1)
+                for index, row in df.iterrows():
+                    if row['Other'] > 0.6:
+                        signalp_dict[locus] = row['# pos']
+                        break
+                
+    ref_tree =  f'{workdir}/data/fasta/{GH_type}/trees/{GH_type}_functional_repset.mafft.faa.treefile' #Load reference tree of GH70 genes
     dom_out = f'{outdir}/{GH_type}_domain_file.txt' #Set the path to the output file
     
+    if GH_type == 'GH32':
+        ref_tree = ref_tree.replace('_functional', '')
+        
     proteins = {} #Create an empty dictionary to store protein information
     locus_list = [] #Create empty list of locus tags
-        
+    
     with open(ref_tree) as ref: #Open the tree with all domains as a reference
         ref_text = ref.read() #Read tree
         print(ref_text) #Print text in the treefile
-    
-    for filename in pathlib.Path(indir).glob('*.tsv'): #Loop through files in input directory that end with .tsv
-        with open(filename) as file: #Open file
+
+    infiles = [filename for filename in os.listdir(indir) if filename.split('.')[0] in rep_strains]
+    for filename in infiles: #Loop through files in input directory that end with .tsv
+        with open(f'{indir}/{filename}') as file: #Open file
             domain_tab = csv.reader(file, delimiter = '\t') #Read file
             for line in domain_tab: #Loop through lines in file
-                sig_pep = False #Boolean to check if a signal peptide is predicted by any method
                 locus = line[0].replace('-', '').upper() #Remove - character from locus tags in the files
+                
                 if locus == 'MP2_13360': #If the locus is the GS2 from MP2
                     locus = 'APS55_RS03845' #Manually assign the right locus tag to it
                 elif locus == 'MP2_13350': #If the locus is the GS1 from MP2
@@ -118,16 +151,22 @@ for GH_type in GH_types: #Loop through GH types
                 elif locus == 'MP2_14250':
                     locus = 'APS55_RS03400'
                 
-                if locus in ref_text or locus in short_genes: #If the locus tag is in the reference tree
-                    print(locus) #Print the locus
-                    add = False #Boolean to check if the domain should be retrieved
+                signalp[locus] = False
+                    
+                add = False #Boolean to check if the domain should be retrieved
+                if locus not in locus_list and locus in ref_text:
+                    proteins[locus] = protein_obj(locus, line[2], []) #Create a protein object for the locus
+                    locus_list.append(locus) #Append locus to the list of loci
+                    if locus in signalp_dict and signalp_dict[locus] > 1 and signalp[locus] == False:
+                        signalp[locus] = True
+                        sp = domain_obj(locus, 1, signalp_dict[locus], 'SP', types['SP'][1], types['SP'][2]) #Create a domain object with domain information
+                        if sp not in proteins[locus].domains and sp.locus == locus: #If the domain is not in the list of domains for the protein
+                            proteins[locus].domains.append(sp) #Add domain to the list
+                    
+                if locus in ref_text:
                     #Condition to get any of the domains of interest
-                    if ('GH32' in ref_tree) and ((line[3] == 'Pfam' and 'Choline' in line[5]) or ('A1404' in locus and line[3] == 'Phobius' and line[4] == 'SIGNAL_PEPTIDE') or (line[3] == 'Pfam' and 'signal peptide' in line[5] and sig_pep == False) or (line[3] == 'TIGRFAM' and 'signal peptide' in line[5] and sig_pep == False) or (line[3] == 'SMART' and 'glyco_32' in line[5])):
-                        if line[3] == 'TIGRFAM': #If the method to detect the domain is TIGRFAM
-                            dom_type = 'SP' #Assign it as a signal peptide domain
-                            sig_pep = True #Set the boolean for SP presence to true
-                            add = True #Set the boolean to retrieve the domain to true
-                        elif line[3] == 'SMART': #If the method to retrieve the domain was SMART
+                    if GH_type == 'GH32' and ((line[3] == 'Pfam' and 'Choline' in line[5]) or (line[3] == 'SMART' and 'glyco_32' in line[5])):
+                        if line[3] == 'SMART': #If the method to retrieve the domain was SMART
                             dom_type = 'GH32' #The domain type is set to GH32
                             add = True 
                         elif line[3] == 'Pfam': #If the method to retrieve the domain was Pfam
@@ -137,23 +176,11 @@ for GH_type in GH_types: #Loop through GH types
                             elif 'cell wall' in line[5]:
                                 dom_type = 'CWB'
                                 add = True
-                            else: #If no signal peptide has been retrieved
-                                dom_type = 'SP' #Retrieve the signal peptide
-                                sig_pep = True 
-                                add = True
-                        elif line[3] == 'Phobius': #If the method was Phobius
-                            dom_type = 'SP' #Set the gene type to signal peptide
-                            sig_pep = True
-                            add = True
                             
                     #Condition to get the domains of interest
-                    elif ('GH70' in ref_tree or locus in short_genes) and (line[3] == 'Pfam' or (line[3] == 'TIGRFAM' and 'signal peptide' in line[5]) or (locus in GS3 and line[3] == 'Phobius' and line[4] == 'SIGNAL_PEPTIDE')):
+                    elif GH_type == 'GH70' and (locus in short_genes) or (line[3] == 'Pfam'):
                         #Condition to retrieve signal peptides (prioritize TIGRFAM)
-                        if (line[3] == 'TIGRFAM' or ('LDX55' not in locus and 'K2W83' not in locus and line[3] == 'Pfam' and 'signal peptide' in line[5]) or (locus in GS3 and line[3] == 'Phobius' and line[4] == 'SIGNAL_PEPTIDE')) and sig_pep == False:
-                            dom_type = 'SP'
-                            sig_pep = True
-                            add = True
-                        elif 'family 70' in line[5]: #If the domain is a GH70 domain
+                        if 'family 70' in line[5]: #If the domain is a GH70 domain
                             dom_type = 'GH70' #Save it as GH70
                             add = True
                         elif 'Choline' in line[5]:
@@ -165,30 +192,26 @@ for GH_type in GH_types: #Loop through GH types
                         elif 'DUF' in line[5]: #If it is a domain of unknown function
                             dom_type = 'DUF' #Save it as DUF
                             add = True
-                            
+                        
                     if add: #If the domain should be added
+                        print(locus, dom_type)
                         domain = domain_obj(locus, line[6], line[7], dom_type, types[dom_type][1], types[dom_type][2]) #Create a domain object with domain information
-                        if locus not in locus_list: #If the locus has not been recorded yet
-                            protein = protein_obj(locus, line[2], [domain]) #Create a protein object for the locus
-                            proteins[locus] = protein #Save the object to a dictionary where the locus is the key and the object is the value
-                            locus_list.append(locus) #Append locus to the list of loci
                         if domain not in proteins[locus].domains and domain.locus == locus: #If the domain is not in the list of domains for the protein
                             proteins[locus].domains.append(domain) #Add domain to the list
-        
+    
     with open(dom_out, 'w') as dom_file: #Open output file in write mode
         #Write file headers    
         dom_file.write('DATASET_DOMAINS\n')
         dom_file.write('SEPARATOR COMMA\n')
-        dom_file.write('DATASET_LABEL,gtf\n')
+        dom_file.write(f'DATASET_LABEL,{GH_type}\n')
         dom_file.write('COLOR,#ff0000\n')
         dom_file.write('DATA\n')
-        
-        for l in proteins.keys(): #Loop through proteins in the dictionary
-            length = proteins[l].length #Get the length of the protein
-            line = f'{l},{length},' #Add locus and length information to file
-            for domain in proteins[l].domains: #Loop through domains in protein
+        for locus in locus_list:
+            line = f'{proteins[locus].locus},{proteins[locus].length},'
+
+            for domain in proteins[locus].domains: #Loop through domains in protein
                 line += f'{domain.shape}|{domain.start}|{domain.end}|' #Add domain formatting information to file
                 line += f'{domain.color.lower()}|{domain.type},'
             line = line[:-1] + '\n' #Add a line break at the end of the line
             dom_file.write(line) #Write line to file
-            
+                
