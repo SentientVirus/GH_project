@@ -244,9 +244,10 @@ for i in range(1, len(phylo_order.keys())+1): #Loop through strain names in the 
     genbank_file = f'{folder_path2}/{strain}_genomic.gbff' #Get GenBank file based on strain name
     genbk = gbk_read(genbank_file) #Read GenBank file with PyGenomeViz
     segments = dict(region1=(pos[strain][0], pos[strain][1])) #Retrieve the segment to be plotted
-    track = gv.add_feature_track(name = genbk.name.replace('_genomic', '').replace('Z12361', ''), #Create track (use DSMZ as strain name for DSMZ12361)
+    track = gv.add_feature_track(name = genbk.name.replace('_genomic', '').replace('12361', ''), #Create track (use DSMZ as strain name for DSMZ12361)
                                  segments = segments, #Add segments to track
                                  label_kws = dict(color = leaf_color[strain.replace('-', '')])) #Add strain name color based on phylogroup
+    chromosome_length = len(genbk.records[0].seq)
     for segment in track.segments: #Loop through segments in the track
         if strain != 'MP2': #If the strain is not MP2
             target_range = (lengths[strain] - segment.range[1], 
@@ -295,7 +296,11 @@ for i in range(1, len(phylo_order.keys())+1): #Loop through strain names in the 
                                   text_kws = dict(color = 'black', rotation = 45, #Set label properties (label and rotation)
                                                   size = 15, ymargin = 0, #Set label properties (text size and distance from the CDS)
                                                   vpos = 'top', hpos = 'left')) #Set label properties (vertical and horizontal position)
-        segment.add_sublabel(f'{segment.start:,} - {segment.end:,} bp')  #Add text indicating segment range to the plot
+            
+        if strain != 'MP2':
+            segment.add_sublabel(f'{chromosome_length-segment.start:,} - {chromosome_length-segment.end:,} bp')  #Add text indicating segment range to the plot
+        else:
+            segment.add_sublabel(f'{segment.start:,} - {segment.end:,} bp')  #Add text indicating segment range to the plot
 
         track.align_label = True #Align track label (strain name) to track
         track.set_segment_sep() #Set separator (//) between segments

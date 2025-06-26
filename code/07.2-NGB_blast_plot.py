@@ -212,6 +212,7 @@ for i in range(1, len(phylo_order.keys())+1): #Loop through strain names in the 
     strain = phylo_order[i] #Get the name of a strain
     genbank_file = f'{folder_path2}/{strain}_genomic.gbff' #Get GenBank file based on strain name
     genbk = gbk_read(genbank_file) #Read GenBank file with Pygenomeviz
+    chromosome_length = len(genbk.records[0].seq)
     if strain in ['A1202', 'MP2', 'H4B5-04J', 'A0901']: #If the strain has a phage
         segments = dict(region1=(pos[strain][0], pos[strain][0]+16000), region2=(pos[strain][1]+12000, pos[strain][1]+36000)) #Add two segments, skipping 36kb between them
     else:
@@ -269,7 +270,10 @@ for i in range(1, len(phylo_order.keys())+1): #Loop through strain names in the 
                                                   size = 15, ymargin = 0, #Set label properties (text size and distance from the CDS)
                                                   vpos = 'top', hpos = 'left')) #Set label properties (vertical and horizontal position)
 
-        segment.add_sublabel(f'{segment.start:,} - {segment.end:,} bp')  #Add text indicating segment range to the plot
+        if strain != 'MP2':
+            segment.add_sublabel(f'{segment.start:,} - {segment.end:,} bp')  #Add text indicating segment range to the plot
+        else:
+            segment.add_sublabel(f'{chromosome_length - segment.start:,} - {chromosome_length - segment.end:,} bp')  #Add text indicating segment range to the plot
 
         track.align_label = True #Align track label (strain name) to track
         track.set_segment_sep() #Set separator (//) between segments
