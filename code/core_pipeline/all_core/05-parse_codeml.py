@@ -7,7 +7,7 @@ Created on Tue June 21 2022
 
 Script from https://github.com/faylward/dnds, slightly modified by Julia 
 Pedersen and Marina Mota-Merlo. It parses the CodeML output and calculates some
-statistics for each subset of genes.
+statistics for all core genes.
 
 """
 
@@ -46,7 +46,7 @@ sys.stdout = open(snakemake.log[0], 'a')
 infile = snakemake.input['txt'] #Text files with CodeML results
 outfile1 = snakemake.output['dNdS'] #Output tabs file with all pairwise comparisons
 outfile2 = snakemake.output['stats'] #Output files with general statistics
-basal_strains = ['A1001', 'A1404'] #Strains to exclude
+basal_strains = [] #Names of strains to exclude can be added here
 
 # =============================================================================
 # 2. Define function to parse CodeML output
@@ -89,7 +89,7 @@ def parse_codeml_output(infile, outfile1, outfile2):
                 dn = float(tabs[9]) #dN is the tenth element of the list
                 ds = float(tabs[11]) #dS is the twelfth element of the list
 
-#                if ds < 50 and ds > 0.01 and dnds < 99:
+#                if ds < 50 and ds > 0.01 and dnds < 99: #Add filtering for evolutionary metrics if desired
 #                    outfile.write(f'{first}\t{second}\t{dn}\t{ds}\t{dnds}\n')
 
                 if not any(basal in loctag.split('_')[0] for basal in basal_strains for loctag in [first, second]): #Filter out pairs that include basal strains

@@ -75,8 +75,8 @@ def parse_codeml_output(infile, pairwise_dict):
 
                 g1 = first_split[0] #Get strain 1
                 g2 = second_split[0] #Get strain 2
-                g1 = g1.replace('K2W83', 'DSM').replace('LDX55', 'IBH001') #Fix strain name 1
-                g2 = g2.replace('K2W83', 'DSM').replace('LDX55', 'IBH001') #Fix strain name 2
+                g1 = g1.replace('K2W83', 'DSMZ').replace('LDX55', 'IBH001') #Fix strain name 1
+                g2 = g2.replace('K2W83', 'DSMZ').replace('LDX55', 'IBH001') #Fix strain name 2
                 
                 if g1.startswith('H'): #If the strain 1 name starts with H
                     g1 = g1[:4] + '-' + g1[4:] #Add the -

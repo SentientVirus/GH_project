@@ -21,8 +21,6 @@ import pandas as pd
 # 1. Define input variables and paths
 # =============================================================================
 
-#to_exclude = ['A1001', 'A1404'] #Strains to exclude from GS1
-        
 codeml_dir = os.path.expanduser('~') + '/GH_project/all_core/results' #Input folder
 outfile = f'{codeml_dir}/global/core_general_stats.tsv'
 
@@ -34,9 +32,6 @@ for folder in folders:
     for file in os.listdir(f'{codeml_dir}/{folder}'): #Loop through files in input folder
         if file.endswith('dNdS.tsv'): #If the files have dN and dS data
             dNdS = pd.read_csv(f'{codeml_dir}/{folder}/{file}', sep = '\t') #Read the files as dataframes
- #           for strain in to_exclude: #Loop through strains to exclude
- #               index_out = dNdS[dNdS['locus1'].str.contains(strain) | dNdS['locus1'].str.contains(strain)].index #Get the index of rows with strains to exclude
- #               dNdS.drop(index_out, inplace = True) #Remove these rows
             dN_list += list(dNdS['dN']) #Add the remaining rows to the dN list
             dS_list += list(dNdS['dS']) #Add the remaining rows to the dS list
             w_list += list(dNdS['w']) #Add the remaining rows to the dN/dS list
