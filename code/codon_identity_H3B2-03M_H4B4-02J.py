@@ -10,7 +10,11 @@ each pairwise comparison are also specified.
 
 @author: Marina Mota-Merlo
 """
-# Make the y axis ticks appear only on the ohrR plot, with higher fontsize
+
+# =============================================================================
+# 0. Import required packages
+# =============================================================================
+
 import os, subprocess
 import logging, traceback, sys
 import pandas as pd
@@ -22,14 +26,16 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 import matplotlib.gridspec as gridspec
 from matplotlib.lines import Line2D
-from matplotlib.ticker import MultipleLocator
+from matplotlib.ticker import MultipleLocator, StrMethodFormatter
 import matplotlib.font_manager as font_manager
+
 # =============================================================================
 # 0. Logging
 # =============================================================================
+
 log = os.path.expanduser('~') + '/GH_project/logs/dS_matrix.log' # Log file
 
-if os.path.exists(log): # Remove årevious log file if it exists
+if os.path.exists(log): # Remove previous log file if it exists
     os.remove(log)
 
 if not os.path.exists(os.path.dirname(log)): # Create log directory if it does not exist
@@ -59,6 +65,7 @@ sys.stdout = open(log, 'a')
 # =============================================================================
 # 0. Input and function definition
 # =============================================================================
+
 # Paths
 aa_path = os.path.expanduser('~') + '/GH_project/data/fasta'
 gene_types = ['GH70', 'GH32', 'other_genes']
@@ -114,17 +121,19 @@ paths2make = [aln_path, codon_path, outdir]
 transposons = {'H3B2-03M': [True, False, False, False, True], 
                'H4B4-02J': [False, True, False, False, False]}
 
+# Positions and size of transposon representations
 y_list = [0.25, 0.75]
-
-fontsize_max = 84
-fontsize_min = 77
 k = 200
 
+# Set font size and style
+fontsize_max = 84
+fontsize_min = 77
 font = font_manager.FontProperties(family='Arial', size = fontsize_min)
 
 # =============================================================================
 # 2. Function definitions
 # =============================================================================
+
 def make_paths(my_path):
     '''This function creates a path if it doesn't exist already
     Input: Path to be created'''
@@ -197,11 +206,13 @@ def get_unique_values(tuple_list):
     return strains
 
 def format_x(x, pos):
+    '''This function specifies how to display the tick labels of the x axis'''
     return f'{x+1:.0f}'
 
 # =============================================================================
 # 0. Remove outputs of prior iterations
 # =============================================================================
+
 for file in os.listdir(seq_outdir):
     if file.endswith('.faa') or file.endswith('fna'):
         os.remove(f'{seq_outdir}/{file}')
@@ -210,12 +221,14 @@ for file in os.listdir(seq_outdir):
 # 1. From amino acid sequences of genes in the 30kb region, including glycosyl
 # hydrolases, create faa and fna files
 # =============================================================================
+
 for folder in gene_types:
     retrieve_gene_seqs(f'{aa_path}/{folder}')
     
 # =============================================================================
 # 2. Align sequences in the faa files and create Pal2nal alignments
 # =============================================================================
+
 for file in os.listdir(seq_outdir):
     if file.endswith('faa'):
         outfile_base = file.replace('faa', 'mafft.faa')
@@ -228,6 +241,7 @@ for file in os.listdir(seq_outdir):
 # =============================================================================
 # 3. Start the plotting!
 # =============================================================================
+
 # Get the length of each alignment to scale gene length in the plots
 length_list = []
 for gene_no in range(1, len(gene_order)+1):
@@ -256,7 +270,6 @@ for t_no in range(1, 6):
 # Create a dataframe assigning different values to identical codons (0),
 # synonymous substitutions (1), non-synonymous substitutions (2) and gaps (3)
 df_aln_dict = {}
-# pos_dict_2 = {}
 fstrains = []
 
 # Create the figure to save the plots
@@ -287,7 +300,7 @@ for gene_no in range(1, len(gene_order)+1):
         if len(strain2) > 6 and '-' not in strain2 and strain2.startswith('H'):
             strain2 = strain2[:4] + '-' + strain2[4:]
         T_presence1 = transposons[strain1][T_no-1] 
-        T_presence2 = transposons[strain2][T_no-1] #sum([transposons[strain1][T_no-1], transposons[strain2][T_no-1]])
+        T_presence2 = transposons[strain2][T_no-1]
         
         print(f'Strain names: {strain1}/{strain2}')
         
@@ -310,6 +323,7 @@ for gene_no in range(1, len(gene_order)+1):
                      clip_on = False, linewidth = 1, linestyle = '--',
                      edgecolor = 'black', facecolor = color)
 
+        # Colors of transposon representations
         if T_presence1 == 1:
             circle_col = 'black'
         else: circle_col = '#F8F9F9'
@@ -317,15 +331,14 @@ for gene_no in range(1, len(gene_order)+1):
             circle2_col = 'black'
         else: circle2_col = '#F8F9F9'
         
-        # circle1 = plt.Circle((0.5, (2-l)/2), 0.2, color = circle_col)
-        ax.scatter([k//2], y_list[0], s = 6000, edgecolor = 'black',  #formerly, y_list[l] instead of 0.5
+        # Plot transposon presence/absence
+        ax.scatter([k//2], y_list[0], s = 6000, edgecolor = 'black',  
                    facecolor = circle_col)
-        ax.scatter([k//2], y_list[1], s = 6000, edgecolor = 'black',  #formerly, y_list[l] instead of 0.5
+        ax.scatter([k//2], y_list[1], s = 6000, edgecolor = 'black',  
                    facecolor = circle2_col)
         ax.set_axis_off()
             
         print(f'Added {gene} presence/absence plot to {comparison}')
-        # ax.add_patch(circle1)
         
     else:
         
@@ -360,11 +373,6 @@ for gene_no in range(1, len(gene_order)+1):
             fstrains = get_unique_values(list(df_aln.columns))
 
             
-        
-        # Reverse index of genes in the forward strand
-        if gene_no >= 27 or gene_no == 16:
-            df_aln = df_aln.iloc[::-1] #.reset_index(drop = True)
-            
         df_aln.index += 1 # Make the index start with 1, not 0
         df_aln_dict[gene] = df_aln # Save dataframe to dictionary
         # Assign colors to the values in the dataframe
@@ -382,19 +390,15 @@ for gene_no in range(1, len(gene_order)+1):
         ax = fig.add_subplot(spec[count, gene_no-1]) # Set the right row and column
         h3 = sns.heatmap(df_aln_dict[gene].T, cmap = cmap, cbar = False, ax = ax) # Plot
         ax.patch.set(lw = 1, ec = 'black') # Border of the subplots
-        gn = gene #.replace('rfbX', '?wzx').replace('wzyC', '?waaL').replace('GH39', '?GH39') # Change some of the gene annotations
+        gn = gene # Change some of the gene annotations
         
         # Add arrows indicating gene direction
         ax.set_title(gn, fontsize = fontsize_min, style = 'italic',
                      fontname = 'Arial') # Add gene names at the top of the plot
-        color = 'white' #'#e5e5e5' # Add background color to arrows
+        color = 'white' # Add background color to arrows
             
-        if gene_no >= 27 or gene_no == 16: # Invert arrows for genes in the forward strand
-            startx = max(df_aln.index)
-            dx = -max(df_aln.index)
-        else: # Otherwise, plot the arrows facing toward the right
-            startx = 0
-            dx = max(df_aln.index)
+        startx = 0
+        dx = max(df_aln.index)
         
         ax.arrow(startx, -2.165*0.14, dx, 0, width = 0.068, head_width = 0.068, 
                  head_length = 30, length_includes_head = True, 
@@ -405,17 +409,17 @@ for gene_no in range(1, len(gene_order)+1):
         if count == 0:
             plt.yticks(rotation=90)
             
-        # nbins = ax.get_xlim()[1]//100 # Number of ticks for the x axis
         plt.tick_params(axis='x', which='major', labelsize = fontsize_min,
                         length = 20) # Increase font size of ax ticks
-        ax.xaxis.set_major_locator(MultipleLocator(150))
-        ax.xaxis.set_major_formatter(format_x)
-        for label in ax.get_xticklabels() :
-            label.set_fontproperties(font)
-        # ticks = list(range(int(ax.get_xlim()[0]), int(ax.get_xlim()[1]+1), 50))
-        # labels = [str(tick+1) for tick in ticks]
-        # ax.set_xticks(ticks, labels)
-        # plt.locator_params(axis='x', nbins=nbins) # Apply change in number of ticks
+            
+        if gene_no >= 27 or gene_no == 16: #For the genes that are in the forward strand
+            ax.invert_xaxis() #Invert the axis
+        ax.xaxis.set_major_locator(MultipleLocator(150)) #Set ticks every 150 positions
+        ax.xaxis.set_major_formatter(format_x) #Apply function to display the index without decimals
+
+        for label in ax.get_xticklabels(): #Loop through tick labels
+            label.set_fontproperties(font) #Apply font formatting
+            
         ax.set(xlabel=None) # Remove x ax label (label on the x axis of the subplot)
         ax.set(ylabel=None) # Remove y ax label
 
@@ -452,14 +456,10 @@ NS_patch = mpatches.Patch(color = '#FF7F3E', label = 'Non-synonymous sites',
 t2_patch = Line2D([], [], markeredgecolor = 'black', marker = 'o', markerfacecolor = 'black',
                   color = 'white', ms = 75, label = 'Transposon in strain')
 
-# t1_patch = Line2D([], [], markeredgecolor = 'black', marker = 'o', markerfacecolor = '#BBBBBB', 
-#            color = 'white', ms = 50, label = 'Transposons in one strain')
-
 t0_patch = Line2D([], [], markeredgecolor = 'black', marker = 'o', markerfacecolor = '#F8F9F9', 
            color = 'white', ms = 75, label = 'Transposon not in strain')
 
-patches = [gap_patch, identity_patch, S_patch, NS_patch, t2_patch, #´t1_patch, 
-           t0_patch]
+patches = [gap_patch, identity_patch, S_patch, NS_patch, t2_patch, t0_patch]
 
 legend = plt.legend(handles = patches,  handlelength = 0.35, handleheight = 1.2, 
                     title = 'Site color', loc = 'upper right', framealpha = 0, 
