@@ -3,7 +3,9 @@
 """
 Created on Thu May  2 19:34:41 2024
 
-@author: marina
+Code to get the domains from the GH70 outgroups.
+
+@author: Marina Mota-Merlo
 """
 
 import pandas as pd
@@ -29,8 +31,8 @@ with open(in_file) as interpro:
         if line[5] == GH70_text:
             if line[0] not in domain_dict.keys():
                 domain_dict[line[0]] = (line[6], line[7])
-            else:
-                domain_dict[line[0]+'_2'] = (line[6], line[7])
+            #else:
+            #    domain_dict[line[0]+'_2'] = (line[6], line[7])
                 
                 
 # =============================================================================

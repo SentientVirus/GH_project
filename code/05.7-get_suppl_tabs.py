@@ -167,9 +167,9 @@ type_list = ['GS1', 'GS2', 'GS3', 'GS4', 'BRS', 'GS2_BRS', 'NGB', 'short',
 repres = [rep.strip('-') for rep in representatives] #Make strain names consistent with locus tags
 
 #Join separated GS2_BRS into one locus_tag, and remove extra locus tags
-GS2_BRS = [GS[:-2] for GS in GS2 if '_2' in GS]
-GS2 = [GS for GS in GS2 if '_2' not in GS]
-BRS = [BS for BS in BRS if BS[:-2] not in GS2_BRS]
+GS2_BRS = [GS[:-4] for GS in GS2 if '_CD1' in GS]
+GS2 = [GS for GS in GS2 if '_CD1' not in GS]
+BRS = [BS for BS in BRS if BS[:-4] not in GS2_BRS]
 
 
 # =============================================================================

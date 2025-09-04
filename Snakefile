@@ -103,7 +103,7 @@ rule get_outgroup_annot:
     input:
         "outgroups/outgroups.faa"
     threads: 16
-    conda: "envs/environment.yml"
+    conda: "envs/alignment_tree.yml"
     log: "logs/interproscan/interpro_outgroups.log"
     shell:
         """
@@ -117,7 +117,7 @@ rule get_outgroup_domains:
         annot = "outgroups/interproscan/outgroup_domains.tsv",
         seq = "outgroups/outgroups.faa"
     threads: 1
-    conda: "envs/environment.yml"
+    conda: "envs/alignment_tree.yml"
     log: "logs/python/outgroups/outgroup_domains.log"
     script: "code/02.11-get_domains.py"
 
@@ -162,19 +162,19 @@ rule create_GH70_functional_all:
 #The conda environment files provide all required packages except for pal2nal (v14).
 rule msa_gtf:
     output:
-        GH70 = expand("data/fasta/GH70/{type}_repset.mafft.{ext}", type = ["GH70_functional", "GS1", "BRS", "BRS2", "BRS3", "BRS_clade", "GS2", "NGB", "complete_short"], ext = ["faa", "fna"]),
+        GH70 = expand("data/fasta/GH70/{type}_repset.mafft.{ext}", type = ["GH70_functional", "GS1", "BRS", "BRS2", "BRS3", "BRS_clade", "GS2", "GS3", "NGB", "complete_short"], ext = ["faa", "fna"]),
         GH32 = expand("data/fasta/GH32/{type}_repset.mafft.{ext}", type = ["GH32", "S1", "S2", "S2a", "S2b", "S3"], ext = ["faa", "fna"]),
         GH70_all = expand("data/fasta/GH70/GH70_functional_all.mafft.{ext}", ext = ["faa", "fna"]),
         GH32_all = expand("data/fasta/GH32/GH32_all.mafft.{ext}", ext = ["faa", "fna"]),
         GH70_out = "data/fasta/GH70/GH70_functional_outgroup_repset.mafft.faa"
     input:
-        GH70 = expand("data/fasta/GH70/{type}_repset.{ext}", type = ["GH70_functional", "GS1", "BRS", "BRS2", "BRS3", "BRS_clade", "GS2", "NGB", "complete_short"], ext = ["faa", "fna"]),
+        GH70 = expand("data/fasta/GH70/{type}_repset.{ext}", type = ["GH70_functional", "GS1", "BRS", "BRS2", "BRS3", "BRS_clade", "GS2", "GS3", "NGB", "complete_short"], ext = ["faa", "fna"]),
         GH32 = expand("data/fasta/GH32/{type}_repset.{ext}", type = ["GH32", "S1", "S2", "S2a", "S2b", "S3"], ext = ["faa", "fna"]),
         GH70_all = expand("data/fasta/GH70/GH70_functional_all.{ext}", ext = ["faa", "fna"]),
         GH32_all = expand("data/fasta/GH32/GH32_all.{ext}", ext = ["faa", "fna"]),
         GH70_out = "data/fasta/GH70/GH70_functional_outgroup_repset.faa"
     threads: 8
-    conda: "envs/environment.yml"
+    conda: "envs/alignment_tree.yml"
     log: "logs/mafft/repset_aln.log"
     shell:
         """
@@ -207,7 +207,7 @@ rule msa_other:
     input:
         expand("data/fasta/other_genes/a_kunkeei_{gene}.{ext}", gene = config["neighbors"], ext = ["faa", "fna"])
     threads: 2
-    conda: "envs/environment.yml"
+    conda: "envs/alignment_tree.yml"
     log: "logs/mafft/neighbors_aln.log"
     shell:
         """
@@ -232,7 +232,7 @@ rule iqtree_gtf:
         gene_GH32 = expand("data/fasta/GH32/{type}_repset.mafft.fna", type = ["GH32", "S1", "S2", "S2a", "S3"]),
         out_GH70 = "data/fasta/GH70/GH70_functional_outgroup_repset.mafft.faa"
     threads: 12
-    conda: "envs/environment.yml"
+    conda: "envs/alignment_tree.yml"
     log: "logs/iqtree/repset_trees.log"
 # Former models: LG+G4+F and GTR+G4+F, then -mset Q.pfam,LG,WAG,JTT
     shell:
@@ -267,7 +267,7 @@ rule iqtree_other:
         prot = expand("data/fasta/other_genes/a_kunkeei_{gene}.mafft.faa", gene = config["neighbors"]),
         gene = expand("data/fasta/other_genes/a_kunkeei_{gene}.mafft.fna", gene = config["neighbors"])
     threads: 4
-    conda: "envs/environment.yml"
+    conda: "envs/alignment_tree.yml"
     log: "logs/iqtree/neighbors_tree.log"
     shell:
         """
@@ -378,7 +378,7 @@ rule codeml_exe:
     params:
         outdir = "/home/marina/GH_project/results"
     log: "logs/python/repset_codeml.log"
-    conda: "envs/environment.yml"
+    conda: "envs/alignment_tree.yml"
     script:
         "code/11-codeml_biopython.py"
 
@@ -393,7 +393,7 @@ rule codeml_other:
     params:
         outdir = "/home/marina/GH_project/results"
     log: "logs/python/neighbors_codeml.log"
-    conda: "envs/environment.yml"
+    conda: "envs/alignment_tree.yml"
     script:
         "code/11.1-codeml_neighbors.py"
 		
@@ -467,26 +467,6 @@ rule presence_absence_tab:
     log: "logs/python/presence_absence.log"
     script:
         "code/04.8-count_GHs.py"
-
-rule plot_delregion:
-    output: "plots/trees/phylogeny.png"
-    input: 
-        tree = "kunkeei_nonclosed.tree",
-        tabs = output_tabs,
-        counts = "plots/counts/GH70_32_counts.tab"
-    params:
-        GS1 = config["GS1"],
-        GS2 = config["GS2"],
-        BRS = config["BRS"],
-        NGB = config["NGB"],
-        short = config["short"],
-        S1 = config["S1"],
-        S2a = config["S2a"],
-        S2b = config["S2b"],
-        S3 = config["S3"]
-    conda: "envs/alignment_tree.yml"
-    log: "logs/python/plot_delregion.log"
-    script: "code/15-ete3_delregion_plot.py"
 
 ##Supplementary table
 rule suppl_tab:
