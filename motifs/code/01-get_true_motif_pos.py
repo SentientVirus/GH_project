@@ -119,7 +119,7 @@ infolder = os.path.expanduser('~') + f'/GH_project/data/fasta/{family}' #Path to
 workdir = os.path.expanduser('~') + '/GH_project/motifs' #Working directory
 output_file = f'{workdir}/{family}_motif_presence_pos.tsv' #Path to output file with motif presence/absence information
 output_file2 = f'{workdir}/{family}_motifs_pos.tsv' #Path to output file with motif sequence and position
-infile = f'{infolder}/complete_{family}_repset.fna' #Input file to search for motifs
+infile = f'{infolder}/complete_{family}_repset.faa' #Input file to search for motifs
 GH_types = ['GS1', 'GS2', 'GS3', 'GS4', 'BRS', 'NGB'] #GH70 types to be assigned to the genes
 tag_type = {} #Initialize dictionary to assign GH type to each locus tag
 prot_list = [] #Initialize list to store protein information
@@ -137,10 +137,10 @@ with open(output_file, 'w') as out_file, open(output_file2, 'w') as out_file2: #
 # =============================================================================
 
 for GH_type in GH_types: #Loop through GH types
-    with open(f'{infolder}/{GH_type}_repset.fna') as handle: #Open .fna files with fasta sequences and locus tags
+    with open(f'{infolder}/{GH_type}_repset.faa') as handle: #Open .faa files with fasta sequences and locus tags
         aa_seqs = SeqIO.parse(handle, 'fasta') #Parse file
         for fasta in aa_seqs: #Loop through fasta records
-            tag_type[fasta.id] = GH_type #Assign the right GH type to the locus tag (ID of the record)
+            tag_type[fasta.id] = GH_type.replace('BRS', 'BrS') #Assign the right GH type to the locus tag (ID of the record)
 
 # =============================================================================
 # 6. Search for motifs in GH32 sequences and save results to the output files
@@ -150,10 +150,10 @@ with open(infile) as handle: #Open input file with all GH32 nucleotide sequences
     codon_seqs = SeqIO.parse(handle, 'fasta') #Parse file contents
     for fasta in codon_seqs: #Loop through fasta records
         if fasta.id in tag_type.keys() or f'{fasta.id}_1' in tag_type.keys(): #If the locus tag is in the GH type dictionary (or the individual domains are)
-            name, sequence = fasta.id, str(fasta.seq.translate()) #Store the locus tag and sequence of the gene
+            name, sequence = fasta.id, str(fasta.seq)#.translate()) #Store the locus tag and sequence of the gene
             name = name.replace('K2W83_RS', 'DSMZ_').replace('LDX55', 'IBH001').replace('APS55_RS', 'MP2_') #Make locus tags show the strain name
             if f'{fasta.id}_1' in tag_type.keys(): #If the gene type dictionary contains locus tags ending in _1 for the gene
-                category = 'GS2_BRS' #Assign it to the GS2_BRS category (double-domain)
+                category = 'GS2-BrS' #Assign it to the GS2_BRS category (double-domain)
             else: category = tag_type[fasta.id] #Otherwise, simply assign it to a category based on the locus tag
             motif_list = [''] #Create a list with an empty string at index 0
             for i in range(1, 8): #Loop from 1 to 7

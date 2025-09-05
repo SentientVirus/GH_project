@@ -1,7 +1,10 @@
 #Code by Marina Mota-Merlo
-#This pipeline requires MAFFT, IQtree, PAL2NAL and PAML. It also requires Python3 with Biopython and Pandas.
+#This pipeline requires MAFFT, PAL2NAL and PAML. It also requires Python3 with Biopython and Pandas.
+
+#Section to import required Python modules
 import os
 
+#Section with functions to retrieve the list of input or output files
 def get_files(path_to_files, term = '0.faa'):
     faa = [f'{path_to_files}/{file}' for file in os.listdir(path_to_files) if file.endswith(term)]
     return faa
@@ -26,63 +29,63 @@ def get_parsed(path_to_files = 'all_core/codons', base_outpath = 'all_core/resul
     print(outfiles)
     return outfiles
 
-rule mafft:
+rule mafft: #Rule to generate amino acid alignments
         input: 
                 get_files('all_core/fasta')
         output: 
                 get_aln_files(get_files('all_core/fasta'))
-        conda: 'envs/environment.yml'
+        conda: 'envs/core_CodeML.yml'
         threads: 8
         shell:
                 """
-                for file in {input};
+                for file in {input}; #Loop through input files
                 do
-                outfile=${{file/.faa/.mafft.faa}}
-                mafft-linsi --thread {threads} $file > $outfile;
+                outfile=${{file/.faa/.mafft.faa}} #Define path to the output file
+                mafft-linsi --thread {threads} $file > $outfile; #Run Mafft L-INS-i
                 done
                 """
 
-rule pal2nal:
+rule pal2nal: #Rule to convert the amino acid alignment to a codon alignment
 	input:
-		aln1 = get_aln_files(get_files('all_core/fasta')),
-		aln2 = get_files('all_core/fasta', '.fna')
+		aln1 = get_aln_files(get_files('all_core/fasta')), #Protein alignments
+		aln2 = get_files('all_core/fasta', '.fna') #Nucleotide sequences
 	output:
 		get_pal2nal('all_core/fasta', 'all_core/codons')
 	threads: 2
         shell:
 		"""
-                mkdir -p all_core/codons
-                for file in {input.aln2};
+                mkdir -p all_core/codons #Create output directory if it doesn't exist
+                for file in {input.aln2}; #Loop through input nucleotide files
                 do
-                file2=${{file/.fna/.mafft.faa}}
-                outfile=${{file/fasta/codons}}
-                outfile=${{outfile/.fna/.pal2nal}}
-                pal2nal.v14/pal2nal.pl $file2 $file -output paml -nogap > $outfile
+                file2=${{file/.fna/.mafft.faa}} #Retrieve the name of the amino acid alignment file
+                outfile=${{file/fasta/codons}} #Fix the path to the output file
+                outfile=${{outfile/.fna/.pal2nal}} #Fix the extension of the output file
+                pal2nal.v14/pal2nal.pl $file2 $file -output paml -nogap > $outfile #Run Pal2Nal to generate a codon alignment without gaps
                 done
                 """
 
-rule codeml_exe:
+rule codeml_exe: #Rule to run CodeML
 	input:
 		get_pal2nal('all_core/fasta', 'all_core/codons'),
-		'trees/empty.tree'
+		'trees/empty.tree' #Empty file
 	output:
                 outdir = directory('all_core/results'), 
-                outfiles = get_CodeML()  #'results/core_genes/{gnrl}/{gnrl}.txt"
+                outfiles = get_CodeML()
 	threads: 1
         log: 'logs/python/all_codeml.log'
-        conda: 'envs/environment.yml'
+        conda: 'envs/core_CodeML.yml'
 	script: 
                 'code/core_pipeline/all_core/04-codeml_core.py'
 		
-rule run_parser:
+rule run_parser: #Rule to parse CodeML results
 	input:
 		txt = get_CodeML()
 	output:
-		dNdS = get_parsed(ext = 'dNdS.tsv'),
-		stats = get_parsed(ext = 'stats.tsv')
+		dNdS = get_parsed(ext = 'dNdS.tsv'), #File with a list of pairwise evolutionary metrics between strains for each gene
+		stats = get_parsed(ext = 'stats.tsv') #Statistics (mean, median) for each evolutionary metric and gene
 	threads: 1
         log: 'logs/python/parse_codeml.log'
-        conda: 'envs/environment.yml'
+        conda: 'envs/core_CodeML.yml'
 	script:
 		'code/core_pipeline/all_core/05-parse_codeml.py'
 

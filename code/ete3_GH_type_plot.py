@@ -205,7 +205,7 @@ with open(config_file) as conf: #Open config file with dataset informatin
     GH_doms = GH70_doms + GH32_doms
     strains = py_config['representatives'] #Get all representative strains
     s_nominus = remove_minus(strains) #Remove minus symbol from strain names
-    GS2_BRS =  [GH_gene.replace('_2', '') for GH_gene in GS2 if GH_gene.replace('_2', '_1') in BRS] # Retrieve BRS domains of the GS2_BRS proteins
+    GS2_BRS =  [GH_gene.replace('_CD1', '') for GH_gene in GS2 if GH_gene.replace('_CD1', '_CD2') in BRS] # Retrieve BRS domains of the GS2_BRS proteins
 
 # =============================================================================
 # Load tree file and save gene types to dictionary
@@ -225,8 +225,8 @@ for GH in GH70_types + GH32_types: #Loop through gene types
         gene = replace_strain_name(gene_dom) #Change locus tag
         if gene_dom in GS1: #If the locus tag is in GS1
             gene_types[gene] = 'GS1' #Assign it to type GS1
-        elif gene_dom in GS2 or (gene_dom[:-2] + '_2' in GS2): #If the locus tag is in GS2 (or part of a GS2_BRS)
-            if gene_dom[:-2] + '_1' in BRS: #If the locus tag is also in BRS
+        elif gene_dom in GS2 or (gene_dom[:-2] + '_CD1' in GS2): #If the locus tag is in GS2 (or part of a GS2_BRS)
+            if gene_dom[:-2] + '_CD2' in BRS: #If the locus tag is also in BRS
                 gene_types[gene] = 'GS2_BRS' #Assign the gene to GS2_BRS
             else: gene_types[gene] = 'GS2' #Otherwise, assign the gene to GS2
         elif gene_dom in BRS: #If the locus tag is in BRS
@@ -253,19 +253,19 @@ for GH in GH70_types + GH32_types: #Loop through gene types
             freader = csv.reader(dfile, delimiter = '\t') #Read the file contents
             for line in freader: #Loop through the lines in the file
                 gene_locus = replace_strain_name(line[0]).replace('-', '').replace('fhon2', 'Fhon2') #Get the locus tag in each line
-                if ((line[0] in GH_doms) or (gene_locus.upper() in GH_doms) or (f'{gene_locus.upper()}_1' in GH_doms) or (f'{line[0]}_1' in GH_doms) or ('MP2' in domain_file and int(gene_locus.split('_')[1]) < 14000)) and ('Glycosyl hydrolase family 70' in line[5] or 'glyco_32' in line[5]): #Get the locus tags of interest
+                if ((line[0] in GH_doms) or (gene_locus.upper() in GH_doms) or (f'{gene_locus.upper()}_CD2' in GH_doms) or (f'{line[0]}_CD2' in GH_doms) or ('MP2' in domain_file and int(gene_locus.split('_')[1]) < 14000)) and ('Glycosyl hydrolase family 70' in line[5] or 'glyco_32' in line[5]): #Get the locus tags of interest
                     if 'MP2' in domain_file: #If the strain is MP2
                         gene_locus = gene_locus.replace('_13350', '_03850').replace('_13360', '_03845') #Make extra changes to the locus tags
                     pos = (int(line[6])*3, int(line[7])*3) #Get the position of the domains
                     if gene_locus in domain_dict.keys() and domain_dict[gene_locus] != pos: #If the locus tag is already stored
                         if 'DSMZ' not in domain_file: #And DSMZ is not in the file name
-                            domain_dict[f'{gene_locus}_1'] = domain_dict[gene_locus] #The position of the BRS domain is the previously stored one
+                            domain_dict[f'{gene_locus}_CD2'] = domain_dict[gene_locus] #The position of the BRS domain is the previously stored one
                             del domain_dict[gene_locus] #Remove locus tag from dictionary keys
-                            gene_locus = f'{gene_locus}_2' #The new position is the position of GS2
+                            gene_locus = f'{gene_locus}_CD1' #The new position is the position of GS2
                         else: #If DSMZ is in the file name
-                            domain_dict[f'{gene_locus}_2'] = domain_dict[gene_locus] #The previously stored position corresponds to GS2
+                            domain_dict[f'{gene_locus}_CD1'] = domain_dict[gene_locus] #The previously stored position corresponds to GS2
                             del domain_dict[gene_locus] #Remove locus tag key
-                            gene_locus = f'{gene_locus}_1' #The newly stored position corresponds to BRS
+                            gene_locus = f'{gene_locus}_CD2' #The newly stored position corresponds to BRS
                     domain_dict[gene_locus] = pos #Store the position in the dictionary
     
 # =============================================================================
@@ -478,10 +478,10 @@ for GH in GH70_types + GH32_types: #Loop through gene types
         new_domains = [] #Create empty list to store extra domains
         for element in gene_dict[key]: #Loop through domains to be plotted next to each leaf (locus tag)
             divide = False #Don't divide the gene
-            if GH == 'BRS' and f'|{GH}' in element[7] and element[1] - element[0] > 2000 and not key.endswith('_1'): #If it is the BRS plot and the gene is a single-domain BRS
+            if GH == 'BRS' and f'|{GH}' in element[7] and element[1] - element[0] > 2000 and not key.endswith('_CD2'): #If it is the BRS plot and the gene is a single-domain BRS
                 divide = True #Divide the gene
                 print(key, GH, 'Domain BRS')
-            elif GH == 'BRS' and '|GS2_BRS' in element[7] and key.endswith('_1'): #If the plot is for BRS and the domain is a BRS in a double-domain GH70
+            elif GH == 'BRS' and '|GS2_BRS' in element[7] and key.endswith('_CD2'): #If the plot is for BRS and the domain is a BRS in a double-domain GH70
                 divide = True
                 print(key, GH, 'Domain BRS from GS2_BRS')
             elif GH == 'GS2' and f'|{GH}' in element[7]: #If the plot is for GS2 and the domain is a GS2

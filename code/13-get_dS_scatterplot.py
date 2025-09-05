@@ -95,14 +95,15 @@ for i in range(len(GH_types)): #Loop through gene types
     GH = GH_types[i] #Name of the gene type
     core_dir = f'{coredir}/{GH}/results'
     axs[0, i].set_title(GH, fontsize = fontsize_title) #Use the name of the gene as the title of the scatter plots
-    if i == 0:
-        color = '#FF707C'
-    elif i == 1:
-        color = '#FFE570'
-    elif i == 2:
-        color = '#84E8A7'
-    elif i == 3:
-        color = '#336E74'
+    color = 'slategrey'
+    # if i == 0:
+    #     color = '#FF707C'
+    # elif i == 1:
+    #     color = '#FFE570'
+    # elif i == 2:
+    #     color = '#84E8A7'
+    # elif i == 3:
+    #     color = '#336E74'
     
     label_list = [] #Create an empty list to store labels (not used)
     x_list = [] #Create a list to store pairwise dS values
@@ -191,16 +192,19 @@ for i in range(len(GH_types)): #Loop through gene types
 subtitle1 = Line2D([], [], marker = '', color = 'black', label = 'Scatter plots', 
                     ms = 0, ls = 'none') #Title of the scatter plot legends
 
-sub_patch = Line2D([0], [0], marker = 'o', color = 'black', label = 'Parwise ${d_S}$',
+sub_patch = Line2D([0], [0], marker = 'o', color = 'black', label = '(x, y)',
                         markerfacecolor = 'slategrey', markersize = 10, 
                         alpha = 0.8, linewidth = 0) #Circular marker in grey
 
 line_patch = Line2D([0, 1], [1, 0], marker = '$/$', color = 'lightgrey', 
                     label = 'x = y', markersize = 20, alpha = 1, linewidth = 0) #Diagonal line marker
 
+line_patch2 = Line2D([0, 1], [1, 0], marker = '$/$', color = 'darkorange', 
+                    label = 'Linear\nregressions', markersize = 20, alpha = 1, linewidth = 0) #Diagonal line marker
 
 
-patches = [subtitle1, sub_patch, line_patch] #List with all elements of the legend
+
+patches = [subtitle1, sub_patch, line_patch, line_patch2] #List with all elements of the legend
 
 legend = fig.legend(handles = patches,  handlelength = 0.6, handleheight = 1.5, 
                     loc = 'upper right', framealpha = 0, 

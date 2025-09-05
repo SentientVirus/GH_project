@@ -62,7 +62,7 @@ leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
               'DSM': '#0072B2'}
 
 treefile = os.path.expanduser('~') + '/GH_project/add_species/results/alignment/blastp_species.mafft.faa.treefile' #Full path to the tree file
-outfile = os.path.expanduser('~') + '/GH_project/add_species/plots/blastp_multispecies_tree.png' #Output image with the tree representation
+outfile = os.path.expanduser('~') + '/GH_project/add_species/plots/blastp_multispecies_tree_support.png' #Output image with the tree representation
 outdir = os.path.dirname(outfile) #Output directory
 
 if not os.path.exists(outdir): #If the output directory does not exist
@@ -108,7 +108,7 @@ for n in t.traverse(): #Loop through the nodes in the tree
 
        support_face = TextFace(int(n.support), fgcolor = color, fsize = 24,
                                ftype = 'Arial') #Create a text with the support value
-       # n.add_face(support_face, column = 0, position='branch-top') #Add the text to the corresponding node in the tree
+       n.add_face(support_face, column = 0, position='branch-top') #Add the text to the corresponding node in the tree
    
 # =============================================================================
 # 4. Modify the style of the leaf names in the tree

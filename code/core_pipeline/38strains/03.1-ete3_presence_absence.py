@@ -199,7 +199,7 @@ for treefile in treefiles: #Loop through tree files
     ts.show_branch_length = False #Hide branch lengths
     ts.show_branch_support = False #Hide branch supports to add formatted text
     ts.show_leaf_name = False #Hide leaf names to add formatted text
-    ts.scale =  30000 #Scale of the tree
+    ts.scale =  20000 #Scale of the tree
     ts.scale_length = 0.01 #Scale legend bar
     ts.legend_position = 2 #Legend placement at top left
     ts.draw_guiding_lines = True #Draw guiding lines
@@ -224,7 +224,7 @@ for treefile in treefiles: #Loop through tree files
     for leaf in t.get_leaves(): #Loop through the leaves sorted by phylogeny 
         nleaf = leaf.name.replace('-', '').upper()  #Create leaf names without the '-' symbol
         color = leaf_color.get(nleaf, None) #Use that to retrieve the leaf color
-        name_face = TextFace(leaf.name, ftype = 'Arial', fgcolor = color, 
+        name_face = TextFace(leaf.name.replace('DSM', 'DSMZ'), ftype = 'Arial', fgcolor = color, 
                              fsize = 40) #Create the text with leaf names
         leaf.add_face(name_face, column = 0, position = 'aligned') #Add the text to the leaf
         
@@ -320,6 +320,7 @@ for treefile in treefiles: #Loop through tree files
     nodeJ.ladderize(0)
     nodeK = t.get_common_ancestor('H4B4-12M', 'H4B5-01J')
     nodeK.ladderize(1)
+    t.convert_to_ultrametric()
     
     t.render(outfile, tree_style = ts) #Save the tree plot to a PNG file
     t.render(outfile.replace('png', 'tiff'), tree_style = ts) #Save plot to TIFF

@@ -123,7 +123,7 @@ infolder = os.path.expanduser('~') + f'/GH_project/data/fasta/{family}' #Path to
 workdir = os.path.expanduser('~') + '/GH_project/motifs' #Working directory
 output_file = f'{workdir}/{family}_motif_presence_pos.tsv' #Path to output file with motif presence/absence information
 output_file2 = f'{workdir}/{family}_motifs_pos.tsv' #Path to output file with motif sequence and position
-infile = f'{infolder}/complete_{family}_repset.fna' #Input file to search for motifs
+infile = f'{infolder}/complete_{family}_repset.faa' #Input file to search for motifs
 GH_types = ['S1', 'S2a', 'S2b', 'S3'] #GH32 types to be assigned to the genes
 tag_type = {} #Initialize dictionary to assign GH type to each locus tag
 prot_list = [] #Initialize list to store protein information
@@ -141,7 +141,7 @@ with open(output_file, 'w') as out_file, open(output_file2, 'w') as out_file2: #
 # =============================================================================
 
 for GH_type in GH_types: #Loop through GH types
-    with open(f'{infolder}/{GH_type}_repset.fna') as handle: #Open .fna files with fasta sequences and locus tags
+    with open(f'{infolder}/{GH_type}_repset.faa') as handle: #Open .faa files with fasta sequences and locus tags
         aa_seqs = SeqIO.parse(handle, 'fasta') #Parse file
         for fasta in aa_seqs: #Loop through fasta records
             tag_type[fasta.id] = GH_type #Assign the right GH type to the locus tag (ID of the record)
@@ -153,7 +153,7 @@ for GH_type in GH_types: #Loop through GH types
 with open(infile) as handle: #Open input file with all GH32 nucleotide sequences
     codon_seqs = SeqIO.parse(handle, 'fasta') #Parse the file contents
     for fasta in codon_seqs: #Loop through fasta records in the file
-        name, sequence = fasta.id, str(fasta.seq.translate()) #Retrieve the gene ID and sequence
+        name, sequence = fasta.id, str(fasta.seq) #.translate()) #Retrieve the gene ID and sequence
         if 'K2W83' in name: #If the locus tag comes from DSMZ 12361
             name = name.replace('K2W83_RS', 'DSMZ_') #Modify it to show the strain name
         elif 'LDX55' in name: #Same for IBH001

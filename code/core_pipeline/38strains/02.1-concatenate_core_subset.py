@@ -38,7 +38,7 @@ for file in infiles:
     records = []
     with open(file) as handle:
         for record in SeqIO.parse(handle, 'fasta'):
-            record.id = record.id.split('_')[0].replace('K2W83', 'DSM').replace('LDX55', 'IBH001').replace('FHON', 'fhon')
+            record.id = record.id.split('_')[0].replace('K2W83', 'DSMZ').replace('LDX55', 'IBH001').replace('FHON', 'fhon')
             if record.id.startswith('H'):
                 record.id = record.id[:4] + '-' + record.id[4:]
             record.description = record.id
