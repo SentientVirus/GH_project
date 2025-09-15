@@ -188,19 +188,19 @@ for folder in ['A', 'B']:
         if gene.name == 18:
             gene_name = gene['gene_name'] + '2'
         elif gene.name == 7:
-            gene_name = 'CDS1'
+            gene_name = 'cds1'
         elif gene.name == 9:
-            gene_name = 'CDS2'
+            gene_name = 'cds2'
         elif gene.name == 10:
-            gene_name = 'CDS3'
+            gene_name = 'cds3'
         elif gene.name == 11:
-            gene_name = 'CDS4'
+            gene_name = 'cds4'
         elif gene.name == 13:
-            gene_name = 'CDS5'
+            gene_name = 'cds5'
         elif gene.name == 14:
-            gene_name = 'CDS7'
+            gene_name = 'cds7'
         elif gene.name == 16:
-            gene_name = 'CDS8'
+            gene_name = 'cds8'
         else: gene_name = gene['gene_name']
         ax3.annotate(gene_name, style = 'italic', rotation = 0, family = 'Arial',
               xy = (hpos, 90), fontsize = 14,
