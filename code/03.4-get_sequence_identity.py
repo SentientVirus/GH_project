@@ -89,6 +89,7 @@ def process_input(infile: str, path: str, suffix: str, GH_dict: dict, pos_dict: 
         for i in range(len(record_list)-1):
             for j in range(i+1, len(record_list)):
                 GH_name = f'{GH_dict[record_list[i].id]}/{GH_dict[record_list[j].id]}'
+                GH_name = GH_name.replace('BRS', 'BrS').replace('short', 'PTL')
                 perc_ident = needle_align_code(record_list[i].seq, record_list[j].seq)
                 pos_dict[(record_list[i].id, record_list[j].id)] = perc_ident
                 with open(out_file, 'a') as out:
