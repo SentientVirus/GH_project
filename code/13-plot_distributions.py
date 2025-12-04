@@ -15,6 +15,7 @@ strains that feature GS2.
 import os
 import matplotlib.pyplot as plt
 from scipy.stats import ks_2samp
+from math import sqrt
 
 # =============================================================================
 # 1. Define output and formatting variables
@@ -104,29 +105,53 @@ for gtype in gtypes: #Loop through gene types
                 type_dS.append(dS)
             if 0.01 < w < 1.5:
                 type_w.append(w)
-                
+    
+    #Test to standardize the values for core genes    
+    mean_core = sum(dS_list)/len(dS_list)
+    sd_core = [(n-mean_core)**2 for n in dS_list]
+    sd_core = sqrt(sum(sd_core)/(len(sd_core)-1))
+    std_core_dS = [(n-mean_core)/sd_core for n in dS_list]
+
+    #Same, but for gene comparisons
+    mean_type = sum(type_dS)/len(type_dS)
+    sd_type = [(n-mean_type)**2 for n in type_dS]
+    sd_type = sqrt(sum(sd_type)/(len(sd_type)-1))
+    std_type_dS = [(n-mean_type)/sd_type for n in type_dS]
+
     #Perform a Kolmogorov-Smirnov test to check if the distributions of core genes and GH70 subtypes are significantly different
-    ks_stat = ks_2samp(type_dS, dS_list)
+    ks_stat = ks_2samp(w_list, type_w)
     print(ks_stat)
                 
     axs[i].set_facecolor('#FFF9EF') #Color the axis background
     axs[i].grid(False) #Remove grid
     axs[i].set_xlim(0, 1.5) #Set the range of the x axis
     axs[i].set_xticks([0, 0.5, 1, 1.5]) #Set axis ticks
+
     #Plot the core gene dS values as a histogram with 50 bins
-    axs[i].hist(dS_list, bins = 50, range = (0, 1.5), linewidth = 0.5, color = '#6B818C', edgecolor='black', density = False, alpha = 1, zorder = 15)
-    
+    axs[i].hist(w_list, bins = 50, range = (0, 1.5), linewidth = 0.5, color = '#6B818C', edgecolor='black', density = False, alpha = 1, zorder = 15)
+
     ax2 = axs[i].twinx() #Create a twin axis
     #Plot a histogram again, this type with the pairwise dS from the gene subtype
-    ax2.hist(type_dS, bins=50, range = (0, 1.5), linewidth=0.5, color = '#D8E4FF', edgecolor='black', density = False, alpha = 0.8, zorder = 15)
+    ax2.hist(type_w, bins=50, range = (0, 1.5), linewidth=0.5, color = '#D8E4FF', edgecolor='black', density = False, alpha = 0.8, zorder = 15)
     ax2.tick_params(axis='both', which='major', labelsize = tick_fontsize, length = 0) #Remove the ticks, but keep the labels
     
     max_y = max(ax2.get_yticks()) #Get the highest tick value
     ax2.set_ylim(0, max_y) #Set the scale to the highest tick value
+
     #Add text with the KS test results
-    ax2.text(1.45, max_y, f'$KS = {ks_stat[0]:.3f}$, $p$-$value < 10⁻⁵$', fontsize = 14, 
-             horizontalalignment = 'right', verticalalignment = 'top', zorder = 30)
-    
+    if ks_stat[1] < 1E-10:
+        ax2.text(1.45, max_y, f'$KS = {ks_stat[0]:.3f}$, ' + r'$p$-$value < 10^{-10}$', fontsize = 14, 
+                horizontalalignment = 'right', verticalalignment = 'top', zorder = 30)
+    elif ks_stat[1] < 1E-5:
+        ax2.text(1.45, max_y, f'$KS = {ks_stat[0]:.3f}$, ' + r'$p$-$value < 10^{-5}$', fontsize = 14, 
+                horizontalalignment = 'right', verticalalignment = 'top', zorder = 30)
+    elif ks_stat[1] < 1E-3:
+        ax2.text(1.45, max_y, f'$KS = {ks_stat[0]:.3f}$, ' + r'$p$-$value < 10^{-3}$', fontsize = 14, 
+                horizontalalignment = 'right', verticalalignment = 'top', zorder = 30)
+    else:
+        ax2.text(1.45, max_y, f'$KS = {ks_stat[0]:.3f}$, $p$-$value = {ks_stat[1]:.3f}$', fontsize = 14, 
+                horizontalalignment = 'right', verticalalignment = 'top', zorder = 30)
+
     # axs[i].set_ylim(0, 12.5)
     # ax2.set_ylim(0, 12.5)
     
@@ -139,7 +164,7 @@ for gtype in gtypes: #Loop through gene types
     
     i += 1 #Increase the count variable by 1 
     
-    plt.title(f'${gtype}$', fontsize = fontsize_title) #Add the gene name as plot title
+    plt.title(f'${gtype.replace("R", "r")}$', fontsize = fontsize_title) #Add the gene name as plot title
     
 [axs[n].tick_params(axis='both', which='major', labelsize = tick_fontsize) for n in range(0, 4)] #Adjust fontsize of the tick labels
 
