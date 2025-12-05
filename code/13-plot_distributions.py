@@ -161,16 +161,16 @@ for gtype in gtypes: #Loop through gene types
 
         #Add text with the KS test results
         if ks_stat[1] < 1E-10:
-            ax2.text(1.45, max_y, f'$KS = {ks_stat[0]:.3f}$, ' + r'$p$-$value < 10^{-10}$', fontsize = 14, 
+            ax2.text(1.45, 0.9*max_y, f'$KS = {ks_stat[0]*ks_stat.statistic_sign:.3f}$\n' + r'$p < 10^{-10}$', fontsize = 14, 
                     horizontalalignment = 'right', verticalalignment = 'top', zorder = 30)
         elif ks_stat[1] < 1E-5:
-            ax2.text(1.45, max_y, f'$KS = {ks_stat[0]:.3f}$, ' + r'$p$-$value < 10^{-5}$', fontsize = 14, 
+            ax2.text(1.45, 0.9*max_y, f'$KS = {ks_stat[0]*ks_stat.statistic_sign:.3f}$\n' + r'$p < 10^{-5}$', fontsize = 14, 
                     horizontalalignment = 'right', verticalalignment = 'top', zorder = 30)
         elif ks_stat[1] < 1E-3:
-            ax2.text(1.45, max_y, f'$KS = {ks_stat[0]:.3f}$, ' + r'$p$-$value < 10^{-3}$', fontsize = 14, 
+            ax2.text(1.45, 0.9*max_y, f'$KS = {ks_stat[0]*ks_stat.statistic_sign:.3f}$\n' + r'$p < 10^{-3}$', fontsize = 14, 
                     horizontalalignment = 'right', verticalalignment = 'top', zorder = 30)
         else:
-            ax2.text(1.45, max_y, f'$KS = {ks_stat[0]:.3f}$, $p$-$value = {ks_stat[1]:.3f}$', fontsize = 14, 
+            ax2.text(1.45, 0.9*max_y, f'$KS = {ks_stat[0]*ks_stat.statistic_sign:.3f}$\n$p = {ks_stat[1]:.3f}$', fontsize = 14, 
                     horizontalalignment = 'right', verticalalignment = 'top', zorder = 30)
 
         if k == 0: #If it is the first row
