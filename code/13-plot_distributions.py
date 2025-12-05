@@ -36,6 +36,9 @@ plt.rcParams['font.family'] = 'Arial' #Font type
 
 i = 0 #Variable to loop through the axes
 
+dNdS = {}
+avg_dNdS = {}
+
 # =============================================================================
 # 2. Create the plot layout
 # =============================================================================
@@ -54,6 +57,7 @@ plt.subplots_adjust(hspace = 0.2, top = 1, bottom = 0.03, wspace = 0.4) #Adjust 
 
 for gtype in gtypes: #Loop through gene types
     print(gtype) #Print gene types
+    dNdS[gtype] = []
 
     indir = os.path.expanduser('~') + f'/GH_project/all_core/{gtype}/results' #Path to input directory
     
@@ -81,18 +85,26 @@ for gtype in gtypes: #Loop through gene types
                 dN = float(values[2]) #Retrieve dN
                 dS = float(values[3]) #Retrieve dS
                 w = float(values[4]) #Retrieve dN/dS
-                dS_check = False #Boolean to check if the dS falls in the desired range
-                dN_check = False #Boolean to check if the dN falls in the desired range
+                # dS_check = False #Boolean to check if the dS falls in the desired range
+                # dN_check = False #Boolean to check if the dN falls in the desired range
                 
+                # if 0.01 < dN < 1.5 and 0.01 < dS < 1.5:
+                #     dN_list.append(dN)
+                #     dS_list.append(dS)
+                #     w_list.append(w)
                 #Add the values to the corresponding list if the value is > 0.01 and < 1.5
-                if 0.01 < dN < 1.5: #If the dN falls in the desired range
+                if dN < 1.5: #If the dN falls in the desired range
                     dN_list.append(dN) #Add it to the list
-                    dN_check = True #Set the dN boolean to true
-                if 0.01 < dS < 1.5: #Same, but for the dS
+                else:
+                    dN_list.append(1.5)
+                    # dN_check = True #Set the dN boolean to true
+                if dS < 1.5: #Same, but for the dS
                     dS_list.append(dS)
-                    dS_check = True
-                if dN_check and dS_check: #If both the dN and dS fall in the desired range
-                    w_list.append(w) #Retrieve the dN/dS
+                else:
+                    dS_list.append(1.5)
+                    # dS_check = True
+                # if dN_check and dS_check: #If both the dN and dS fall in the desired range
+                w_list.append(w) #Retrieve the dN/dS
              
     #Do the same, but for the pairwise comparisons within the gene subtype
     with open(type_comparison) as tsv:
@@ -102,17 +114,30 @@ for gtype in gtypes: #Loop through gene types
             dN = float(values[2])
             dS = float(values[3])
             w = float(values[4])
-            check1 = False #Boolean to check if the dN falls within the desired range
-            check2 = False #Boolean to check if the dS falls within the desired range
+            # check1 = False #Boolean to check if the dN falls within the desired range
+            # check2 = False #Boolean to check if the dS falls within the desired range
             
-            if 0.01 < dN < 1.5:
+            # if 0.01 < dN < 1.5 and 0.01 < dS < 1.5:
+            #     type_dN.append(dN)
+            #     type_dS.append(dS)
+            #     type_w.append(w)
+            
+            if dN < 0.05:
                 type_dN.append(dN)
-                check1 = True
-            if 0.01 < dS < 1.5:
+                # check1 = True
+            else:
+                type_dN.append(0.05)
+            if dS < 1.5:
                 type_dS.append(dS)
-                check2 = True
-            if check1 and check2:
-                type_w.append(w)
+            else:
+                type_dS.append(1.5)
+            #     check2 = True
+            # if check1 and check2:
+            type_w.append(w)
+            
+            if dS == 0:
+                dS = 0.01
+            dNdS[gtype] += [dN/dS]
     
     #Test to standardize the values for core genes    
     mean_core = sum(dS_list)/len(dS_list)
@@ -125,52 +150,63 @@ for gtype in gtypes: #Loop through gene types
     sd_type = [(n-mean_type)**2 for n in type_dS]
     sd_type = sqrt(sum(sd_type)/(len(sd_type)-1))
     std_type_dS = [(n-mean_type)/sd_type for n in type_dS]
+    
+    print(f'Length of core gene lists: dS - {len(dS_list)}, dN - {len(dN_list)} - w - {len(w_list)}')
+    print(f'Length of {gtype} lists: dS - {len(type_dS)}, dN - {len(type_dN)} - w - {len(type_w)}')
 
     for k in range(3):
         print(k, i)
         if k == 0:
             core = dS_list
             subtype = type_dS
+            max_x = 1.5
+            x_ticks = [0.0, 0.5, 1.0, 1.5]
         elif k == 1:
             core = dN_list
             subtype = type_dN
+            max_x = 0.05 #max(max(dN_list), max(type_dN))
+            # x_ticks = [0.0, 0.1, 0.2, 0.3, 0.4]
+            x_ticks = [0.00, 0.01, 0.02, 0.03, 0.04, 0.05]
         elif k == 2:
             core = w_list
             subtype = type_w
-
-
+            max_x = max(max(w_list), max(type_w))
+            # x_ticks = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5]
+        
         #Perform a Kolmogorov-Smirnov test to check if the distributions of core genes and GH70 subtypes are significantly different
         ks_stat = ks_2samp(core, subtype)
         print(ks_stat)
                     
         axs[k, i].set_facecolor('#FFF9EF') #Color the axis background
         axs[k, i].grid(False) #Remove grid
-        axs[k, i].set_xlim(0, 1.5) #Set the range of the x axis
-        axs[k, i].set_xticks([0, 0.5, 1, 1.5]) #Set axis ticks
+        axs[k, i].set_xlim(0, max_x) #Set the range of the x axis
+        if k != 2:
+            axs[k, i].set_xticks(x_ticks) #Set axis ticks
 
         #Plot the core gene dS values as a histogram with 50 bins
-        axs[k, i].hist(core, bins = 50, range = (0, 1.5), linewidth = 0.5, color = '#6B818C', edgecolor='black', density = False, alpha = 1, zorder = 15)
+        axs[k, i].hist(core, bins = 50, range = (0, max_x), linewidth = 0.5, color = '#6B818C', edgecolor='black', density = False, alpha = 1, zorder = 15)
 
         ax2 = axs[k, i].twinx() #Create a twin axis
         #Plot a histogram again, this type with the pairwise dS from the gene subtype
-        ax2.hist(subtype, bins=50, range = (0, 1.5), linewidth=0.5, color = '#D8E4FF', edgecolor='black', density = False, alpha = 0.8, zorder = 15)
+        ax2.hist(subtype, bins=50, range = (0, max_x), linewidth=0.5, color = '#D8E4FF', edgecolor='black', density = False, alpha = 0.8, zorder = 15)
         ax2.tick_params(axis='both', which='major', labelsize = tick_fontsize, length = 0) #Remove the ticks, but keep the labels
         
         max_y = max(ax2.get_yticks()) #Get the highest tick value
         ax2.set_ylim(0, max_y) #Set the scale to the highest tick value
+        x_pos = max_x*1.45/1.5
 
         #Add text with the KS test results
         if ks_stat[1] < 1E-10:
-            ax2.text(1.45, 0.9*max_y, f'$KS = {ks_stat[0]*ks_stat.statistic_sign:.3f}$\n' + r'$p < 10^{-10}$', fontsize = 14, 
+            ax2.text(x_pos, 0.9*max_y, f'$KS = {ks_stat[0]*ks_stat.statistic_sign:.3f}$\n' + r'$p < 10^{-10}$', fontsize = 14, 
                     horizontalalignment = 'right', verticalalignment = 'top', zorder = 30)
         elif ks_stat[1] < 1E-5:
-            ax2.text(1.45, 0.9*max_y, f'$KS = {ks_stat[0]*ks_stat.statistic_sign:.3f}$\n' + r'$p < 10^{-5}$', fontsize = 14, 
+            ax2.text(x_pos, 0.9*max_y, f'$KS = {ks_stat[0]*ks_stat.statistic_sign:.3f}$\n' + r'$p < 10^{-5}$', fontsize = 14, 
                     horizontalalignment = 'right', verticalalignment = 'top', zorder = 30)
         elif ks_stat[1] < 1E-3:
-            ax2.text(1.45, 0.9*max_y, f'$KS = {ks_stat[0]*ks_stat.statistic_sign:.3f}$\n' + r'$p < 10^{-3}$', fontsize = 14, 
+            ax2.text(x_pos, 0.9*max_y, f'$KS = {ks_stat[0]*ks_stat.statistic_sign:.3f}$\n' + r'$p < 10^{-3}$', fontsize = 14, 
                     horizontalalignment = 'right', verticalalignment = 'top', zorder = 30)
         else:
-            ax2.text(1.45, 0.9*max_y, f'$KS = {ks_stat[0]*ks_stat.statistic_sign:.3f}$\n$p = {ks_stat[1]:.3f}$', fontsize = 14, 
+            ax2.text(x_pos, 0.9*max_y, f'$KS = {ks_stat[0]*ks_stat.statistic_sign:.3f}$\n$p = {ks_stat[1]:.3f}$', fontsize = 14, 
                     horizontalalignment = 'right', verticalalignment = 'top', zorder = 30)
 
         if k == 0: #If it is the first row
@@ -192,6 +228,8 @@ for gtype in gtypes: #Loop through gene types
             ax2.set_ylabel('') #Remove any label for the second histogram
 
     i += 1 #Increase the count variable by 1
+    
+    avg_dNdS[gtype] = 1/(sum(dNdS[gtype])/len(dNdS[gtype]))
     
 [axs[m, n].tick_params(axis='both', which='major', labelsize = tick_fontsize) for n in range(0, 4) for m in range(0, 3)] #Adjust fontsize of the tick labels
 
