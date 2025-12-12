@@ -73,47 +73,6 @@ domain_no = {0: 'NGB', 1: 'GS1', 2: 'GS2', 3: 'GS3', 4: 'GS4', 5: 'GS2-BRS',
 names = list(domain_no.values())
 
 #Matrix with gene counts per strain (0 = absent, 1 = present, -1 = partial/non-functional)
-#                    #Strain      N  3 G2 G2B B G1 G4 G3 2a 2b  1
-# strain_presence = {'A0901':    [1, 1, 0, 0, 0,-1, 0, 0, 1, 0, 0],
-#                    'A1001':    [0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0],
-#                    'A1003':    [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-#                    'A1202':    [1, 0, 0, 0,-1, 1, 0, 0, 0, 0, 0],
-#                    'A1401':    [1, 0,-1, 0,-1, 1, 0, 0, 0, 0, 0],
-#                    'A1404':    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#                    'A1805':    [1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0],
-#                    'DSM':      [1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
-#                    'fhon2':    [1, 0,-1, 0, 1, 1, 0, 0, 0, 0, 0],
-#                    'G0101':    [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-#                    'G0403':    [0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0],
-#                    'H1B1-04J': [0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0],
-#                    'H1B1-05A': [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-#                    'H1B3-02M': [1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0],
-#                    'H3B1-01A': [1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0],
-#                    'H3B1-04J': [0, 0, 0, 1,-1, 1, 0, 0, 0, 0, 0],
-#                    'H3B1-04X': [1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0],
-#                    'H3B2-02X': [1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
-#                    'H3B2-03J': [1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0],
-#                    'H3B2-03M': [1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0],
-#                    'H3B2-06M': [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0],
-#                    'H3B2-09X': [1, 0,-1, 0, 1, 1, 0, 0, 0, 0, 0],
-#                    'H4B1-11J': [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0],
-#                    'H4B2-02J': [1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0],
-#                    'H4B2-04J': [1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0],
-#                    'H4B2-05J': [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-#                    'H4B2-06J': [0, 1, 0, 0, 0,-1, 0, 0, 1, 0, 0],
-#                    'H4B2-11M': [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-#                    'H4B4-02J': [0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0],
-#                    'H4B4-05J': [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0],
-#                    'H4B4-06M': [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0],
-#                    'H4B4-12M': [0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0],
-#                    'H4B5-01J': [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-#                    'H4B5-03X': [1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0],
-#                    'H4B5-04J': [1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0],
-#                    'H4B5-05J': [1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0],
-#                    'IBH001':   [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0],
-#                    'MP2':      [0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0]
-#                    }
-
                    #Strain      N G1 G2 G3 G4 G2B B  1  2a 2b 3
 strain_presence = {'A0901':    [1,-1, 0, 0, 0, 0, 0, 0, 1, 0, 1],
                    'A1001':    [0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1],
@@ -159,9 +118,6 @@ strain_presence = {'A0901':    [1,-1, 0, 0, 0, 0, 0, 0, 1, 0, 1],
 scale = 60 #Variable to scale the presence/absence circles
 
 #To color the circles
-# colors = ['#336E74', '#84CDE8', '#FFE570', '#BDE384', '#84E8A7', '#FF707C', 
-#           '#FFC36F', '#FF986F', '#C870FF', '#F87BFF', '#656ED4']
-
 colors = ['#336E74', '#FF707C', '#FFE570', '#FF986F', '#FFC36F', '#BDE384', 
           '#84E8A7', '#656ED4', '#C870FF', '#F87BFF', '#84CDE8']
 
@@ -243,50 +199,22 @@ for treefile in treefiles: #Loop through tree files
                     ts.legend.add_face(empty_face, column = i+2)
                 else: #Otherwise
                     ts.legend.add_face(text_face, column = i+2) #Add the gene name text
-                # if i == len(names)-1: #If it is the last gene name
-                #     empty_face = TextFace(' '*2, ftype = 'Arial', fsize=28, 
-                #                           tight_text = True) #Create text with spaces
-                #     ts.legend.add_face(empty_face, column = len(names)+2) #Add it after the last gene (to center gene names better)
         
         motifs = ['']*len(names) #Create an empty list of motifs to plot
-        # extra_motifs = ['']*len(names)
         seqFace = SeqMotifFace('A'*300, motifs = '', seq_format = 'blank', #Create an empty motif to add space between leaf names and presence/absence 
                                gap_format = 'blank')
         (t & f'{leaf.name}').add_face(seqFace, 0, 'aligned') #Add empty motif to the first column
         
         for n in range(len(names)): #Loop through gene names
             motifs[n] = [5, 55, '()', None, 50, '', '', ''] #Start adding info to plot a motif
-            # extra_motifs[n] = [0, 0, '()', None, 0, 'white', 'white', '']
             motifs[n][5] = 'black' #colors[n] #Update edge colors according to gene type
             motifs[n][6] = colors[n] #Update fill colors according to gene type
-            # extra_motif = False
-            # if n == 0: #Uncomment to add gene type on circles
-            #     motifs[n][7] = f'Arial|18|white|{names[n]}' 
-            # else:
-            #     motifs[n][7] = f'Arial|18|black|{names[n]}'
             
             if strain_presence[leaf.name][n] == 0: #If the gene is absent
-                # motifs[n][0] = 15 #Set start position of circle
-                # motifs[n][1] = 45 #Set end position of circle (equal to end - start)
-                # motifs[n][2] = 'o' #Change shape to square
-                # motifs[n][4] = 30 #Set height of circle
                 motifs[n][5] = 'black' #'#E7E7E7' #Set edge color to light grey
                 motifs[n][6] = 'white' #'#E7E7E7' #Set fill color to light grey
-                # motifs[n][7] = 'Arial|18|black|'
             elif strain_presence[leaf.name][n] == -1: #If the gene is partially present, perhaps lost
-                # motifs[n][0] = 10 #Set start position of circle
-                # motifs[n][1] = 50 #Set end position of circle
                 motifs[n][2] = '<>' #Change shape to diamond
-                # motifs[n][4] = 40 #Set height of circle (equal to end - start)
-                # motifs[n][5] = 'darkgrey' #Set edge color to dark grey
-                # motifs[n][6] = f'rgradient:{colors[n]}' #Set fill color to dark grey
-                # motifs[n][7] = 'Arial|18|black|'
-            #     extra_motif = True
-            # if extra_motif:
-            #     extra_motifs[n][0] = 5 #Set start position of circle
-            #     extra_motifs[n][1] = 55 #Set end position of circle
-            #     extra_motifs[n][4] = 50 #Set end position of circle
-            #     extra_motifs[n][5] = 'black'
             
             seq = 'A'*scale #Create sequence object on top to which circles are plotted
             if n == 0: #If it's the first gene (NGB)
@@ -294,7 +222,6 @@ for treefile in treefiles: #Loop through tree files
             seqFace = SeqMotifFace(seq, motifs = [motifs[n]], seq_format = 'blank', #Create object with the motifs, make the sequence tract invisible
                                     gap_format = 'blank') 
             (t & f'{leaf.name}').add_face(seqFace, n+1, 'aligned') #Add each gene to a different column
-            # (t & f'{leaf.name}').add_face(seqFace2, n+1, 'aligned') #Add each gene to a different column
 
         
     t.ladderize(1) #Reorder the nodes to keep the order consistent in all plots
