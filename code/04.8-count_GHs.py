@@ -3,7 +3,7 @@
 This is a script that counts how many instances of each gene are in each genome.
 Needed to make the CDS plot of the dynamic region in ete3.
 
-@author: Marina Mota Merlo
+@author: Marina Mota-Merlo
 """
 import os, logging, traceback
 import csv
@@ -79,7 +79,6 @@ with open(phylo) as phy: #Order by phylogeny
         strain = strain.strip()
         if len(strain) > 0:
             strain = strain.replace('-', '')
-            #Fix this part...
             count[0] = sum(value_dict[s] for s in GS1 if (strain.upper() in s) or ('APS55' in s and strain == 'MP2') or ('LDX55' in s and strain == 'IBH001') or ('K2W83' in s and strain == 'DSMZ12361')) #Account for locus tags with a different format for MP2
             count[1] = sum(value_dict[s] for s in GS2 if (strain.upper() in s) or ('APS55' in s and strain == 'MP2') or ('LDX55' in s and strain == 'IBH001') or ('K2W83' in s and strain == 'DSMZ12361'))
             count[2] = sum(value_dict[s] for s in BRS if (strain.upper() in s) or ('APS55' in s and strain == 'MP2') or ('LDX55' in s and strain == 'IBH001') or ('K2W83' in s and strain == 'DSMZ12361'))
@@ -113,5 +112,4 @@ with open(phylo) as phy: #Order by phylogeny
                 tab.write(f'{strain}\t{count[0]}\t{count[1]}\t{count[2]}\t'+
                           f'{count[3]}\t{count[4]}\t{total}\t{count[5]}\t'+
                           f'{count[6]}\t{count[7]}\t{total2}\t{loci[:-2]}\n')
-            #strain = next(p)
         count = [0, 0, 0, 0, 0, 0, 0, 0]

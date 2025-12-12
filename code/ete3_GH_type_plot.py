@@ -13,31 +13,9 @@ and only the GS1, GS2 and BRS phylogenies were included.
 
 from ete3 import Tree, TreeStyle, NodeStyle, SeqMotifFace, TextFace
 #Use PhyloTree
-import csv, os, logging, traceback
+import csv, os
 import yaml
 import numpy as np
-from collections import Counter
-
-# =============================================================================
-# Logging
-# =============================================================================
-
-# logging.basicConfig(filename = snakemake.log[0], level = logging.INFO,
-#                     format = '%(asctime)s %(message)s',
-#                     datefmt = '%Y-%m-%d %H:%M:%S')
-
-# def handle_exception(exc_type, exc_value, exc_traceback):
-#     if issubclass(exc_type, KeyboardInterrupt):
-#         sys.__excepthook__(exc_type, exc_value, exc_traceback)
-#         return
-
-#     logger.error(''.join(["Uncaught exception: ",
-#                           *traceback.format_exception(exc_type, exc_value, exc_traceback)
-#                           ]))
-
-# sys.excepthook = handle_exception
-
-# sys.stdout = open(snakemake.log[0], 'a')
 
 # =============================================================================
 # Set colors for strains and CDS
