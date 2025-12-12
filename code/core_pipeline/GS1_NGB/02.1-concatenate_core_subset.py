@@ -19,7 +19,7 @@ import os, subprocess
 # 1. Define inputs and outputs
 # =============================================================================
 threads = 48
-GHs = ['NGB'] #['GS1', 'NGB']
+GHs = ['GS1', 'NGB']
 
 for GH in GHs:
     inpath = os.path.expanduser('~') + f'/GH_project/all_core/38_strains/fasta/{GH}'
