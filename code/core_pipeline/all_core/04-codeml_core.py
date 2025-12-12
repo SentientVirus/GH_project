@@ -5,7 +5,7 @@ Created on Wed Nov 17 10:30:36 2021
 This is a script to use CodeML through BioPython to calculate the
 pairwise substitution rates between the cores genes in the different strains.
 
-@author: Marina Mota Merlo
+@author: Marina Mota-Merlo
 """
 
 # =============================================================================

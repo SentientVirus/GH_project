@@ -15,7 +15,6 @@ a separate file.
 
 import os, re
 from Bio import SeqIO
-from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 # =============================================================================

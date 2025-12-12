@@ -3,7 +3,10 @@
 """
 Created on Thu Feb  6 11:29:02 2025
 
-@author: marina
+Create a strain phylogeny tree based on the individual gene trees of all the core
+genes.
+
+@author: Marina Mota-Merlo
 """
 
 # =============================================================================
