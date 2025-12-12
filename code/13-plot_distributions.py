@@ -16,7 +16,6 @@ import os
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from scipy.stats import ks_2samp, pearsonr
-from math import sqrt
 import numpy as np
 from matplotlib.ticker import MultipleLocator
 
@@ -41,6 +40,9 @@ i = 0 #Variable to loop through the axes
 
 dNdS = {}
 avg_dNdS = {}
+
+ticks = [0.0, 0.5, 1.0, 1.5]
+tick_labels = ['0.0', '0.5', '1.0', r'$\geq1.5$']
 
 # =============================================================================
 # 2. Create the plot layout
@@ -86,6 +88,9 @@ for gtype in gtypes: #Loop through gene types
     type_dN = []
     type_dS = []
     type_w = []
+    filtered_dN = []
+    filtered_dS = []
+    
     
     for file in infiles: #Loop through input files
         with open(file) as tsv: #Open the file
@@ -122,29 +127,14 @@ for gtype in gtypes: #Loop through gene types
                 type_dN.append(1.5)
             if dS < 1.5:
                 type_dS.append(dS)
+                filtered_dN.append(dN)
+                filtered_dS.append(dS)
             else:
                 type_dS.append(1.5)
             type_w.append(w)
-            
-            if dS == 0:
-                dS = 0.01
-            dNdS[gtype] += [dN/dS]
-    
-    #Test to standardize the values for core genes    
-    mean_core = sum(dS_list)/len(dS_list)
-    sd_core = [(n-mean_core)**2 for n in dS_list]
-    sd_core = sqrt(sum(sd_core)/(len(sd_core)-1))
-    std_core_dS = [(n-mean_core)/sd_core for n in dS_list]
-
-    #Same, but for gene comparisons
-    mean_type = sum(type_dS)/len(type_dS)
-    sd_type = [(n-mean_type)**2 for n in type_dS]
-    sd_type = sqrt(sum(sd_type)/(len(sd_type)-1))
-    std_type_dS = [(n-mean_type)/sd_type for n in type_dS]
     
     print(f'Length of core gene lists: dS - {len(dS_list)}, dN - {len(dN_list)} - w - {len(w_list)}')
     print(f'Length of {gtype} lists: dS - {len(type_dS)}, dN - {len(type_dN)} - w - {len(type_w)}')
-    
 
     core = dS_list
     subtype = type_dS
@@ -157,13 +147,14 @@ for gtype in gtypes: #Loop through gene types
     for k in range(2):
         axs[k, i].set_facecolor('#FFF9EF') #Color the axis background
         axs[k, i].grid(False) #Remove grid
-        axs[k, i].set_xlim(0, max_x) #Set the range of the x axis
+        axs[k, i].set_xlim(0, max_x+0.02) #Set the range of the x axis
 
 
     #Plot the core gene dS values as a histogram with 50 bins
-    axs[0, i].hist(core, bins = 50, range = (0, max_x), linewidth = 0.5, color = '#6B818C', edgecolor = 'black', density = False, alpha = 1, zorder = 15)
+    axs[1, i].hist(core, bins = 50, range = (0, max_x), linewidth = 0.5, color = '#6B818C', edgecolor = 'black', density = False, alpha = 1, zorder = 15)
+    axs[1, i].set_xticks(ticks, labels = tick_labels)
 
-    ax2 = axs[0, i].twinx() #Create a twin axis
+    ax2 = axs[1, i].twinx() #Create a twin axis
     #Plot a histogram again, this type with the pairwise dS from the gene subtype
     ax2.hist(subtype, bins = 50, range = (0, max_x), linewidth = 0.5, color = '#D8E4FF', edgecolor='black', density = False, alpha = 0.8, zorder = 15)
     ax2.tick_params(axis='both', which='major', labelsize = tick_fontsize, length = 0) #Remove the ticks, but keep the labels
@@ -186,37 +177,44 @@ for gtype in gtypes: #Loop through gene types
         ax2.text(x_pos, 0.9*max_y, f'$KS = {ks_stat[0]*ks_stat.statistic_sign:.3f}$\n$p = {ks_stat[1]:.3f}$', fontsize = 14, 
                 horizontalalignment = 'right', verticalalignment = 'top', zorder = 30)
 
-    plt.title(f'${gtype.replace("R", "r")}$', fontsize = fontsize_title) #Add the gene name as plot title
-
     if i == 0:
-        axs[0, i].set_ylabel('No. of core pairwise ${d_S}$', fontsize = fontsize_subtitle) #Add the label for the first histogram
-        axs[1, i].set_ylabel('Pairwise gene ${d_N}$', fontsize = fontsize_subtitle) #Add the label for the first histogram, second row
+        axs[1, i].set_ylabel('No. of core pairwise ${d_S}$', fontsize = fontsize_subtitle) #Add the label for the first histogram
+        axs[0, i].set_ylabel('Pairwise gene ${d_N}$', fontsize = fontsize_subtitle) #Add the label for the first histogram, second row
     elif i == 3: #If it is the last plot in the row
         ax2.set_ylabel('No. of gene pairwise ${d_S}$', fontsize = fontsize_subtitle, rotation = 270, labelpad = 25) #Add the label for the second histogram
     if i != 3: #If it is not the last plot
         ax2.set_ylabel('') #Remove any label for the second histogram
         
-    axs[1, i].scatter(type_dS, type_dN, alpha = 0.8, s = 20, c = ['#D8E4FF']*len(type_dS), edgecolors = 'black', zorder = 10) #Add scatter plot (dS vs dN)
-    r1 = pearsonr(type_dS, type_dN) #Calculate the Pearson correlation coefficient
-    slope1, intercept1 = np.polyfit(type_dS, type_dN, 1) #Perform linear regression
+    axs[0, i].scatter(type_dS, type_dN, alpha = 0.8, s = 20, c = ['#D8E4FF']*len(type_dS), edgecolors = 'black', zorder = 10) #Add scatter plot (dS vs dN)
+    r1 = pearsonr(filtered_dS, filtered_dN) #Calculate the Pearson correlation coefficient
+    slope1, intercept1 = np.polyfit(filtered_dS, filtered_dN, 1) #Perform linear regression
+    print(r1[1])
+    if r1[1] < 1E-10:
+        pval = ' $p < 10^{-10}$'
+    elif r1[1] < 1E-5:
+        pval = ' $p < 10^{-5}$'
+    elif r1[1] < 1E-3:
+        pval = ' $p < 10^{-3}$'
+    else: pval = ' $p = {r1[1]:.3f}$'
+        
     
     #Add linear regression to the plot
-    axs[1, i].axline(xy1=(0, intercept1), color = 'darkorange', slope=slope1, label=f'$y = {slope1:.3f}x {intercept1:+.3f}$\n$R² = {r1[0]**2:.3f},$' + ' $p$-$value < 10^{-10}$', zorder = 5)
-    axs[1, i].legend(loc = 'upper right', frameon = False) #Add legend to the linear regression at the upper right corner and without a frame
+    axs[0, i].axline(xy1=(0, intercept1), color = 'darkorange', slope=slope1, label=f'$y = {slope1:.3f}x {intercept1:+.3f}$\n$R² = {r1[0]**2:.3f},$' + pval, zorder = 5)
+    axs[0, i].legend(loc = 'upper right', frameon = False) #Add legend to the linear regression at the upper right corner and without a frame
     
     #Format the scatter plot axes
-    axs[1, i].plot([0, 1], [0, 1], color = 'lightgrey') #Plot a line where x = y
-    axs[1, i].set_ylim(0, 0.25) #Set y ax limits (based on the highest dN in the dataset)
-    axs[1, i].fill_between(y_line, x_line, where = where_param, 
+    axs[0, i].plot([0, 1], [0, 1], color = 'lightgrey') #Plot a line where x = y
+    axs[0, i].set_ylim(0, 0.25) #Set y ax limits (based on the highest dN in the dataset)
+    axs[0, i].fill_between(y_line, x_line, where = where_param, 
                            interpolate = False, color = 'white', alpha = 0.5) #Fill everything under the x = y line
+    axs[0, i].set_xticks(ticks, labels = tick_labels)
     
     minor_ticks = MultipleLocator(0.25) #Create a locator for minor ticks
-    axs[1, i].xaxis.set_minor_locator(minor_ticks) #Apply it to the scatterplot ax
-    axs[1, i].grid(color = '#F7F0D5', linestyle = '-', linewidth = 2, which = 'both') #Add a grid to the plot, on both major and minor ticks
+    axs[0, i].xaxis.set_minor_locator(minor_ticks) #Apply it to the scatterplot ax
+    axs[0, i].grid(color = '#F7F0D5', linestyle = '-', linewidth = 2, which = 'both') #Add a grid to the plot, on both major and minor ticks
+    axs[0, i].set_title(f'${gtype.replace("R", "r")}$', fontsize = fontsize_title) #Add the gene name as plot title
 
     i += 1 #Increase the count variable by 1
-    
-    avg_dNdS[gtype] = 1/(sum(dNdS[gtype])/len(dNdS[gtype]))
     
 [spine.set_edgecolor('black') for n in range(0, 4) for m in range(0, 2) for spine in axs[m, n].spines.values()]
 [axs[m, n].tick_params(axis = 'both', which = 'major', labelsize = tick_fontsize) for n in range(0, 4) for m in range(0, 2)] #Adjust fontsize of the tick labels
@@ -239,7 +237,7 @@ patches = [subtitle1, sub_patch, line_patch, line_patch2] #List with all element
 
 legend = fig.legend(handles = patches,  handlelength = 0.6, handleheight = 1.5, 
                     loc = 'upper right', framealpha = 0, 
-                    frameon = False, fontsize = fontsize, bbox_to_anchor = (1.13, 0.5)) #Add legend to plot
+                    frameon = False, fontsize = fontsize, bbox_to_anchor = (1.13, 1)) #Add legend to plot
            
 #Set legend headers to bold
 legend.get_texts()[0].set_fontweight('bold')
@@ -268,7 +266,7 @@ patches2 = [subtitle2, sub_patch2, sub_patch3] #List with all elements of the le
 
 legend2 = fig.legend(handles = patches2,  handlelength = 0.6, handleheight = 1.5, 
                     loc = 'upper right', framealpha = 0, 
-                    frameon = False, fontsize = fontsize, bbox_to_anchor = (1.13, 1)) #Add legend to plot
+                    frameon = False, fontsize = fontsize, bbox_to_anchor = (1.13, 0.5)) #Add legend to plot
            
 #Set legend headers to bold
 legend2.get_texts()[0].set_fontweight('bold')
