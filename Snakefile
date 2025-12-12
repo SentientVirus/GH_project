@@ -236,7 +236,6 @@ rule iqtree_gtf:
     log: "logs/iqtree/repset_trees.log"
 # Former models: LG+G4+F and GTR+G4+F, then -mset Q.pfam,LG,WAG,JTT
     shell:
-#		'iqtree -s {input.prot} -st AA -m LG+C10+F -bb 1000 -alrt 1000 -v > {output.prot} && iqtree -s {input.gene} -st DNA -m GTR+G4+F -bb 1000 -alrt 1000 -v > {output.gene}'
         """
         mkdir -p data/fasta/GH70/trees && mkdir -p data/fasta/GH32/trees
         for i in {input.prot_GH70};
@@ -382,21 +381,6 @@ rule codeml_exe:
     script:
         "code/11-codeml_biopython.py"
 
-rule codeml_other:
-    output:
-        summary = expand("results/a_kunkeei_{CDS}/a_kunkeei_{CDS}.txt", CDS = config["neighbors"]),
-        dN = expand("results/a_kunkeei_{CDS}/2ML.dN", CDS = config["neighbors"]),
-        dS = expand("results/a_kunkeei_{CDS}/2ML.dS", CDS = config["neighbors"])
-    input:
-        codons = expand("data/codons/a_kunkeei_{CDS}.pal2nal", CDS = config["neighbors"]),
-        trees = expand("data/fasta/other_genes/trees/a_kunkeei_{CDS}.mafft.faa.treefile", CDS = config["neighbors"])
-    params:
-        outdir = "/home/marina/GH_project/results"
-    log: "logs/python/neighbors_codeml.log"
-    conda: "envs/alignment_tree.yml"
-    script:
-        "code/11.1-codeml_neighbors.py"
-		
 rule run_parser:
     output:
         dNdS = expand("results/{type}/dNdS.tsv", type = ["GH70", "GS1", "GS2", "BRS", "BRS2", "BRS3", "BRS_clade", "NGB", "GH32", "S1", "S2a", "S3"]),
@@ -407,20 +391,9 @@ rule run_parser:
     script:
         "code/12-parse_codeml.py"
 
-rule parse_neighbors:
-    output:
-        dNdS = expand("results/a_kunkeei_{CDS}/dNdS.tsv", CDS = config["neighbors"]),
-        stats = expand("results/a_kunkeei_{CDS}/stats.tsv", CDS = config["neighbors"])
-    input:
-        txt = expand("results/a_kunkeei_{CDS}/a_kunkeei_{CDS}.txt", CDS = config["neighbors"])
-    log: "logs/python/neighbors_outtabs.log"
-    script:
-        "code/12.1-parse_codeml.py"
-
 ## Rules to generate plots
 def getTargetFiles():
     targets = []
-    #all_strains = config["strains"] + config["extra_strains"]
     all_strains = config["representatives"]
     for s in all_strains:
         no = str(config["no_dict_repr"][s][0])
@@ -435,12 +408,10 @@ output_tabs = getTargetFiles()
 rule get_CDS_tabs:
     output:
         output_tabs 
-        #lambda wildcards: expand("plots/tabfiles/{no}_{strain}_gpr.tab", strain = config["strains"], no = config["no_dict"][{wildcards.strain}])
     input:
         gbff = expand("gbks/{strain}_1.gbk", strain = config["representatives"]),
         tree = "trees/new_phylogeny.txt"
     log: "logs/python/05.2-CDS_tabfiles.log"
-#    shadow: "minimal"
     script:
          "code/05.2-get_CDS_tabs.py"
 
