@@ -114,7 +114,6 @@ def parse_GH(indir, outdir, gene_domains, out_prefix):
         fna.write('')
     
     for gbk_file in sorted(strains, key=lambda v: v.upper()):
-    #for gbk_file in sorted(os.listdir(indir)):
         print(gbk_file)
         with open(f'{indir}/{gbk_file}_1.gbk') as new_gbk:
 

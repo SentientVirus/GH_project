@@ -5,7 +5,7 @@ Created on Tue Nov 29 10:01:24 2022
 
 This is a script to divide each entry in a GenBank file into different files.
 
-@author: Marina Mota Merlo
+@author: Marina Mota-Merlo
 """
 # =============================================================================
 # Script to divide multi-record GenBank files into single-record files.
@@ -28,7 +28,6 @@ def parse_GenBank(file, locus_dict):
     with open(file, 'r') as handle:
         n = 1
         f = (line for line in handle)
-        # check = False
         for line in f:
             if 'LOCUS' in line:
                 locus_name = line.split()[1]
@@ -39,12 +38,6 @@ def parse_GenBank(file, locus_dict):
                     locus_2_strain[locus_name] = f'DSMZ12361_{n}'
                 n += 1
                 print(locus_2_strain[locus_name])
-            # elif '_1' not in locus_name and 'ORIGIN' in line:
-            #     check = True
-            # elif '//' in line:
-            #     check = False
-            # if check and 'ORIGIN' not in line:
-            #     line = '  ' + line
             locus_dict[locus_name] += line
         final_locus_dict = {locus_2_strain[locname]: locus_dict[locname] for locname in locus_dict.keys()}
     return final_locus_dict

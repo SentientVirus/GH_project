@@ -54,7 +54,7 @@ sys.stdout = open(snakemake.log[0], 'a')
 direct = 'interproscan'
 indir = 'gbks'
 gene_types = snakemake.output
-file_list = snakemake.input #[f'gbks/{file}' for file in os.listdir('gbks') if ('Fhon13' not in file and len(file.split('-')) < 2)]
+file_list = snakemake.input
 strains = [Path(file).stem for file in file_list] #Extract strain names from files
 strains = [strain[:-2] for strain in strains] #Remove _1 from strain names
 
@@ -138,7 +138,7 @@ def get_domains(sequence, start, end):
 # =============================================================================
 
 def parse_GH70(indir, outdir, gene_dom, out_prefix):
-    locus_tags = list(gene_dom.keys())                   #locus_tags of interest
+    locus_tags = list(gene_dom.keys()) #Locus_tags of interest
     
     
     outfile_faa = f'{outdir}/{out_prefix}.faa' #Name outputs
@@ -161,7 +161,6 @@ def parse_GH70(indir, outdir, gene_dom, out_prefix):
                                     locus_tag = feature.qualifiers['locus_tag'][0][3:]  #retrieve locus tag as locus_tag
                                 else:
                                     locus_tag = feature.qualifiers['locus_tag'][0]
-                                    #print(locus_tag)
                                 if locus_tag in locus_tags or f'{locus_tag}_CD1' in locus_tags: #if locus_tag is present in locus_tags
                                     locus_tag_list = [locus_tag]
                                     if f'{locus_tag}_CD2' in locus_tags:
@@ -212,7 +211,7 @@ def parse_GH32(indir, outdir, gene_dom, out_prefix):
                                     print(f'{out_prefix} with locus tag {locus_tag} added.\n')
 
 # =============================================================================
-# Implementation of the functions'/'
+# Implementation of the functions
 # =============================================================================
 
 for gene_type in gene_types: #Loop through output filenames

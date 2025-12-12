@@ -74,14 +74,11 @@ def set_codeml_options(cml, rmd, seq, mdl = 1, noise = 0, verb = False, cf = 2, 
 # Apply these functions to snakemake pipeline
 # =============================================================================
 
-#As Julia pointed out, I wasn't using trees for core genes, so I shouldn't
-#use trees here either
-
 tree_inputs = list(snakemake.input['trees_GH70']) + list(snakemake.input['trees_GH32'])
 
 for i in range(len(tree_inputs)):
     cml = codeml_object(snakemake.params.outdir + '/' + os.path.basename(tree_inputs[i]).split('_')[0],
-                        snakemake.input['codons'][i], snakemake.output['summary'][i]) #, tree_inputs[i])
+                        snakemake.input['codons'][i], snakemake.output['summary'][i])
     cml = set_codeml_options(cml, -2, 1)
     
     ##Run CodeML

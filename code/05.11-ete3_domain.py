@@ -7,7 +7,7 @@ This script creates plots of the domains of GH70 and GH32 proteins
 next to a strain phylogeny. To plot a specific gene type, the script has
 to be manually updated.
 
-@author: Marina Mota Merlo
+@author: Marina Mota-Merlo
 """
 
 from ete3 import Tree, TreeStyle, NodeStyle

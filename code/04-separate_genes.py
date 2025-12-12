@@ -5,7 +5,7 @@ Created on Thu Dec  1 16:43:13 2022
 
 Script to divide GHs by type and subset of strains of interest.
 
-@author: Marina Mota Merlo
+@author: Marina Mota-Merlo
 
 """
 

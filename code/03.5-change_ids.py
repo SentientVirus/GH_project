@@ -8,7 +8,7 @@ IBH001. It changes the column with protein IDs in the Interproscan output to
 a column with locus tags, so that these files can be navigated using the same
 scripts as for the A. kunkeei annotations made by Dyrhage et al. (2022).
 
-@author: Marina Mota Merlo
+@author: Marina Mota-Merlo
 """
 
 # =============================================================================

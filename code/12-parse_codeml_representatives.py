@@ -122,7 +122,6 @@ def parse_codeml_output(infile, outfile1, outfile2):
 
                 if first.split('_')[0] in rep and second.split('_')[0] in rep:
 
-#                    outfile.write(f'{first}\t{second}\t{dn}\t{ds}\t{dnds}\n')
                     outfile.write(f'{second}\t{first}\t{dn}\t{ds}\t{dnds}\n')
                     print(f'Added dN, dS and w for pair {first} vs {second}.')
     

@@ -106,7 +106,7 @@ transtable = {'TTT': 'F', 'TTC': 'F', 'TTA': 'L', 'TTG': 'L', 'CTT': 'L',
               'GGT': 'G', 'GGC': 'G', 'GGA': 'G', 'GGG': 'G'}
 
 # List of glycosyl hydrolase genes, using the names that I gave them
-GH_genes = ['GS1', 'GS2'] #, 'BRS', 'S2a', 'S3']
+GH_genes = ['GS1', 'GS2']
 
 # Paths to be created if they don't exist
 paths2make = [aln_path, codon_path, outdir]

@@ -50,7 +50,7 @@ direct = 'interproscan'
 indir = os.path.dirname(snakemake.input[0])
 outdir = os.path.dirname(snakemake.output[0])
 gene_types = snakemake.output
-file_list = snakemake.input #[f'gbks/{file}' for file in os.listdir('gbks') if ('Fhon13' not in file and len(file.split('-')) < 2)]
+file_list = snakemake.input
 strains = [Path(file).stem for file in file_list] #Extract strain names from files
 strains = [strain[:-2] for strain in strains] #Remove _1 from strain names
 
@@ -71,15 +71,6 @@ def get_GH70(directory, strains, domain_annot):
                 if domain_annot in line: #If it is a GH70 domain
                     loctag = line[0].replace('-', '')
                     loctag = loctag.replace('fhon2', 'FHON2')
-                    # if filename == 'MP2':
-                    #     if loctag == 'MP2_13350':
-                    #         loctag = 'APS55_RS03850'
-                    #     elif loctag == 'MP2_13360':
-                    #         loctag = 'APS55_RS03845'
-                    #     elif loctag == 'MP2_14250':
-                    #         loctag = 'APS55_RS03400'
-                    
-                    
                     print(loctag)
                     if loctag not in GH70_gene_names: #Retrieve domain position
                         GH70_gene_names.append(loctag)
@@ -123,7 +114,6 @@ def save_annot(directory, strains, outdir, gene_names, prefix = 'GH70'):
 
         with open(f'{directory}/{filename}.tsv') as annot: #Open annotations
             file = csv.reader(annot) #Read file
-            # check = False
             for line in file: #Loop through file
                 MP2_check = False
                 loctag = line[0].split('\t')[0].replace('-', '')
@@ -154,13 +144,9 @@ def save_annot(directory, strains, outdir, gene_names, prefix = 'GH70'):
                 if loctag in gene_names or full_loctag in gene_names or MP2_check:
                     with open(outfile, 'a') as handle:
                         handle.write(f'{line_text}\n')
-                # elif check == False:
-                #     with open(outfile, 'a') as handle:
-                #         handle.write(f'{line_text}\n')
-                #         check = True
 
 # =============================================================================
-# Implementation of the functions'/'
+# Implementation of the functions
 # =============================================================================
 for gene_type in gene_types: #Loop through output filenames
     gtype = Path(gene_type).stem.split('_')[0] #Get gene type: GH70 or GH32

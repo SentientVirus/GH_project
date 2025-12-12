@@ -6,9 +6,8 @@ Created on Mon Sep  4 10:28:42 2023
 This is a script to use PyGenomeViz to plot the region of the genome where
 the NGB gene is in the representative set of strains.
 
-@author: Marina Mota Merlo
+@author: Marina Mota-Merlo
 """
-#from Bio.Blast.Applications import NcbiblastpCommandline as cline_blast
 from pygenomeviz import GenomeViz
 from pygenomeviz.parser import Genbank as gbk_read
 from matplotlib.lines import Line2D
@@ -17,11 +16,6 @@ from Bio.SeqFeature import SimpleLocation
 import os
 import pandas as pd
 
-# TO DO:
-    # Add meaningful comments
-    # Check if there is a phage in H4B5-05J, and double-check all phage positions
-    # Try to simplify the trimming of the tab_df
-    
 # =============================================================================
 # 1. Define inputs
 # =============================================================================
@@ -63,7 +57,6 @@ leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
               'H4B508X': '#0072B2', 'MP2': '#33B18F', 'IBH001': '#D55E00', 
               'DSMZ12361': '#0072B2'}
 
-#NGB locus tags
 NGB = ['A0901_05380', 'A1003_04750', 'A1202_05530', 'A1401_04720', 'A1805_04920',
        'FHON2_04830', 'G0101_04800', 'H1B105A_04750', 'H1B302M_04960', 
        'H3B101A_04720', 'H3B104X_04750', 'H3B202X_04770', 'H3B203J_04720', 
@@ -79,26 +72,6 @@ phage_pos = {'MP2': (190, 500),
              'A0901': (4670, 5350)}
 
 #Order in which strains and corresponding comparisons should be plotted
-# phylo_order = {1:'G0101', 2:'H4B2-05J', 3:'H4B2-11M', 4:'H1B1-04J', 
-#               5:'H4B4-12M', 6:'H4B5-01J', 7:'H3B1-01A', 8:'H3B2-03J', 
-#               9:'H3B1-04X', 10:'H3B2-02X', 11:'A1003', 12:'H4B2-04J', 
-#               13:'H4B5-03X', 14:'H4B4-02J', 15:'H1B3-02M', 16:'Fhon2', 
-#               17:'DSMZ12361', 18:'H4B2-02J', 19:'H1B1-05A', 20:'H3B1-04J', 
-#               21:'A1401', 22:'A1202', 23:'H4B5-05J', 24:'H3B2-09X', 
-#               25:'H4B5-04J', 26:'A1805', 27:'MP2', 28:'G0403', 29:'H3B2-06M', 
-#               30:'H4B4-05J', 31:'H4B1-11J', 32:'H4B4-06M', 33:'A0901', 
-#               34:'IBH001', 35:'H4B2-06J', 36:'H3B2-03M', 37:'A1404', 38:'A1001'}
-
-# phylo_order = {1:'G0101', 2:'H4B2-05J', 3:'H4B2-11M', 4:'H4B5-01J', 
-#               5:'H4B4-12M', 6:'H1B1-04J', 7:'H3B1-01A', 8:'H3B2-03J', 
-#               9:'H4B2-04J', 10:'H3B1-04X', 11:'H3B2-02X', 12:'A1003',
-#               13:'H1B3-02M', 14:'H4B4-02J', 15:'H4B5-03X', 16:'Fhon2', 
-#               17:'H1B1-05A', 18:'H4B2-02J', 19:'DSMZ12361', 20:'H3B1-04J', 
-#               21:'A1202', 22:'A1401', 23:'H4B5-05J', 24:'H3B2-09X', 
-#               25:'H4B5-04J', 26:'A1805', 27:'MP2', 28:'G0403', 29:'H4B4-05J', 
-#               30:'H3B2-06M', 31:'H4B1-11J', 32:'H4B4-06M', 33:'IBH001', 
-#               34:'H4B2-06J', 35:'A0901', 36:'H3B2-03M', 37:'A1404', 38:'A1001'}
-
 phylo_order = {1:'H4B4-12M', 2:'H4B5-01J', 3:'G0101', 4:'H4B2-05J', 
               5:'H4B2-11M', 6:'H1B1-04J', 7:'H4B5-03X', 8:'H4B4-02J', 
               9:'H1B3-02M', 10:'H3B2-02X', 11:'H3B1-04X', 12:'A1003',
@@ -359,9 +332,6 @@ for i in range(1, len(phylo_order.keys())): #Loop through strains in the order i
             seg2_s.loc[seg2_s['q. start'] < query_pos[1] - 24000, 'q. start'] = query_pos[1] - 24000
         seg2_s = seg2_s.reset_index() #Reset the index of the dataframe
     
-    # if strain1_name == 'A0901':
-    #     raise ValueError('Stop here!!!')
-        
     if subject_check == False and query_check == False: #If none of the strains in the comparison has multiple segments
         for j in range(len(tab_df)):
             #Get strain names from dataframe and shorten name of DSMZ

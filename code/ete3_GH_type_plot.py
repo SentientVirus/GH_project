@@ -82,16 +82,6 @@ leaf_color = {'A0901': '#D55E00', 'A1001': '#771853', 'A1002': '#D55E00',
               'DSMZ12361': '#0072B2', 'DSMZ': '#0072B2'}
 
 #Highlighted gene colors for GS1-2 and BRS, faint colors for the rest
-# gene_colors = {'GS1': '#FF7575', 'GS2': '#FF75B6', 'BRS': '#E875FF',
-#                'S1': '#FFA175', 'S2': '#FFB875', 'S2a': '#FFB875', 'S2b': '#FFD775', 
-#                'S3': '#FFF575', 'mhpD': '#CCCCCC', 'hpcG': '#CCCCCC', 
-#                'oppA': '#CCCCCC', 'GS3': '#FFC2D0', 'GS4': '#FF8A75'}
-
-# #Faint colors for GS1-2 and BRS
-# alt_colors = {'GS1': '#FFC0C0', 'GS2': '#FFC0DE', 'BRS': '#F4C0FF', 
-#               'S1': '#FFD3BD', 'S2': '#FFE0C3', 'S2a': '#FFE0C3', 'S2b': '#FFF0CB', 
-#               'S3': '#FFFCD0'}
-
 gene_colors = {'GS1': '#FF707C', 'GS2': '#FFE570', 'BRS': '#84E8A7',
                 'S1': '#656ED4', 'S2': '#CB78FF', 'S2a': '#C870FF', 'S2b': '#F87BFF', 
                 'S3': '#84CDE8', 'mhpD': '#DAD9DF', 'hpcG': '#DAD9DF', 
@@ -107,7 +97,6 @@ alt_colors = {'GS1': '#FFC6CB', 'GS2': '#FFF5C6', 'BRS': '#CDF6DB',
 # =============================================================================
 # Set target region and load input files
 # =============================================================================
-# TO DO: Annotate script and integrate into Snakemake
 
 segment_length = 23000 #25000 #Length of the graphical representation of the CDS in the plot
 gapscale = 1000 #Gap added for padding at the beginning

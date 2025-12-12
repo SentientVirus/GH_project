@@ -50,8 +50,8 @@ tick_labels = ['0.0', '0.5', '1.0', r'$\geq1.5$']
 
 with plt.style.context('fivethirtyeight'): #Ass plot style 
     fig, axs = plt.subplots(2, 4, constrained_layout = False, figsize=(18, 6), #Set no. of frames, layout and figure size
-                            gridspec_kw={'width_ratios': [1, 1, 1, 1]}) #, #Adjust width ratios of the plots
-                            # sharey = 'row')
+                            gridspec_kw={'width_ratios': [1, 1, 1, 1]}) #Adjust width ratios of the plots
+
 fig.patch.set_facecolor('white') #Make the background white
 
 plt.subplots_adjust(hspace = 0.2, top = 1, bottom = 0.03, wspace = 0.4) #Adjust spacing around the plots

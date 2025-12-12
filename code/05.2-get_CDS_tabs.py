@@ -5,7 +5,7 @@ Created on Wed Sep 29 21:57:29 2021
 This script retrieves positional information about the CDS in and around the
 deleted region so that this information can be later plotted.
 
-@author: Marina Mota Merlo
+@author: Marina Mota-Merlo
 """
 import os, logging, traceback
 import re
@@ -35,7 +35,6 @@ sys.stdout = open(snakemake.log[0], 'a')
 # Input/output definitions
 # =============================================================================
 
-#homedir = '/home/marina'
 outdir = 'plots/tabfiles'
 phylo_file = snakemake.input.tree
 inputs = snakemake.input.gbff
@@ -78,8 +77,6 @@ with open(phylo_file) as f:
 # Create tab files with CDS positions
 # =============================================================================
 
-#omit = ['Fhon13', 'H3B2-03M-01', 'H3B2-03M-04'] #Or use shadow: minimal in Snakemake
-
 for filename in inputs:
     if filename.endswith('.gbk'):
         f = (row for row in open(filename))
@@ -108,7 +105,6 @@ for filename in inputs:
                         gene = re.sub(r'[("")]', '', gene) #Remove ""
                         check = True
                         break
-                        #print(gene)
                     if '/locus_tag' in gene: #If the next line includes gene name
                         locus_tag = gene[:-1].replace(' ', '') #Remove spaces
                         locus_tag = locus_tag.replace('/locus_tag=', '') #Remove other text
