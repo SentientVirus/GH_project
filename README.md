@@ -1,5 +1,6 @@
 # GH project
 Family 70 and 32 glycoside hydrolases in _Apilactobacillus kunkeei_.
+[![DOI](https://zenodo.org/badge/571615023.svg)](https://doi.org/10.5281/zenodo.17985948)
 
 ## Folder organization
 Global folder organization:
